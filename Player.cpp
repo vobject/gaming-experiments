@@ -52,7 +52,7 @@ void Player::Update(const int elapsed_time)
       const auto new_pos_x = mPosX + mDirX * move_speed;
       const auto new_pos_y = mPosY + mDirY * move_speed;
 
-      if (mLevel.IsMovementLegal(new_pos_x, new_pos_y)) {
+      if (!mLevel.IsBlocking(new_pos_x, new_pos_y)) {
          mPosX += mDirX * move_speed;
          mPosY += mDirY * move_speed;
       }
@@ -63,7 +63,7 @@ void Player::Update(const int elapsed_time)
       const auto new_pos_x = mPosX - mDirX * move_speed;
       const auto new_pos_y = mPosY - mDirY * move_speed;
 
-      if (mLevel.IsMovementLegal(new_pos_x, new_pos_y)) {
+      if (!mLevel.IsBlocking(new_pos_x, new_pos_y)) {
          mPosX -= mDirX * move_speed;
          mPosY -= mDirY * move_speed;
       }

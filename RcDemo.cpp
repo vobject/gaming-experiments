@@ -5,6 +5,10 @@
 #include "Player.hpp"
 #include "Render.hpp"
 
+#if !defined(_WIN32)
+#include <X11/Xlib.h>
+#endif
+
 #include <SDL.h>
 
 #include <chrono>
@@ -60,6 +64,13 @@ void RcDemo::Mainloop()
 
 void RcDemo::Initialize()
 {
+#if !defined(_WIN32)
+   // HACK for ubuntu1204: https://github.com/DrMcCoy/xoreos/commit/9a6c84d5458256ac5a0ff7525055ef2d8761e683
+   if (!XInitThreads()) {
+      throw "Failed to initialize Xlib muti-threading support";
+   }
+#endif
+
    mRenderer = std::make_shared<Render>(640, 480);
    mMainFrame = std::make_shared<MainFrame>("RcDemo_1");
 

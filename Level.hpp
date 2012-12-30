@@ -11,7 +11,7 @@ public:
    Level();
    ~Level();
 
-   bool IsMovementLegal(int pos_x, int pos_y) const;
+   bool IsBlocking(int pos_x, int pos_y) const;
 
 private:
    std::vector<std::vector<int>> mGrid;

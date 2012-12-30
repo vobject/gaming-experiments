@@ -42,8 +42,8 @@ Level::~Level()
 
 }
 
-bool Level::IsMovementLegal(const int pos_x, const int pos_y) const
+bool Level::IsBlocking(const int pos_x, const int pos_y) const
 {
-   // The '0' means floor. We can walk on the floor.
-   return (mGrid[pos_x][pos_y] == 0);
+   // The '0' means floor. We can only walk on floor cells.
+   return (mGrid[pos_x][pos_y] != 0);
 }

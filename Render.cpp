@@ -171,6 +171,8 @@ void Render::DoRender(const Level& level, const Player& player)
       // Draw the pixels of the stripe as a vertical line.
       DrawVerticalLine(x, drawStart, drawEnd, color);
    }
+
+   DrawMinimap(level, player);
 }
 
 void Render::PostRender()
@@ -196,6 +198,73 @@ void Render::DrawFloor(const SDL_Color color)
                            static_cast<Uint16>(mResX),
                            static_cast<Uint16>(mResY / 2) };
    SDL_FillRect(mScreen, &floor_rect, floor);
+}
+
+void Render::DrawPixel(const int pos_x, const int pos_y, const unsigned int color)
+{
+   const auto bpp = mScreen->format->BytesPerPixel;
+   const auto offset = (mScreen->pitch * pos_y) + (pos_x * bpp);
+
+   SDL_LockSurface(mScreen);
+   memcpy(static_cast<char*>(mScreen->pixels) + offset, &color, bpp);
+   SDL_UnlockSurface(mScreen);
+}
+
+void Render::DrawLine(
+   int src_x,
+   int src_y,
+   int dest_x,
+   int dest_y,
+   const unsigned int color
+)
+{
+   // based on http://alawibaba.com/projects/whiteboard/drawing-SDL.c
+
+   int lg_delta;
+   int sh_delta;
+   int cycle;
+   int lg_step;
+   int sh_step;
+
+   lg_delta = dest_x - src_x;
+   sh_delta = dest_y - src_y;
+   lg_step = lg_delta > 0 ? 1 : (!lg_delta ? 0 : -1);
+   lg_delta = std::abs(lg_delta);
+   sh_step = sh_delta > 0 ? 1 : (!sh_delta ? 0 : -1);
+   sh_delta = std::abs(sh_delta);
+
+   if (sh_delta < lg_delta)
+   {
+      cycle = lg_delta >> 1;
+      while (src_x != dest_x)
+      {
+         DrawPixel(src_x, src_y, color);
+
+         cycle += sh_delta;
+         if (cycle > lg_delta)
+         {
+            cycle -= lg_delta;
+            src_y += sh_step;
+         }
+         src_x += lg_step;
+      }
+      DrawPixel(src_x, src_y, color);
+   }
+
+   cycle = sh_delta >> 1;
+   while (src_y != dest_y)
+   {
+      DrawPixel(src_x, src_y, color);
+
+      cycle += lg_delta;
+      if (cycle > sh_delta)
+      {
+         cycle -= sh_delta;
+         src_x += lg_step;
+      }
+      src_y += sh_step;
+   }
+   DrawPixel(src_x, src_y, color);
 }
 
 void Render::DrawVerticalLine(
@@ -236,5 +305,58 @@ void Render::DrawVerticalLine(
    {
       *(Uint32*)bufp = screen_color;
       bufp += mScreen->pitch;
+   }
+}
+
+void Render::DrawMinimap(const Level& level, const Player& player)
+{
+   const auto cells_x = level.mGrid.at(0).size();
+   const auto cells_y = level.mGrid.size();
+
+   const Uint16 cell_size_x = (mResX / 4) / cells_x;
+   const Uint16 cell_size_y = (mResY / 4) / cells_y;
+   const Uint16 map_size_x = cell_size_x * cells_x;
+   const Uint16 map_size_y = cell_size_y * cells_y;
+   const Sint16 pos_x = mResX - map_size_x;
+   const Sint16 pos_y = mResY - map_size_y;
+
+   const auto color_floor = SDL_MapRGB(mScreen->format, 0xff, 0xff, 0xff);
+   const auto color_wall = SDL_MapRGB(mScreen->format, 0x5f, 0x5f, 0x5f);
+   const auto color_player = SDL_MapRGB(mScreen->format, 0xff, 0x1f, 0x1f);
+
+   // Draw the minimap area.
+   SDL_Rect map_rect = { pos_x, pos_y, map_size_x, map_size_y };
+   SDL_FillRect(mScreen, &map_rect, color_floor);
+
+   // Draw the individual walls to the minimap.
+   SDL_Rect wall_rect = { map_rect.x, map_rect.y, cell_size_x, cell_size_y };
+   const unsigned int player_cell_x = player.mPosY;
+   const unsigned int player_cell_y = player.mPosX;
+
+   for (unsigned int cell_y = 0; cell_y < level.mGrid.size(); cell_y++)
+   {
+      for (unsigned int cell_x = 0; cell_x < level.mGrid[cell_y].size(); cell_x++)
+      {
+         if (level.mGrid[cell_y][cell_x] != 0)
+         {
+            //Draw only cells of wall type.
+            SDL_FillRect(mScreen, &wall_rect, color_wall);
+         }
+
+         if ((cell_y == player_cell_y) && (cell_x == player_cell_x))
+         {
+            //Draw player to minimap.
+            SDL_FillRect(mScreen, &wall_rect, color_player);
+            DrawLine(wall_rect.x + (cell_size_x / 2),
+                     wall_rect.y + (cell_size_y / 2),
+                     wall_rect.x + std::sin(player.mDirX) * 8,
+                     wall_rect.y + std::sin(player.mDirX) * 8,
+                     color_player);
+         }
+
+         wall_rect.x += cell_size_x;
+      }
+      wall_rect.x = pos_x;
+      wall_rect.y += cell_size_y;
    }
 }

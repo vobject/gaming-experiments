@@ -35,143 +35,14 @@ void Render::PreRender()
 {
    // Screen size might have changed.
    mScreen = SDL_GetVideoSurface();
-
-   DrawCeiling({ 0x60, 0x60, 0x60 });
-   DrawFloor({ 0x80, 0x80, 0x80 });
 }
 
 void Render::DoRender(const Level& level, const Player& player)
 {
-   for (int x = 0; x < mResX; x++)
-   {
-      //calculate ray position and direction
-      const double cameraX = 2 * x / double(mResX) - 1; //x-coordinate in camera space
-      const double rayPosX = player.mPosX;
-      const double rayPosY = player.mPosY;
-      const double raydir_x = player.mDirX + player.mPlaneX * cameraX;
-      const double raydir_y = player.mDirY + player.mPlaneY * cameraX;
-
-      //which box of the map we're in
-      int mapX = rayPosX;
-      int mapY = rayPosY;
-
-      //length of ray from current position to next x or y-side
-      double sideDistX;
-      double sideDistY;
-
-      //length of ray from one x or y-side to next x or y-side
-      double deltaDistX = std::sqrt(1 + (raydir_y * raydir_y) / (raydir_x * raydir_x));
-      double deltaDistY = std::sqrt(1 + (raydir_x * raydir_x) / (raydir_y * raydir_y));
-      double perpWallDist;
-
-      //what direction to step in x or y-direction (either +1 or -1)
-      int stepX;
-      int stepY;
-
-      bool hit = false; //was there a wall hit?
-      int side; //was a NS or a EW wall hit?
-
-      //calculate step and initial sideDist
-      if (raydir_x < 0)
-      {
-         stepX = -1;
-         sideDistX = (rayPosX - mapX) * deltaDistX;
-      }
-      else
-      {
-         stepX = 1;
-         sideDistX = (mapX + 1.0 - rayPosX) * deltaDistX;
-      }
-      if (raydir_y < 0)
-      {
-         stepY = -1;
-         sideDistY = (rayPosY - mapY) * deltaDistY;
-      }
-      else
-      {
-         stepY = 1;
-         sideDistY = (mapY + 1.0 - rayPosY) * deltaDistY;
-      }
-
-      //perform DDA
-      while (!hit)
-      {
-         //jump to next map square, OR in x-direction, OR in y-direction
-         if (sideDistX < sideDistY)
-         {
-            sideDistX += deltaDistX;
-            mapX += stepX;
-            side = 0;
-         }
-         else
-         {
-            sideDistY += deltaDistY;
-            mapY += stepY;
-            side = 1;
-         }
-
-         //Check if ray has hit a wall
-         if ((mapX >= level.mGrid.size()) || (mapY >= level.mGrid[0].size()))
-         {
-            hit = true;
-            break;
-         }
-
-         if (level.mGrid[mapX][mapY] > 0)
-         {
-            hit = true;
-            break;
-         }
-      }
-
-      //Calculate distance projected on camera direction (oblique distance will give fisheye effect!)
-      if (side == 0) {
-         perpWallDist = std::fabs((mapX - rayPosX + (1 - stepX) / 2) / raydir_x);
-      }
-      else {
-         perpWallDist = std::fabs((mapY - rayPosY + (1 - stepY) / 2) / raydir_y);
-      }
-
-      // Calculate height of line to draw on screen
-      const int lineHeight = std::abs(int(mResY / perpWallDist));
-
-      //calculate lowest and highest pixel to fill in current stripe
-      int drawStart = -lineHeight / 2 + mResY / 2;
-      if(drawStart < 0) drawStart = 0;
-      int drawEnd = lineHeight / 2 + mResY / 2;
-      if(drawEnd >= mResY) drawEnd = mResY - 1;
-
-      //choose wall color
-      SDL_Color color;
-      if ((mapX >= level.mGrid.size()) || (mapY >= level.mGrid[0].size()))
-      {
-         color = { 0xff, 0x00, 0x00 }; // red borders
-      }
-      else
-      {
-         switch(level.mGrid[mapX][mapY])
-         {
-            case 1:  color = { 0xff, 0x00, 0x00 }; break; //red
-            case 2:  color = { 0x00, 0xff, 0x00 }; break; //green
-            case 3:  color = { 0x00, 0x00, 0xff }; break; //blue
-            case 4:  color = { 0xff, 0xff, 0xff }; break; //white
-            case 5:  color = { 0xff, 0xff, 0x00 }; break; //yellow
-            default: color = { 0x30, 0x30, 0x30 }; break; //dark gray
-         }
-      }
-
-      if (side == 1)
-      {
-         // Give x and y sides different brightness.
-         color.r = color.r * .7f;
-         color.g = color.g * .7f;
-         color.b = color.b * .7f;
-      }
-
-      // Draw the pixels of the stripe as a vertical line.
-      DrawVerticalLine(x, drawStart, drawEnd, color);
-   }
-
+   DrawCeiling({ 0x60, 0x60, 0x60 });
+   DrawFloor({ 0x80, 0x80, 0x80 });
+   DrawPlayerView(level, player);
+//   DrawPlayerView2(level, player);
    DrawMinimap(level, player);
 }
 
@@ -200,112 +71,223 @@ void Render::DrawFloor(const SDL_Color color)
    SDL_FillRect(mScreen, &floor_rect, floor);
 }
 
-void Render::DrawPixel(const int pos_x, const int pos_y, const unsigned int color)
+void Render::DrawPlayerView(const Level& level, const Player& player)
 {
-   const auto bpp = mScreen->format->BytesPerPixel;
-   const auto offset = (mScreen->pitch * pos_y) + (pos_x * bpp);
-
-   SDL_LockSurface(mScreen);
-   memcpy(static_cast<char*>(mScreen->pixels) + offset, &color, bpp);
-   SDL_UnlockSurface(mScreen);
-}
-
-void Render::DrawLine(
-   int src_x,
-   int src_y,
-   int dest_x,
-   int dest_y,
-   const unsigned int color
-)
-{
-   // based on http://alawibaba.com/projects/whiteboard/drawing-SDL.c
-
-   int lg_delta;
-   int sh_delta;
-   int cycle;
-   int lg_step;
-   int sh_step;
-
-   lg_delta = dest_x - src_x;
-   sh_delta = dest_y - src_y;
-   lg_step = lg_delta > 0 ? 1 : (!lg_delta ? 0 : -1);
-   lg_delta = std::abs(lg_delta);
-   sh_step = sh_delta > 0 ? 1 : (!sh_delta ? 0 : -1);
-   sh_delta = std::abs(sh_delta);
-
-   if (sh_delta < lg_delta)
+   for (auto x = 0; x < mResX; x++)
    {
-      cycle = lg_delta >> 1;
-      while (src_x != dest_x)
-      {
-         DrawPixel(src_x, src_y, color);
+      // Current column position relative to the center of the screen.
+      // Left edge is -1, right edge is 1, and center is 0.
+      const double cam_x = 2. * x / mResX - 1;
 
-         cycle += sh_delta;
-         if (cycle > lg_delta)
+      // Starting direction and  positionof the current ray to be cast.
+      const double ray_dir_x = player.mDirX + player.mPlaneX * cam_x;
+      const double ray_dir_y = player.mDirY + player.mPlaneY * cam_x;
+      const double ray_pos_x = player.mPosX;
+      const double ray_pos_y = player.mPosY;
+
+      // The direction to step in X or Y-direction (either +1 or -1).
+      const int step_x = (ray_dir_x >= 0) ? 1 : -1;
+      const int step_y = (ray_dir_y >= 0) ? 1 : -1;
+
+      // Length of ray from one X and Y-side to next X and Y-side.
+      const double delta_dist_x = std::sqrt(1 + std::pow(ray_dir_y, 2) / std::pow(ray_dir_x, 2));
+      const double delta_dist_y = std::sqrt(1 + std::pow(ray_dir_x, 2) / std::pow(ray_dir_y, 2));
+
+      // The player's current grid position inside the level.
+      int map_x = ray_pos_x;
+      int map_y = ray_pos_y;
+
+      // Length of ray from its current position to next X- and Y-side.
+      double side_dist_x = (step_x == 1) ?
+                              ((map_x + 1.0 - ray_pos_x) * delta_dist_x) :
+                              ((ray_pos_x - map_x) * delta_dist_x);
+      double side_dist_y = (step_y == 1) ?
+                              ((map_y + 1.0 - ray_pos_y) * delta_dist_y) :
+                              ((ray_pos_y - map_y) * delta_dist_y);
+
+      // Y walls (EW) will be drawn darker.
+      bool y_side_hit;
+
+      for (bool wall_hit = false; !wall_hit;) // Run the DDA algorithm.
+      {
+         if (side_dist_x < side_dist_y)
          {
-            cycle -= lg_delta;
-            src_y += sh_step;
+            // Jump one square in X-direction.
+            map_x += step_x;
+            side_dist_x += delta_dist_x;
+            y_side_hit = false;
          }
-         src_x += lg_step;
+         else
+         {
+            // Jump one square in Y-direction.
+            map_y += step_y;
+            side_dist_y += delta_dist_y;
+            y_side_hit = true;
+         }
+
+         // Check if the ray has hit a wall.
+         wall_hit = level.mGrid[map_x][map_y] > 0;
       }
-      DrawPixel(src_x, src_y, color);
-   }
 
-   cycle = sh_delta >> 1;
-   while (src_y != dest_y)
-   {
-      DrawPixel(src_x, src_y, color);
+      // Calculate the perpendicular distance projected on camera direction.
+      // Oblique distance would give fisheye effect.
+      const double perp_wall_dist = y_side_hit ?
+                                 std::fabs((map_y - ray_pos_y + (1 - step_y) / 2) / ray_dir_y) :
+                                 std::fabs((map_x - ray_pos_x + (1 - step_x) / 2) / ray_dir_x);
 
-      cycle += lg_delta;
-      if (cycle > sh_delta)
+      // Calculate the height of the vertical line to draw on screen.
+      const int line_height = std::abs(int(mResY / perp_wall_dist));
+
+      // Set where the vertical line should be drawn.
+      int line_start = (-line_height / 2) + (mResY / 2);
+      int line_end = line_height / 2 + mResY / 2;
+
+      if (line_start < 0) {
+         line_start = 0;
+      }
+
+      if (line_end >= mResY) {
+         line_end = mResY - 1;
+      }
+
+      // Choose wall color.
+      SDL_Color color;
+
+      switch(level.mGrid[map_x][map_y])
       {
-         cycle -= sh_delta;
-         src_x += lg_step;
+         case 1:  color = { 0xff, 0x00, 0x00 }; break; // red
+         case 2:  color = { 0x00, 0xff, 0x00 }; break; // green
+         case 3:  color = { 0x00, 0x00, 0xff }; break; // blue
+         case 4:  color = { 0xff, 0xff, 0xff }; break; // white
+         case 5:  color = { 0xff, 0xff, 0x00 }; break; // yellow
+         default: color = { 0x30, 0x30, 0x30 }; break; // dark gray
       }
-      src_y += sh_step;
+
+      if (y_side_hit)
+      {
+         // Give X and Y-sides different brightness.
+         color.r = color.r * .7f;
+         color.g = color.g * .7f;
+         color.b = color.b * .7f;
+      }
+
+      // Draw the pixels of the stripe as a vertical line.
+      DrawVerticalLine(x, line_start, line_end, color);
    }
-   DrawPixel(src_x, src_y, color);
 }
 
-void Render::DrawVerticalLine(
-   const int x,
-   int y1,
-   int y2,
-   const SDL_Color color
-)
+void Render::DrawPlayerView2(const Level& level, const Player& player)
 {
-   if(y2 < y1)
-   {
-      // TODO: In which case can this happen?
+//   auto current_strip = 0;
 
-      // Make sure y2 is always greater than y1.
-      std::swap(y1, y2);
-   }
+//   for (unsigned int i = 0; i < mRayCount; i++)
+//   {
+//      const auto ray_screen_pos = (-mRayCount / 2 + i) * mStrip;
+//      const auto ray_view_dist = std::sqrt(std::pow(ray_screen_pos, 2) +
+//                                           std::pow(mViewDistance, 2));
 
-   if(y2 < 0 || y1 >= mResY  || x < 0 || x >= mResX) {
-      return; // Not a single point of the line is on screen.
-   }
+//      auto ray_angle = std::asin(ray_screen_pos / ray_view_dist);
+//      ray_angle += player.mRot;
+//      ray_angle = std::fmod(ray_angle, (M_PI * 2));
+//      ray_angle += (ray_angle < 0) ? (M_PI * 2) : 0;
 
-   if(y1 < 0)
-   {
-      y1 = 0; //clip
-   }
+//      CastRay(ray_angle, current_strip++, level, player);
+//   }
+}
 
-   if(y2 >= mResX)
-   {
-      y2 = mResY - 1; //clip
-   }
+void Render::CastRay(const double angle, const unsigned int strip, const Level& level, const Player& player)
+{
+//   const auto moving_right = (angle > ((M_PI * 2) * .75)) || (angle < ((M_PI * 2) * .25));
+//   const auto moving_up = (angle < 0) || (angle > M_PI);
 
-   auto screen_color = SDL_MapRGB(mScreen->format, color.r, color.g, color.b);
-   auto bufp = static_cast<char*>(mScreen->pixels)
-               + (y1 * mScreen->pitch)
-               + (x * mScreen->format->BytesPerPixel);
+//   int wall_type = 0;
+//   bool is_wall_horizontal = false;
 
-   for(int y = y1; y <= y2; y++)
-   {
-      *(Uint32*)bufp = screen_color;
-      bufp += mScreen->pitch;
-   }
+//   const double sin_angle = std::sin(angle);
+//   const double cos_angle = std::cos(angle);
+//   const double slope = sin_angle / cos_angle;
+
+//   double distance = .0;
+//   int hit_coord_x = 0;
+//   int hit_coord_y = 0;
+//   int texture_x = 0;
+
+//   const auto dxver = moving_right ? 1 : -1;
+//   const auto dyver = dxver * slope;
+
+//   auto x = moving_right ? std::ceil(player.mPosX) : std::floor(player.mPosX);
+//   auto y = player.mPosY + (x - player.mPosX) * slope;
+
+//   const auto cells_x = level.mGrid.at(0).size();
+//   const auto cells_y = level.mGrid.size();
+
+//   while ((x >= 0) && (x < cells_x) && (y >= 0) && (y < cells_y))
+//   {
+//      int wall_x = std::floor(x + (moving_right ? 0 : -1));
+//      int wall_y = std::floor(y);
+
+//      if (level.mGrid[wall_y][wall_x] > 0)
+//      {
+//         const auto dist_x = x - player.mPosX;
+//         const auto dist_y = y - player.mPosY;
+//         distance = std::pow(dist_x, 2) + std::pow(dist_y, 2);
+
+//         wall_type = level.mGrid[wall_y][wall_x];
+//         texture_x = std::fmod(y, 1);
+//         if (!moving_right) { texture_x = 1 - texture_x; }
+
+//         hit_coord_x = x;
+//         hit_coord_y = y;
+
+//         is_wall_horizontal = true;
+//         break;
+//      }
+//      x += dxver;
+//      y += dyver;
+//   }
+
+//   if (distance)
+//   {
+
+//   }
+
+/*
+   var strip = screenStrips[stripIdx];
+
+   dist = Math.sqrt(dist);
+
+   // use perpendicular distance to adjust for fish eye
+   // distorted_dist = correct_dist / cos(relative_angle_of_ray)
+   dist = dist * Math.cos(player.rot - rayAngle);
+
+   // now calc the position, height and width of the wall strip
+
+   // "real" wall height in the game world is 1 unit, the distance from the player to the screen is viewDist,
+   // thus the height on the screen is equal to wall_height_real * viewDist / dist
+
+   var height = Math.round(viewDist / dist);
+
+   // width is the same, but we have to stretch the texture to a factor of stripWidth to make it fill the strip correctly
+   var width = height * stripWidth;
+
+   // top placement is easy since everything is centered on the x-axis, so we simply move
+   // it half way down the screen and then half the wall height back up.
+   var top = Math.round((screenHeight - height) / 2);
+
+   strip.style.height = height+"px";
+   strip.style.top = top+"px";
+
+   strip.img.style.height = Math.floor(height * numTextures) + "px";
+   strip.img.style.width = Math.floor(width*2) +"px";
+   strip.img.style.top = -Math.floor(height * (wallType-1)) + "px";
+
+   var texX = Math.round(textureX*width);
+
+   if (texX > width - stripWidth)
+      texX = width - stripWidth;
+
+   strip.img.style.left = -texX + "px";
+*/
 }
 
 void Render::DrawMinimap(const Level& level, const Player& player)
@@ -347,16 +329,52 @@ void Render::DrawMinimap(const Level& level, const Player& player)
          {
             //Draw player to minimap.
             SDL_FillRect(mScreen, &wall_rect, color_player);
-            DrawLine(wall_rect.x + (cell_size_x / 2),
-                     wall_rect.y + (cell_size_y / 2),
-                     wall_rect.x + std::sin(player.mDirX) * 8,
-                     wall_rect.y + std::sin(player.mDirX) * 8,
-                     color_player);
          }
 
          wall_rect.x += cell_size_x;
       }
       wall_rect.x = pos_x;
       wall_rect.y += cell_size_y;
+   }
+}
+
+void Render::DrawVerticalLine(
+   const int x,
+   int y_start,
+   int y_end,
+   const SDL_Color color
+)
+{
+   if (y_end < y_start)
+   {
+      // Make sure y_end is always greater than y_start.
+      std::swap(y_start, y_end);
+   }
+
+   if (y_end < 0 || y_start >= mResY || x < 0 || x >= mResX) {
+      return; // Not a single point of the line is on screen.
+   }
+
+   if (y_start < 0)
+   {
+      y_start = 0; //clip
+   }
+
+   if (y_end >= mResX)
+   {
+      y_end = mResY - 1; //clip
+   }
+
+   const auto screen_color = SDL_MapRGB(mScreen->format, color.r,
+                                                         color.g,
+                                                         color.b);
+   const auto bpp = mScreen->format->BytesPerPixel;
+   const auto offset = (mScreen->pitch * y_start) + (x * bpp);
+   auto bufp = static_cast<char*>(mScreen->pixels) + offset;
+
+   for(int y = y_start; y <= y_end; y++)
+   {
+      *(Uint32*)bufp = screen_color;
+      bufp += mScreen->pitch;
    }
 }

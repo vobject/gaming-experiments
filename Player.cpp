@@ -18,8 +18,29 @@ Player::~Player()
 
 void Player::Update(const int elapsed_time)
 {
-   const double move_speed = elapsed_time / 1000.0 * 4.;
-   const double rot_speed = elapsed_time / 1000.0 * 3.;
+   UpdateRotation(elapsed_time);
+   UpdateMovement(elapsed_time);
+
+//   //double mRotSpeed = 6. * M_PI / 180.;
+//   const double rot_speed = elapsed_time / 1000. * 3.;
+
+//   if (mInput.TestLeft()) // Rotate to the left.
+//   {
+//      mRot += -1 * rot_speed;
+//   }
+
+//   if (mInput.TestRight()) // Rotate to the right.
+//   {
+//      mRot += 1 * rot_speed;
+//   }
+
+//   //double mMoveSpeed = 1.8;
+//   //const double move_speed = elapsed_time / 1000. * 4.;
+}
+
+void Player::UpdateRotation(const int elapsed_time)
+{
+   const double rot_speed = elapsed_time / 1000. * 3.;
 
    if (mInput.TestLeft()) // Rotate to the left.
    {
@@ -46,6 +67,11 @@ void Player::Update(const int elapsed_time)
       mPlaneX = old_plane_x * std::cos(-rot_speed) - mPlaneY * std::sin(-rot_speed);
       mPlaneY = old_plane_x * std::sin(-rot_speed) + mPlaneY * std::cos(-rot_speed);
    }
+}
+
+void Player::UpdateMovement(const int elapsed_time)
+{
+   const double move_speed = elapsed_time / 1000. * 4.;
 
    if (mInput.TestUp()) // Move forward if no wall blocks our path.
    {
@@ -58,7 +84,7 @@ void Player::Update(const int elapsed_time)
       }
    }
 
-   if (mInput.TestDown()) //Move backward if no wall blocks our path.
+   if (mInput.TestDown()) // Move backward if no wall blocks our path.
    {
       const auto new_pos_x = mPosX - mDirX * move_speed;
       const auto new_pos_y = mPosY - mDirY * move_speed;

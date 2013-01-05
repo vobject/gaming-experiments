@@ -20,22 +20,6 @@ void Player::Update(const int elapsed_time)
 {
    UpdateRotation(elapsed_time);
    UpdateMovement(elapsed_time);
-
-//   //double mRotSpeed = 6. * M_PI / 180.;
-//   const double rot_speed = elapsed_time / 1000. * 3.;
-
-//   if (mInput.TestLeft()) // Rotate to the left.
-//   {
-//      mRot += -1 * rot_speed;
-//   }
-
-//   if (mInput.TestRight()) // Rotate to the right.
-//   {
-//      mRot += 1 * rot_speed;
-//   }
-
-//   //double mMoveSpeed = 1.8;
-//   //const double move_speed = elapsed_time / 1000. * 4.;
 }
 
 void Player::UpdateRotation(const int elapsed_time)

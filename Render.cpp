@@ -42,7 +42,6 @@ void Render::DoRender(const Level& level, const Player& player)
    DrawCeiling({ 0x60, 0x60, 0x60 });
    DrawFloor({ 0x80, 0x80, 0x80 });
    DrawPlayerView(level, player);
-//   DrawPlayerView2(level, player);
    DrawMinimap(level, player);
 }
 
@@ -174,120 +173,6 @@ void Render::DrawPlayerView(const Level& level, const Player& player)
       // Draw the pixels of the stripe as a vertical line.
       DrawVerticalLine(x, line_start, line_end, color);
    }
-}
-
-void Render::DrawPlayerView2(const Level& level, const Player& player)
-{
-//   auto current_strip = 0;
-
-//   for (unsigned int i = 0; i < mRayCount; i++)
-//   {
-//      const auto ray_screen_pos = (-mRayCount / 2 + i) * mStrip;
-//      const auto ray_view_dist = std::sqrt(std::pow(ray_screen_pos, 2) +
-//                                           std::pow(mViewDistance, 2));
-
-//      auto ray_angle = std::asin(ray_screen_pos / ray_view_dist);
-//      ray_angle += player.mRot;
-//      ray_angle = std::fmod(ray_angle, (M_PI * 2));
-//      ray_angle += (ray_angle < 0) ? (M_PI * 2) : 0;
-
-//      CastRay(ray_angle, current_strip++, level, player);
-//   }
-}
-
-void Render::CastRay(const double angle, const unsigned int strip, const Level& level, const Player& player)
-{
-//   const auto moving_right = (angle > ((M_PI * 2) * .75)) || (angle < ((M_PI * 2) * .25));
-//   const auto moving_up = (angle < 0) || (angle > M_PI);
-
-//   int wall_type = 0;
-//   bool is_wall_horizontal = false;
-
-//   const double sin_angle = std::sin(angle);
-//   const double cos_angle = std::cos(angle);
-//   const double slope = sin_angle / cos_angle;
-
-//   double distance = .0;
-//   int hit_coord_x = 0;
-//   int hit_coord_y = 0;
-//   int texture_x = 0;
-
-//   const auto dxver = moving_right ? 1 : -1;
-//   const auto dyver = dxver * slope;
-
-//   auto x = moving_right ? std::ceil(player.mPosX) : std::floor(player.mPosX);
-//   auto y = player.mPosY + (x - player.mPosX) * slope;
-
-//   const auto cells_x = level.mGrid.at(0).size();
-//   const auto cells_y = level.mGrid.size();
-
-//   while ((x >= 0) && (x < cells_x) && (y >= 0) && (y < cells_y))
-//   {
-//      int wall_x = std::floor(x + (moving_right ? 0 : -1));
-//      int wall_y = std::floor(y);
-
-//      if (level.mGrid[wall_y][wall_x] > 0)
-//      {
-//         const auto dist_x = x - player.mPosX;
-//         const auto dist_y = y - player.mPosY;
-//         distance = std::pow(dist_x, 2) + std::pow(dist_y, 2);
-
-//         wall_type = level.mGrid[wall_y][wall_x];
-//         texture_x = std::fmod(y, 1);
-//         if (!moving_right) { texture_x = 1 - texture_x; }
-
-//         hit_coord_x = x;
-//         hit_coord_y = y;
-
-//         is_wall_horizontal = true;
-//         break;
-//      }
-//      x += dxver;
-//      y += dyver;
-//   }
-
-//   if (distance)
-//   {
-
-//   }
-
-/*
-   var strip = screenStrips[stripIdx];
-
-   dist = Math.sqrt(dist);
-
-   // use perpendicular distance to adjust for fish eye
-   // distorted_dist = correct_dist / cos(relative_angle_of_ray)
-   dist = dist * Math.cos(player.rot - rayAngle);
-
-   // now calc the position, height and width of the wall strip
-
-   // "real" wall height in the game world is 1 unit, the distance from the player to the screen is viewDist,
-   // thus the height on the screen is equal to wall_height_real * viewDist / dist
-
-   var height = Math.round(viewDist / dist);
-
-   // width is the same, but we have to stretch the texture to a factor of stripWidth to make it fill the strip correctly
-   var width = height * stripWidth;
-
-   // top placement is easy since everything is centered on the x-axis, so we simply move
-   // it half way down the screen and then half the wall height back up.
-   var top = Math.round((screenHeight - height) / 2);
-
-   strip.style.height = height+"px";
-   strip.style.top = top+"px";
-
-   strip.img.style.height = Math.floor(height * numTextures) + "px";
-   strip.img.style.width = Math.floor(width*2) +"px";
-   strip.img.style.top = -Math.floor(height * (wallType-1)) + "px";
-
-   var texX = Math.round(textureX*width);
-
-   if (texX > width - stripWidth)
-      texX = width - stripWidth;
-
-   strip.img.style.left = -texX + "px";
-*/
 }
 
 void Render::DrawMinimap(const Level& level, const Player& player)

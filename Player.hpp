@@ -1,8 +1,6 @@
 #ifndef PLAYER_HPP
 #define PLAYER_HPP
 
-#include <cmath>
-
 class Level;
 class Input;
 
@@ -22,11 +20,6 @@ private:
 
    const Level& mLevel;
    const Input& mInput;
-
-   // New stuff.
-//   double mRot = .0;
-
-   // Old stuff.
 
    // Position vector of the player.
    double mPosX = 20.;

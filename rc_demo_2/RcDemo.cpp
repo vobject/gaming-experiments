@@ -72,7 +72,7 @@ void RcDemo::Initialize()
 #endif
 
    mRenderer = std::make_shared<Render>(640, 480);
-   mMainFrame = std::make_shared<MainFrame>("RcDemo_1");
+   mMainFrame = std::make_shared<MainFrame>("RcDemo_2");
 
    mLevel = std::make_shared<Level>();
    mInput = std::make_shared<Input>(SDLK_UP, SDLK_DOWN,

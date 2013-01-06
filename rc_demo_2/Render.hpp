@@ -27,7 +27,6 @@ private:
    void DrawMinimap(const Level& level, const Player& player);
 
    void DrawVerticalLine(int x, int y1, int y2, SDL_Color color);
-   void SetPixel(int x, int y, Uint32 color);
 
    const int mResX;
    const int mResY;

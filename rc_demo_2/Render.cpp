@@ -41,8 +41,8 @@ void Render::PreRender()
 
 void Render::DoRender(const Level& level, const Player& player)
 {
-   DrawCeiling({ 0x60, 0x60, 0x60 });
-   DrawFloor({ 0x80, 0x80, 0x80 });
+//   DrawCeiling({ 0x60, 0x60, 0x60 });
+//   DrawFloor({ 0x80, 0x80, 0x80 });
    DrawPlayerView(level, player);
    DrawMinimap(level, player);
 }
@@ -152,10 +152,9 @@ void Render::DrawPlayerView(const Level& level, const Player& player)
       }
 
       // Get the texture that matches the cell type.
-      const auto texture_id = level.mGrid[map_x][map_y] - 1;
-      const auto texture = mResCache->GetWall(texture_id);
+      const auto wall_tex_id = level.mGrid[map_x][map_y] - 1;
+      const auto wall_tex = mResCache->GetWall(wall_tex_id);
 
-      /////////////////////////////////////////////////
       // Where exactly the wall was hit.
       double wall_x;
 
@@ -168,37 +167,104 @@ void Render::DrawPlayerView(const Level& level, const Player& player)
       wall_x -= std::floor((wall_x));
 
       // X-coordinate on the texture.
-      int tex_x = wall_x * texture->w;
+      int tex_x = wall_x * wall_tex->w;
 
       if(( y_side_hit && ray_dir_y < 0) ||
          (!y_side_hit && ray_dir_x > 0))
       {
-         tex_x = texture->w - tex_x - 1;
+         tex_x = wall_tex->w - tex_x - 1;
       }
-
-//      SDL_Rect src_rect = { static_cast<Sint16>(tex_x),
-//                            static_cast<Sint16>(0),
-//                            static_cast<Uint16>(1),
-//                            static_cast<Uint16>(64) };
-//      SDL_Rect dst_rect = { static_cast<Sint16>(x),
-//                            static_cast<Sint16>(line_start) };
-//      SDL_BlitSurface(texture, &src_rect, mScreen, &dst_rect);
 
       for(int y = line_start; y < line_end; y++)
       {
          const int tex_y = (y * 2 - mResY + line_height) *
-                          (texture->h / 2) / line_height;
+                           (wall_tex->h / 2) / line_height;
 
-//         const auto bpp = mScreen->format->BytesPerPixel;
-//         const auto offset = (texture->h * tex_y) + (tex_x * bpp);
-//         const auto p = static_cast<char*>(mScreen->pixels) + offset;
-//         Uint32 color = *(Uint32*)p;
+         const auto tex_bpp = wall_tex->format->BytesPerPixel;
+         const auto tex_offset = (wall_tex->pitch * tex_y) + (tex_x * tex_bpp);
+         const auto tex_ptr = static_cast<Uint8*>(wall_tex->pixels) + tex_offset;
 
-         auto color = ((Uint32*)texture->pixels)[texture->h * tex_y + tex_x];
+         SDL_Color color = { tex_ptr[0], tex_ptr[1], tex_ptr[2] };
 
-         //make color darker for y-sides: R, G and B byte each divided through two with a "shift" and an "and"
-         if(y_side_hit) color = (color >> 1) & 8355711;
-         SetPixel(x, y, color);
+         if (y_side_hit)
+         {
+            // Give X and Y-sides different brightness.
+            color.r /= 2;
+            color.g /= 2;
+            color.b /= 2;
+         }
+
+         const auto scr_bpp = mScreen->format->BytesPerPixel;
+         const auto scr_offset = (mScreen->pitch * y) + (x * scr_bpp);
+         const auto scr_ptr = static_cast<Uint8*>(mScreen->pixels) + scr_offset;
+         memcpy(scr_ptr, &color, sizeof(color));
+      }
+
+      // Get the texture for the ceiling and floor.
+      const auto ceiling_tex = mResCache->GetWall(3);
+      const auto floor_tex = mResCache->GetWall(2);
+
+      // Position of the floor at the bottom of the wall.
+      double floor_x_wall;
+      double floor_y_wall;
+
+      if (!y_side_hit && (ray_dir_x > 0)) {
+         floor_x_wall = map_x;
+         floor_y_wall = map_y + wall_x;
+      }
+      else if (!y_side_hit && (ray_dir_x < 0)) {
+         floor_x_wall = map_x + 1.;
+         floor_y_wall = map_y + wall_x;
+      }
+      else if (y_side_hit && (ray_dir_y > 0)) {
+         floor_x_wall = map_x + wall_x;
+         floor_y_wall = map_y;
+      }
+      else {
+         floor_x_wall = map_x + wall_x;
+         floor_y_wall = map_y + 1.;
+      }
+
+      const double dist_wall = perp_wall_dist;
+      const double dist_player = .0;
+
+      // Draw the floor from below the wall to the bottom of the screen.
+      for(int y = line_end + 1; y < mResY; y++)
+      {
+         const double cur_dist = mResY / (2. * y - mResY);
+         const double weight = (cur_dist - dist_player) / (dist_wall - dist_player);
+
+         const double cur_floor_x = weight * floor_x_wall + (1.0 - weight) * ray_pos_x;
+         const double cur_floor_y = weight * floor_y_wall + (1.0 - weight) * ray_pos_y;
+
+         const int floor_tex_x = int(cur_floor_x * floor_tex->w / 4) % floor_tex->w;
+         const int floor_tex_y = int(cur_floor_y * floor_tex->h / 4) % floor_tex->h;
+
+         const auto ceiling_tex_bpp = ceiling_tex->format->BytesPerPixel;
+         const auto ceiling_tex_offset = (ceiling_tex->pitch * floor_tex_y) + (floor_tex_x * ceiling_tex_bpp);
+         const auto ceiling_tex_ptr = static_cast<Uint8*>(ceiling_tex->pixels) + ceiling_tex_offset;
+
+         const auto floor_tex_bpp = floor_tex->format->BytesPerPixel;
+         const auto floor_tex_offset = (floor_tex->pitch * floor_tex_y) + (floor_tex_x * floor_tex_bpp);
+         const auto floor_tex_ptr = static_cast<Uint8*>(floor_tex->pixels) + floor_tex_offset;
+
+         const SDL_Color ceiling_color = { ceiling_tex_ptr[0], ceiling_tex_ptr[1], ceiling_tex_ptr[2] };
+         SDL_Color floor_color = { floor_tex_ptr[0], floor_tex_ptr[1], floor_tex_ptr[2] };
+
+         // Make the floor darker.
+         floor_color.r /= 3;
+         floor_color.g /= 3;
+         floor_color.b /= 3;
+
+         const auto bpp = mScreen->format->BytesPerPixel;
+
+         const auto ceiling_offset = (mScreen->pitch * (mResY - y)) + (x * bpp);
+         const auto ceiling_ptr = static_cast<Uint8*>(mScreen->pixels) + ceiling_offset;
+         memcpy(ceiling_ptr, &ceiling_color, sizeof(ceiling_color));
+
+         const auto floor_offset = (mScreen->pitch * y) + (x * bpp);
+         const auto floor_ptr = static_cast<Uint8*>(mScreen->pixels) + floor_offset;
+         memcpy(floor_ptr, &floor_color, sizeof(floor_color));
       }
    }
 }
@@ -290,15 +356,4 @@ void Render::DrawVerticalLine(
       *(Uint32*)bufp = screen_color;
       bufp += mScreen->pitch;
    }
-}
-
-void Render::SetPixel(const int x, const int y, const Uint32 color)
-{
-//   const auto screen_color = SDL_MapRGB(mScreen->format, color.r,
-//                                                         color.g,
-//                                                         color.b);
-   const auto bpp = mScreen->format->BytesPerPixel;
-   const auto offset = (mScreen->pitch * y) + (x * bpp);
-   auto bufp = static_cast<char*>(mScreen->pixels) + offset;
-   *(Uint32*)bufp = color;
 }

@@ -10,7 +10,7 @@ Slice::Slice(const int screen_height, const Ray ray, const Vector pos, const Vec
    : mHeight(screen_height)
    , mBuf(mHeight)
 {
-   const int wall_height = mHeight / ray.GetDistance();
+   const int wall_height = std::abs(int(mHeight / ray.GetDistance()));
 
    int wall_start = (mHeight / 2) - (wall_height / 2);
    int wall_end = (mHeight / 2) + (wall_height / 2);
@@ -26,6 +26,31 @@ Slice::Slice(const int screen_height, const Ray ray, const Vector pos, const Vec
    // Get the texture that matches the cell type.
    const auto cell_id = level.mGrid[ray.GetMapIntersectionX()][ray.GetMapIntersectionY()] - 1;
    const auto wall_tex = res.GetWall(cell_id);
+
+//   SDL_Color color;
+//   switch(cell_id)
+//   {
+//      case 1:  color = { 0xff, 0x00, 0x00 }; break; // red
+//      case 2:  color = { 0x00, 0xff, 0x00 }; break; // green
+//      case 3:  color = { 0x00, 0x00, 0xff }; break; // blue
+//      case 4:  color = { 0xff, 0xff, 0xff }; break; // white
+//      case 5:  color = { 0xff, 0xff, 0x00 }; break; // yellow
+//      default: color = { 0x30, 0x30, 0x30 }; break; // dark gray
+//   }
+
+//   if (ray.VerticalSideHit())
+//   {
+//      // Give X and Y-sides different brightness.
+//      color.r /= 2;
+//      color.g /= 2;
+//      color.b /= 2;
+//   }
+
+//   for (int y = wall_start; y < wall_end; y++)
+//   {
+//      mBuf[y] = color;
+//   }
+//   return;
 
    // Where exactly the wall was hit.
    double wall_x = ray.GetIntersection().GetY();

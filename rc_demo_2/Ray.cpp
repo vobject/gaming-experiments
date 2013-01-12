@@ -67,6 +67,8 @@ Ray::Ray(const Vector pos, const Vector dir, const Level& level)
       const double unit_x = mMapX + (1 - step_x) / 2;
       const double intersect_x = pos.GetY() + ((unit_x - pos.GetX()) / dir.GetX()) * dir.GetY();
       mIntersection = { unit_x, intersect_x };
+
+      // FIXME: May be to small.
       mDistance = std::fabs((unit_x - pos.GetX()) / dir.GetX());
    }
    else
@@ -74,6 +76,8 @@ Ray::Ray(const Vector pos, const Vector dir, const Level& level)
       const double unit_y = mMapY + (1 - step_y) / 2;
       const double intersect_y = pos.GetX() + ((unit_y - pos.GetY()) / dir.GetY()) * dir.GetX();
       mIntersection = { unit_y, intersect_y };
+
+      // FIXME: May be too small.
       mDistance = std::fabs((unit_y - pos.GetY()) / dir.GetY());
    }
 }

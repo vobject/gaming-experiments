@@ -42,6 +42,16 @@ Level::~Level()
 
 }
 
+int Level::GetWidth() const
+{
+   return mGrid[0].size();
+}
+
+int Level::GetHeight() const
+{
+   return mGrid.size();
+}
+
 bool Level::IsBlocking(const int pos_x, const int pos_y) const
 {
    // The '0' means floor. We can only walk on floor cells.

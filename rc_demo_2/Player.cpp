@@ -1,6 +1,7 @@
 #include "Player.hpp"
 #include "Level.hpp"
 #include "Input.hpp"
+#include "Utils.hpp"
 
 #include <cmath>
 
@@ -20,6 +21,21 @@ void Player::Update(const int elapsed_time)
 {
    UpdateRotation(elapsed_time);
    UpdateMovement(elapsed_time);
+}
+
+Vector Player::GetPosition() const
+{
+   return { mPosX, mPosY };
+}
+
+Vector Player::GetDirection() const
+{
+   return { mDirX, mDirY };
+}
+
+Vector Player::GetPlane() const
+{
+   return { mPlaneX, mPlaneY };
 }
 
 void Player::UpdateRotation(const int elapsed_time)

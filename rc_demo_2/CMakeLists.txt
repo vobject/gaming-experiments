@@ -35,6 +35,8 @@ FILE(GLOB HDR_LIST ./RcDemo.hpp
                    ./Input.hpp
                    ./Render.hpp
                    ./ResourceCache.hpp
+                   ./Ray.hpp
+                   ./Slice.hpp
                    ./Utils.hpp)
 
 FILE(GLOB SRC_LIST ./main.cpp
@@ -44,7 +46,9 @@ FILE(GLOB SRC_LIST ./main.cpp
                    ./Player.cpp
                    ./Input.cpp
                    ./Render.cpp
-                   ./ResourceCache.cpp)
+                   ./ResourceCache.cpp
+                   ./Ray.cpp
+                   ./Slice.cpp)
 
 ADD_EXECUTABLE(${PROJECT_NAME} ${HDR_LIST} ${SRC_LIST})
 

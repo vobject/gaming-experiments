@@ -4,6 +4,25 @@
 #include <memory>
 #include <utility>
 
+class Vector
+{
+public:
+   constexpr Vector(const double x, const double y) : mX(x), mY(y) { }
+   ~Vector() { }
+
+   Vector& operator=(const Vector& v) { mX = v.mX; mY = v.mY; return *this;}
+   Vector operator+(const Vector v) const { return { mX + v.mX, mY + v.mY }; }
+   Vector operator-(const Vector v) const { return { mX - v.mX, mY - v.mY }; }
+   Vector operator*(const double d) const { return { mX * d, mY * d }; }
+
+   double GetX() const { return mX; }
+   double GetY() const { return mY; }
+
+private:
+   double mX;
+   double mY;
+};
+
 constexpr int operator"" _ms(unsigned long long milliseconds)
 {
    return milliseconds;

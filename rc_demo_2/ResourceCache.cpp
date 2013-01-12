@@ -28,10 +28,12 @@ SDL_Surface* ResourceCache::GetWall(const int id) const
 
 void ResourceCache::LoadWallResources()
 {
-   mWallCache.push_back(LoadTexture("walls_1.png", WALL_SIZE_X, WALL_SIZE_Y));
-   mWallCache.push_back(LoadTexture("walls_2.png", WALL_SIZE_X, WALL_SIZE_Y));
-   mWallCache.push_back(LoadTexture("walls_3.png", WALL_SIZE_X, WALL_SIZE_Y));
-   mWallCache.push_back(LoadTexture("walls_4.png", WALL_SIZE_X, WALL_SIZE_Y));
+   mWallCache.push_back(LoadTexture("walls_1.jpg", 1024, 1024));
+   mWallCache.push_back(LoadTexture("walls_2.jpg", 512, 512));
+   mWallCache.push_back(LoadTexture("walls_3.jpg", 1024, 1024));
+   mWallCache.push_back(LoadTexture("walls_4.jpg", 512, 512));
+   mWallCache.push_back(LoadTexture("walls_5.jpg", 512, 512));
+   mWallCache.push_back(LoadTexture("walls_6.jpg", 512, 512));
 }
 
 SDL_Surface* ResourceCache::LoadTexture(
@@ -56,7 +58,7 @@ SDL_Surface* ResourceCache::LoadTexture(
 
    const auto x_zoom = static_cast<double>(width) / img_compat->w;
    const auto y_zoom = static_cast<double>(height) / img_compat->h;
-   const auto img_zoomed = zoomSurface(img_compat, x_zoom, y_zoom, 0);
+   const auto img_zoomed = zoomSurface(img_compat, x_zoom, y_zoom, 1);
    SDL_FreeSurface(img_compat);
    img_compat = nullptr;
 

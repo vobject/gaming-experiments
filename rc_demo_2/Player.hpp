@@ -3,6 +3,7 @@
 
 class Level;
 class Input;
+class Vector;
 
 class Player
 {
@@ -13,6 +14,10 @@ public:
    ~Player();
 
    void Update(int elapsed_time);
+
+   Vector GetPosition() const;
+   Vector GetDirection() const;
+   Vector GetPlane() const;
 
 private:
    void UpdateRotation(int elapsed_time);
@@ -32,8 +37,8 @@ private:
    // Camera plane of the player.
    // Must be perpendicular to the direction (but can change its length).
    // The ratio between direction length and the camera plane determinates FOV.
-   double mPlaneX = 0.;
-   double mPlaneY = 0.66;
+   double mPlaneX = .0;
+   double mPlaneY = .66;
 };
 
 #endif // PLAYER_HPP

@@ -71,7 +71,7 @@ void RcDemo::Initialize()
    }
 #endif
 
-   mRenderer = std::make_shared<Render>(640, 480);
+   mRenderer = std::make_shared<Render>(800, 600);
    mMainFrame = std::make_shared<MainFrame>("RcDemo_2");
 
    mLevel = std::make_shared<Level>();

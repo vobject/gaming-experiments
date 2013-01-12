@@ -9,8 +9,8 @@ struct SDL_Surface;
 class ResourceCache
 {
 public:
-   static const int WALL_SIZE_X = 64;
-   static const int WALL_SIZE_Y = 64;
+   //static const int WALL_SIZE_X = 64;
+   //static const int WALL_SIZE_Y = 64;
 
    ResourceCache(const std::string& res_dir);
    ~ResourceCache();

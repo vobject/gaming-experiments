@@ -29,15 +29,9 @@ void render_thread(const Level& level, const Player& player, const ResourceCache
       const auto ray_dir = player_dir + (player_plane * cam_x);
 
       const Ray ray(player_pos, ray_dir, level);
-      const Slice slice (resy, ray, player_pos, ray_dir, level, res);
 
-      for (auto y = 0; y < resy; y++)
-      {
-         const auto color = slice.GetPixel(y);
-         const auto offset = (screen->pitch * y) + (x * 4);
-         const auto ptr = static_cast<Uint8*>(screen->pixels) + offset;
-         memcpy(ptr, &color, sizeof(color));
-      }
+      Slice slice (screen, x);
+      slice.Draw(ray, player_pos, ray_dir, level, res);
    }
 }
 
@@ -82,44 +76,49 @@ void Render::PostRender()
    SDL_Flip(mScreen);
 }
 
-void Render::DrawCeiling(const SDL_Color color)
-{
-   const auto ceiling = SDL_MapRGB(mScreen->format, color.r, color.g, color.b);
-   SDL_Rect ceiling_rect = { 0,
-                             0,
-                             static_cast<Uint16>(mResX),
-                             static_cast<Uint16>(mResY / 2) };
-   SDL_FillRect(mScreen, &ceiling_rect, ceiling);
-}
+//void Render::DrawCeiling(const SDL_Color color)
+//{
+//   const auto ceiling = SDL_MapRGB(mScreen->format, color.r, color.g, color.b);
+//   SDL_Rect ceiling_rect = { 0,
+//                             0,
+//                             static_cast<Uint16>(mResX),
+//                             static_cast<Uint16>(mResY / 2) };
+//   SDL_FillRect(mScreen, &ceiling_rect, ceiling);
+//}
 
-void Render::DrawFloor(const SDL_Color color)
-{
-   const auto floor = SDL_MapRGB(mScreen->format, color.r, color.g, color.b);
-   SDL_Rect floor_rect = { 0,
-                           static_cast<Sint16>(mResY / 2),
-                           static_cast<Uint16>(mResX),
-                           static_cast<Uint16>(mResY / 2) };
-   SDL_FillRect(mScreen, &floor_rect, floor);
-}
+//void Render::DrawFloor(const SDL_Color color)
+//{
+//   const auto floor = SDL_MapRGB(mScreen->format, color.r, color.g, color.b);
+//   SDL_Rect floor_rect = { 0,
+//                           static_cast<Sint16>(mResY / 2),
+//                           static_cast<Uint16>(mResX),
+//                           static_cast<Uint16>(mResY / 2) };
+//   SDL_FillRect(mScreen, &floor_rect, floor);
+//}
 
 void Render::DrawPlayerView(const Level& level, const Player& player)
 {
-   const int thread_cnt = 6;
+   const int thread_cnt = 2;
    const int thread_slice = mResX / thread_cnt;
+   std::vector<std::thread> threads(thread_cnt);
 
-   std::vector<std::thread> threads;
+   if (SDL_MUSTLOCK(mScreen)) {
+      // Scene rendering will only be done via pixel manipulation.
+      SDL_LockSurface(mScreen);
+   }
+
    for (int i = 0; i < thread_cnt; i++)
    {
       const auto slice_start = i * thread_slice;
       const auto slice_stop = slice_start + thread_slice;
 
-      threads.push_back(std::thread{render_thread,
-                                    std::ref(level),
-                                    std::ref(player),
-                                    std::ref(*mResCache),
-                                    slice_start, slice_stop,
-                                    mResX, mResY,
-                                    mScreen});
+      threads[i] = std::thread{render_thread,
+                               std::ref(level),
+                               std::ref(player),
+                               std::ref(*mResCache),
+                               slice_start, slice_stop,
+                               mResX, mResY,
+                               mScreen};
    }
 
    for (auto& t : threads)
@@ -127,27 +126,9 @@ void Render::DrawPlayerView(const Level& level, const Player& player)
       t .join();
    }
 
-//   const Vector player_pos = player.GetPosition();
-//   const Vector player_dir = player.GetDirection();
-//   const Vector player_plane = player.GetPlane();
-
-//   for (auto x = 0; x < mResX; x++)
-//   {
-//      // Current column position relative to the center of the screen.
-//      // Left edge is -1, right edge is 1, and center is 0.
-//      const double cam_x = 2. * x / mResX - 1;
-
-//      // Starting direction of the current ray to be cast.
-//      const auto ray_dir = player_dir + (player_plane * cam_x);
-
-//      const Ray ray(player_pos, ray_dir, level);
-//      const Slice slice (mResY, ray, player_pos, ray_dir, level, *mResCache);
-
-//      for (auto y = 0; y < mResY; y++)
-//      {
-//         SetPixel(x, y, slice.GetPixel(y));
-//      }
-//   }
+   if (SDL_MUSTLOCK(mScreen)) {
+      SDL_UnlockSurface(mScreen);
+   }
 }
 
 void Render::DrawMinimap(const Level& level, const Player& player)
@@ -198,10 +179,10 @@ void Render::DrawMinimap(const Level& level, const Player& player)
    }
 }
 
-void Render::SetPixel(const int x, const int y, const SDL_Color color)
-{
-   // We will always use 32bit surfaces.
-   const auto offset = (mScreen->pitch * y) + (x * 4);
-   const auto ptr = static_cast<Uint8*>(mScreen->pixels) + offset;
-   memcpy(ptr, &color, sizeof(color));
-}
+//void Render::SetPixel(const int x, const int y, const SDL_Color color)
+//{
+//   // We will always use 32bit surfaces.
+//   const auto offset = (mScreen->pitch * y) + (x * 4);
+//   const auto ptr = static_cast<Uint8*>(mScreen->pixels) + offset;
+//   memcpy(ptr, &color, sizeof(color));
+//}

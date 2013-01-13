@@ -20,22 +20,22 @@ public:
    void PostRender();
 
 private:
-   void DrawCeiling(SDL_Color color);
-   void DrawFloor(SDL_Color color);
+//   void DrawCeiling(SDL_Color color);
+//   void DrawFloor(SDL_Color color);
 
    void DrawPlayerView(const Level& level, const Player& player);
    void DrawMinimap(const Level& level, const Player& player);
 
 //   void DrawVerticalLine(int x, int y1, int y2, SDL_Color color);
 
-   void SetPixel(int x, int y, SDL_Color color);
+//   void SetPixel(int x, int y, SDL_Color color);
 
    const int mResX;
    const int mResY;
    SDL_Surface* mScreen = nullptr;
 
    // Must be initialized after the video system has been set up.
-   std::unique_ptr<ResourceCache> mResCache;
+   std::unique_ptr<const ResourceCache> mResCache;
 };
 
 #endif // RENDER_HPP

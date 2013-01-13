@@ -13,14 +13,14 @@ class Vector;
 class Slice
 {
 public:
-   Slice(int screen_height, Ray ray, Vector pos, Vector dir, const Level& level, const ResourceCache& res);
+   Slice(SDL_Surface* surface, int x);
    ~Slice();
 
-   SDL_Color GetPixel(int y) const;
+   void Draw(Ray ray, Vector pos, Vector dir, const Level& level, const ResourceCache& res);
 
 private:
-   const int mHeight;
-   std::vector<SDL_Color> mBuf;
+   SDL_Surface* const mSurface;
+   const int mXCoordinate;
 };
 
 #endif // SLICE_HPP

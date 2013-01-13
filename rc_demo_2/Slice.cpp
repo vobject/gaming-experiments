@@ -6,51 +6,36 @@
 
 #include <cmath>
 
-Slice::Slice(const int screen_height, const Ray ray, const Vector pos, const Vector dir, const Level& level, const ResourceCache& res)
-   : mHeight(screen_height)
-   , mBuf(mHeight)
+Slice::Slice(SDL_Surface* const surface, const int x)
+   : mSurface(surface)
+   , mXCoordinate(x)
 {
-   const int wall_height = std::abs(int(mHeight / ray.GetDistance()));
 
-   int wall_start = (mHeight / 2) - (wall_height / 2);
-   int wall_end = (mHeight / 2) + (wall_height / 2);
+}
+
+Slice::~Slice()
+{
+
+}
+
+void Slice::Draw(Ray ray, Vector pos, Vector dir, const Level& level, const ResourceCache& res)
+{
+   const int wall_height = std::abs(int(mSurface->h / ray.GetDistance()));
+
+   int wall_start = (mSurface->h / 2) - (wall_height / 2);
+   int wall_end = (mSurface->h / 2) + (wall_height / 2);
 
    if (wall_start < 0) {
       wall_start = 0;
    }
 
-   if (wall_end >= mHeight) {
-      wall_end = mHeight - 1;
+   if (wall_end >= mSurface->h) {
+      wall_end = mSurface->h - 1;
    }
 
    // Get the texture that matches the cell type.
    const auto cell_id = level.mGrid[ray.GetMapIntersectionX()][ray.GetMapIntersectionY()] - 1;
    const auto wall_tex = res.GetWall(cell_id);
-
-//   SDL_Color color;
-//   switch(cell_id)
-//   {
-//      case 1:  color = { 0xff, 0x00, 0x00 }; break; // red
-//      case 2:  color = { 0x00, 0xff, 0x00 }; break; // green
-//      case 3:  color = { 0x00, 0x00, 0xff }; break; // blue
-//      case 4:  color = { 0xff, 0xff, 0xff }; break; // white
-//      case 5:  color = { 0xff, 0xff, 0x00 }; break; // yellow
-//      default: color = { 0x30, 0x30, 0x30 }; break; // dark gray
-//   }
-
-//   if (ray.VerticalSideHit())
-//   {
-//      // Give X and Y-sides different brightness.
-//      color.r /= 2;
-//      color.g /= 2;
-//      color.b /= 2;
-//   }
-
-//   for (int y = wall_start; y < wall_end; y++)
-//   {
-//      mBuf[y] = color;
-//   }
-//   return;
 
    // Where exactly the wall was hit.
    double wall_x = ray.GetIntersection().GetY();
@@ -67,7 +52,7 @@ Slice::Slice(const int screen_height, const Ray ray, const Vector pos, const Vec
 
    for (int y = wall_start; y < wall_end; y++)
    {
-      const int tex_y = (y * 2 - mHeight + wall_height) *
+      const int tex_y = (y * 2 - mSurface->h + wall_height) *
                         (wall_tex->h / 2) / wall_height;
 
       const auto tex_offset = (wall_tex->pitch * tex_y) + (tex_x * 4);
@@ -83,7 +68,9 @@ Slice::Slice(const int screen_height, const Ray ray, const Vector pos, const Vec
          color.b /= 2;
       }
 
-      mBuf[y] = color;
+      const auto scr_offset = (mSurface->pitch * y) + (mXCoordinate * 4);
+      const auto scr_ptr = static_cast<Uint8*>(mSurface->pixels) + scr_offset;
+      memcpy(scr_ptr, &color, sizeof(color));
    }
 
    // Get the texture for the ceiling and floor.
@@ -115,9 +102,9 @@ Slice::Slice(const int screen_height, const Ray ray, const Vector pos, const Vec
    const double dist_player = .0;
 
    // Draw the floor from below the wall to the bottom of the screen.
-   for (int y = wall_end; y < mHeight; y++)
+   for (int y = wall_end; y < mSurface->h; y++)
    {
-      const double cur_dist = mHeight / (2. * y - mHeight);
+      const double cur_dist = mSurface->h / (2. * y - mSurface->h);
       const double weight = (cur_dist - dist_player) / (dist_wall - dist_player);
 
       const double cur_floor_x = weight * floor_x_wall + (1.0 - weight) * pos.GetX();
@@ -140,17 +127,12 @@ Slice::Slice(const int screen_height, const Ray ray, const Vector pos, const Vec
       floor_color.g /= 3;
       floor_color.b /= 3;
 
-      mBuf[mHeight - y - 1] = ceiling_color;
-      mBuf[y] = floor_color;
+      const auto ceiling_offset = (mSurface->pitch * (mSurface->h - y - 1)) + (mXCoordinate * 4);
+      const auto ceiling_ptr = static_cast<Uint8*>(mSurface->pixels) + ceiling_offset;
+      memcpy(ceiling_ptr, &ceiling_color, sizeof(ceiling_color));
+
+      const auto floor_offset = (mSurface->pitch * y) + (mXCoordinate * 4);
+      const auto floor_ptr = static_cast<Uint8*>(mSurface->pixels) + floor_offset;
+      memcpy(floor_ptr, &floor_color, sizeof(floor_color));
    }
-}
-
-Slice::~Slice()
-{
-
-}
-
-SDL_Color Slice::GetPixel(const int y) const
-{
-   return mBuf[y];
 }

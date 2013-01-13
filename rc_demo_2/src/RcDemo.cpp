@@ -12,6 +12,7 @@
 #include <SDL.h>
 
 #include <chrono>
+#include <unistd.h>
 
 RcDemo::RcDemo()
 {
@@ -71,7 +72,7 @@ void RcDemo::Initialize()
    }
 #endif
 
-   mRenderer = std::make_shared<Render>(800, 600);
+   mRenderer = std::make_shared<Render>(800, 600, sysconf(_SC_NPROCESSORS_ONLN));
    mMainFrame = std::make_shared<MainFrame>("RcDemo_2");
 
    mLevel = std::make_shared<Level>();

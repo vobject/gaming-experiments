@@ -35,9 +35,10 @@ void render_thread(const Level& level, const Player& player, const ResourceCache
    }
 }
 
-Render::Render(const int res_x, const int res_y)
+Render::Render(const int res_x, const int res_y, const int threads)
    : mResX(res_x)
    , mResY(res_y)
+   , mThreadCnt(threads)
 {
    if (0 > SDL_Init(SDL_INIT_VIDEO)) {
       throw "Cannot init SDL video subsystem.";
@@ -98,16 +99,15 @@ void Render::PostRender()
 
 void Render::DrawPlayerView(const Level& level, const Player& player)
 {
-   const int thread_cnt = 2;
-   const int thread_slice = mResX / thread_cnt;
-   std::vector<std::thread> threads(thread_cnt);
+   const int thread_slice = mResX / mThreadCnt;
+   std::vector<std::thread> threads(mThreadCnt);
 
    if (SDL_MUSTLOCK(mScreen)) {
       // Scene rendering will only be done via pixel manipulation.
       SDL_LockSurface(mScreen);
    }
 
-   for (int i = 0; i < thread_cnt; i++)
+   for (int i = 0; i < mThreadCnt; i++)
    {
       const auto slice_start = i * thread_slice;
       const auto slice_stop = slice_start + thread_slice;

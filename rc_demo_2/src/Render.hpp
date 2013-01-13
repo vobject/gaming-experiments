@@ -12,7 +12,7 @@ class ResourceCache;
 class Render
 {
 public:
-   Render(int res_x, int res_y);
+   Render(int res_x, int res_y, int threads);
    ~Render();
 
    void PreRender();
@@ -32,6 +32,7 @@ private:
 
    const int mResX;
    const int mResY;
+   const int mThreadCnt;
    SDL_Surface* mScreen = nullptr;
 
    // Must be initialized after the video system has been set up.

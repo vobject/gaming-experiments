@@ -123,9 +123,9 @@ void Slice::Draw(Ray ray, Vector pos, Vector dir, const Level& level, const Reso
       SDL_Color floor_color = { floor_tex_ptr[0], floor_tex_ptr[1], floor_tex_ptr[2] };
 
       // Make the floor darker.
-      floor_color.r /= 3;
-      floor_color.g /= 3;
-      floor_color.b /= 3;
+      floor_color.r /= 2;
+      floor_color.g /= 2;
+      floor_color.b /= 2;
 
       const auto ceiling_offset = (mSurface->pitch * (mSurface->h - y - 1)) + (mXCoordinate * 4);
       const auto ceiling_ptr = static_cast<Uint8*>(mSurface->pixels) + ceiling_offset;

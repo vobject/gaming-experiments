@@ -36,27 +36,27 @@ ADD_DEFINITIONS(
 
 SET(CMAKE_CXX_FLAGS_DEBUG "-O0 -g3")
 
-FILE(GLOB HDR_LIST ./RcDemo.hpp
-                   ./MainFrame.hpp
-                   ./Level.hpp
-                   ./Player.hpp
-                   ./Input.hpp
-                   ./Render.hpp
-                   ./ResourceCache.hpp
-                   ./Ray.hpp
-                   ./Slice.hpp
-                   ./Utils.hpp)
+FILE(GLOB HDR_LIST src/RcDemo.hpp
+                   src/MainFrame.hpp
+                   src/Level.hpp
+                   src/Player.hpp
+                   src/Input.hpp
+                   src/Render.hpp
+                   src/ResourceCache.hpp
+                   src/Ray.hpp
+                   src/Slice.hpp
+                   src/Utils.hpp)
 
-FILE(GLOB SRC_LIST ./main.cpp
-                   ./RcDemo.cpp
-                   ./MainFrame.cpp
-                   ./Level.cpp
-                   ./Player.cpp
-                   ./Input.cpp
-                   ./Render.cpp
-                   ./ResourceCache.cpp
-                   ./Ray.cpp
-                   ./Slice.cpp)
+FILE(GLOB SRC_LIST src/main.cpp
+                   src//RcDemo.cpp
+                   src/MainFrame.cpp
+                   src/Level.cpp
+                   src/Player.cpp
+                   src/Input.cpp
+                   src/Render.cpp
+                   src/ResourceCache.cpp
+                   src/Ray.cpp
+                   src/Slice.cpp)
 
 ADD_EXECUTABLE(${PROJECT_NAME} ${HDR_LIST} ${SRC_LIST})
 

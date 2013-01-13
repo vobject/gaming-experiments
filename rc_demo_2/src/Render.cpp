@@ -51,7 +51,7 @@ Render::Render(const int res_x, const int res_y)
       throw "SDL_SetVideoMode() failed.";
    }
 
-   mResCache = make_unique<ResourceCache>(".");
+   mResCache = make_unique<ResourceCache>("res");
 }
 
 Render::~Render()

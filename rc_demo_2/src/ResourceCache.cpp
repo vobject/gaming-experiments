@@ -4,8 +4,10 @@
 #include <SDL_image.h>
 #include <SDL_rotozoom.h>
 
-ResourceCache::ResourceCache(const std::string& res_dir)
+ResourceCache::ResourceCache(const std::string& res_dir, const int res_x, const int res_y)
    : mResDir(res_dir)
+   , mResX(res_x)
+   , mResY(res_y)
 {
    if (0 == IMG_Init(IMG_INIT_JPG | IMG_INIT_PNG)) {
        throw "Failed to initialize SDL_image";
@@ -33,7 +35,11 @@ void ResourceCache::LoadWallResources()
    mWallCache.push_back(LoadTexture("walls_3.jpg", 1024, 1024));
    mWallCache.push_back(LoadTexture("walls_4.jpg", 512, 512));
    mWallCache.push_back(LoadTexture("walls_5.jpg", 512, 512));
-   mWallCache.push_back(LoadTexture("walls_6.jpg", 512, 512));
+
+   // Sky textures have to be mResY / 2 pixels high.
+   mWallCache.push_back(LoadTexture("walls_6.jpg", 2048, mResY / 2));
+   mWallCache.push_back(LoadTexture("walls_7.jpg", 4096, mResY / 2));
+   mWallCache.push_back(LoadTexture("walls_8.jpg", 4096, mResY / 2));
 }
 
 SDL_Surface* ResourceCache::LoadTexture(

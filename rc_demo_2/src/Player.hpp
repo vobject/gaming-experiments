@@ -15,6 +15,7 @@ public:
 
    void Update(int elapsed_time);
 
+   double GetRotation() const;
    Vector GetPosition() const;
    Vector GetDirection() const;
    Vector GetPlane() const;

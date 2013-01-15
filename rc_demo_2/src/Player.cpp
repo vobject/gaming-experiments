@@ -4,6 +4,7 @@
 #include "Utils.hpp"
 
 #include <cmath>
+#include <cstdio>
 
 Player::Player(const Level& level, const Input& input)
    : mLevel(level)
@@ -21,6 +22,16 @@ void Player::Update(const int elapsed_time)
 {
    UpdateRotation(elapsed_time);
    UpdateMovement(elapsed_time);
+}
+
+double Player::GetRotation() const
+{
+   if (mDirY > .0) {
+      return std::acos(mDirX) * 180. / M_PI;
+   }
+   else {
+      return 360. - std::acos(mDirX) * 180. / M_PI;
+   }
 }
 
 Vector Player::GetPosition() const
@@ -45,12 +56,12 @@ void Player::UpdateRotation(const int elapsed_time)
    if (mInput.TestLeft()) // Rotate to the left.
    {
       // Rotate direction plane.
-      auto old_mDirX = mDirX;
-      mDirX = old_mDirX * std::cos(rot_speed) - mDirY * std::sin(rot_speed);
-      mDirY = old_mDirX * std::sin(rot_speed) + mDirY * std::cos(rot_speed);
+      const auto old_dir_x = mDirX;
+      mDirX = old_dir_x * std::cos(rot_speed) - mDirY * std::sin(rot_speed);
+      mDirY = old_dir_x * std::sin(rot_speed) + mDirY * std::cos(rot_speed);
 
       // Rotate camera plane.
-      auto old_plane_x = mPlaneX;
+      const auto old_plane_x = mPlaneX;
       mPlaneX = old_plane_x * std::cos(rot_speed) - mPlaneY * std::sin(rot_speed);
       mPlaneY = old_plane_x * std::sin(rot_speed) + mPlaneY * std::cos(rot_speed);
    }
@@ -58,12 +69,12 @@ void Player::UpdateRotation(const int elapsed_time)
    if (mInput.TestRight()) // Rotate to the right.
    {
       // Rotate direction plane.
-      auto old_mDirX = mDirX;
+      const auto old_mDirX = mDirX;
       mDirX = old_mDirX * std::cos(-rot_speed) - mDirY * std::sin(-rot_speed);
       mDirY = old_mDirX * std::sin(-rot_speed) + mDirY * std::cos(-rot_speed);
 
       // Rotate camera plane.
-      auto old_plane_x = mPlaneX;
+      const auto old_plane_x = mPlaneX;
       mPlaneX = old_plane_x * std::cos(-rot_speed) - mPlaneY * std::sin(-rot_speed);
       mPlaneY = old_plane_x * std::sin(-rot_speed) + mPlaneY * std::cos(-rot_speed);
    }

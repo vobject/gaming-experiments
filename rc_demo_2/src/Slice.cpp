@@ -74,7 +74,7 @@ void Slice::Draw(Ray ray, Vector pos, Vector dir, const Level& level, const Reso
    }
 
    // Get the texture for the ceiling and floor.
-   const auto ceiling_tex = res.GetWall(5);
+//   const auto ceiling_tex = res.GetWall(5);
    const auto floor_tex = res.GetWall(4);
 
    // Position of the floor at the bottom of the wall.
@@ -113,13 +113,13 @@ void Slice::Draw(Ray ray, Vector pos, Vector dir, const Level& level, const Reso
       const int floor_tex_x = int(cur_floor_x * floor_tex->w / 4) % floor_tex->w;
       const int floor_tex_y = int(cur_floor_y * floor_tex->h / 4) % floor_tex->h;
 
-      const auto ceiling_tex_offset = (ceiling_tex->pitch * floor_tex_y) + (floor_tex_x * 4);
-      const auto ceiling_tex_ptr = static_cast<Uint8*>(ceiling_tex->pixels) + ceiling_tex_offset;
+//      const auto ceiling_tex_offset = (ceiling_tex->pitch * floor_tex_y) + (floor_tex_x * 4);
+//      const auto ceiling_tex_ptr = static_cast<Uint8*>(ceiling_tex->pixels) + ceiling_tex_offset;
 
       const auto floor_tex_offset = (floor_tex->pitch * floor_tex_y) + (floor_tex_x * 4);
       const auto floor_tex_ptr = static_cast<Uint8*>(floor_tex->pixels) + floor_tex_offset;
 
-      const SDL_Color ceiling_color = { ceiling_tex_ptr[0], ceiling_tex_ptr[1], ceiling_tex_ptr[2] };
+//      const SDL_Color ceiling_color = { ceiling_tex_ptr[0], ceiling_tex_ptr[1], ceiling_tex_ptr[2] };
       SDL_Color floor_color = { floor_tex_ptr[0], floor_tex_ptr[1], floor_tex_ptr[2] };
 
       // Make the floor darker.
@@ -127,9 +127,9 @@ void Slice::Draw(Ray ray, Vector pos, Vector dir, const Level& level, const Reso
       floor_color.g /= 2;
       floor_color.b /= 2;
 
-      const auto ceiling_offset = (mSurface->pitch * (mSurface->h - y - 1)) + (mXCoordinate * 4);
-      const auto ceiling_ptr = static_cast<Uint8*>(mSurface->pixels) + ceiling_offset;
-      memcpy(ceiling_ptr, &ceiling_color, sizeof(ceiling_color));
+//      const auto ceiling_offset = (mSurface->pitch * (mSurface->h - y - 1)) + (mXCoordinate * 4);
+//      const auto ceiling_ptr = static_cast<Uint8*>(mSurface->pixels) + ceiling_offset;
+//      memcpy(ceiling_ptr, &ceiling_color, sizeof(ceiling_color));
 
       const auto floor_offset = (mSurface->pitch * y) + (mXCoordinate * 4);
       const auto floor_ptr = static_cast<Uint8*>(mSurface->pixels) + floor_offset;

@@ -20,15 +20,9 @@ public:
    void PostRender();
 
 private:
-//   void DrawCeiling(SDL_Color color);
-//   void DrawFloor(SDL_Color color);
-
+   void DrawSky(const Player& player);
    void DrawPlayerView(const Level& level, const Player& player);
    void DrawMinimap(const Level& level, const Player& player);
-
-//   void DrawVerticalLine(int x, int y1, int y2, SDL_Color color);
-
-//   void SetPixel(int x, int y, SDL_Color color);
 
    const int mResX;
    const int mResY;

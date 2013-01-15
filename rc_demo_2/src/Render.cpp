@@ -52,7 +52,7 @@ Render::Render(const int res_x, const int res_y, const int threads)
       throw "SDL_SetVideoMode() failed.";
    }
 
-   mResCache = make_unique<ResourceCache>("res");
+   mResCache = make_unique<ResourceCache>("res", mResX, mResY);
 }
 
 Render::~Render()
@@ -68,6 +68,7 @@ void Render::PreRender()
 
 void Render::DoRender(const Level& level, const Player& player)
 {
+   DrawSky(player);
    DrawPlayerView(level, player);
    DrawMinimap(level, player);
 }
@@ -77,25 +78,37 @@ void Render::PostRender()
    SDL_Flip(mScreen);
 }
 
-//void Render::DrawCeiling(const SDL_Color color)
-//{
-//   const auto ceiling = SDL_MapRGB(mScreen->format, color.r, color.g, color.b);
-//   SDL_Rect ceiling_rect = { 0,
-//                             0,
-//                             static_cast<Uint16>(mResX),
-//                             static_cast<Uint16>(mResY / 2) };
-//   SDL_FillRect(mScreen, &ceiling_rect, ceiling);
-//}
+void Render::DrawSky(const Player& player)
+{
+   const auto sky_tex = mResCache->GetWall(5);
+   const int sky_x = sky_tex->w - (sky_tex->w / 360.) * player.GetRotation();
+   int sky_width = mResX;
+   int left_over = 0;
 
-//void Render::DrawFloor(const SDL_Color color)
-//{
-//   const auto floor = SDL_MapRGB(mScreen->format, color.r, color.g, color.b);
-//   SDL_Rect floor_rect = { 0,
-//                           static_cast<Sint16>(mResY / 2),
-//                           static_cast<Uint16>(mResX),
-//                           static_cast<Uint16>(mResY / 2) };
-//   SDL_FillRect(mScreen, &floor_rect, floor);
-//}
+   if ((sky_x + sky_width) > sky_tex->w)
+   {
+      left_over = (sky_x + mResX) - sky_tex->w;
+      sky_width -= left_over;
+   }
+
+   if (sky_width > 0)
+   {
+      SDL_Rect src = { static_cast<Sint16>(sky_x), 0,
+                       static_cast<Uint16>(sky_width),
+                       static_cast<Uint16>(mResY / 2) };
+      SDL_Rect dst = { 0, 0 };
+      SDL_BlitSurface(sky_tex, &src, mScreen, &dst);
+   }
+
+   if (left_over > 0)
+   {
+      SDL_Rect src = { 0, 0,
+                       static_cast<Uint16>(left_over),
+                       static_cast<Uint16>(mResY / 2) };
+      SDL_Rect dst = { static_cast<Sint16>(sky_width), 0 };
+      SDL_BlitSurface(sky_tex, &src, mScreen, &dst);
+   }
+}
 
 void Render::DrawPlayerView(const Level& level, const Player& player)
 {

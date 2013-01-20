@@ -24,6 +24,8 @@ private:
    void UpdateRotation(int elapsed_time);
    void UpdateMovement(int elapsed_time);
 
+//   bool TooCloseToWall() const;
+
    const Level& mLevel;
    const Input& mInput;
 

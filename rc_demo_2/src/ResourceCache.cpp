@@ -14,6 +14,9 @@ ResourceCache::ResourceCache(const std::string& res_dir, const int res_x, const 
    }
 
    LoadWallResources();
+//   LoadCeilingResources();
+   LoadFloorResources();
+   LoadSkyResources();
 }
 
 ResourceCache::~ResourceCache()
@@ -28,18 +31,44 @@ SDL_Surface* ResourceCache::GetWall(const int id) const
    return mWallCache[id];
 }
 
+//SDL_Surface* ResourceCache::GetCeiling(const int id) const
+//{
+//   return mCeilingCache[id];
+//}
+
+SDL_Surface* ResourceCache::GetFloor(const int id) const
+{
+   return mFloorCache[id];
+}
+
+SDL_Surface* ResourceCache::GetSky(const int id) const
+{
+   return mSkyCache[id];
+}
+
 void ResourceCache::LoadWallResources()
 {
    mWallCache.push_back(LoadTexture("walls_1.jpg", 1024, 1024));
    mWallCache.push_back(LoadTexture("walls_2.jpg", 1024, 1024));
    mWallCache.push_back(LoadTexture("walls_3.jpg", 1024, 1024));
    mWallCache.push_back(LoadTexture("walls_4.jpg", 512, 512));
-   mWallCache.push_back(LoadTexture("walls_5.jpg", 512, 512));
+}
 
+//void ResourceCache::LoadCeilingResources()
+//{
+//}
+
+void ResourceCache::LoadFloorResources()
+{
+   mFloorCache.push_back(LoadTexture("floor_0.jpg", 512, 512));
+}
+
+void ResourceCache::LoadSkyResources()
+{
    // Sky textures have to be mResY / 2 pixels high.
-   mWallCache.push_back(LoadTexture("walls_6.jpg", 2048, mResY / 2));
-   mWallCache.push_back(LoadTexture("walls_7.jpg", 4096, mResY / 2));
-   mWallCache.push_back(LoadTexture("walls_8.jpg", 4096, mResY / 2));
+   mSkyCache.push_back(LoadTexture("sky_0.jpg", 2048, mResY / 2));
+   mSkyCache.push_back(LoadTexture("sky_1.jpg", 4096, mResY / 2));
+   mSkyCache.push_back(LoadTexture("sky_2.jpg", 4096, mResY / 2));
 }
 
 SDL_Surface* ResourceCache::LoadTexture(

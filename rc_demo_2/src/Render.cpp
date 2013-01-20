@@ -81,7 +81,7 @@ void Render::PostRender()
 
 void Render::DrawSky(const Player& player)
 {
-   const auto sky_tex = mResCache->GetWall(5);
+   const auto sky_tex = mResCache->GetSky(0);
    const int sky_x = sky_tex->w - (sky_tex->w / 360.) * player.GetRotation();
    int sky_width = mResX;
    int left_over = 0;

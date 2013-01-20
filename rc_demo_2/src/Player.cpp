@@ -1,6 +1,7 @@
 #include "Player.hpp"
 #include "Level.hpp"
 #include "Input.hpp"
+#include "Ray.hpp"
 #include "Utils.hpp"
 
 #include <cmath>
@@ -86,6 +87,14 @@ void Player::UpdateMovement(const int elapsed_time)
 
    if (mInput.TestUp()) // Move forward if no wall blocks our path.
    {
+      //      printf("dirX=%f, dirY=%f\n", mDirX, mDirY); fflush(stdout);
+
+      // Do not let the player get too close to the wall.
+      const Ray ray(GetPosition(), GetDirection(), mLevel);
+      if (ray.GetDistance() < .5) {
+         return;
+      }
+
       const auto new_pos_x = mPosX + mDirX * move_speed;
       const auto new_pos_y = mPosY + mDirY * move_speed;
 
@@ -106,3 +115,29 @@ void Player::UpdateMovement(const int elapsed_time)
       }
    }
 }
+
+//bool Player::TooCloseToWall() const
+//{
+//   const Ray ray_1(GetPosition(), {1, 0}, mLevel);
+//   if (ray_1.GetDistance() < .5) {
+//      return true;
+//   }
+
+//   const Ray ray_2(GetPosition(), {0, 1}, mLevel);
+//   if (ray_2.GetDistance() < .5) {
+//      return true;
+//   }
+
+//   const Ray ray_3(GetPosition(), {-1, 0}, mLevel);
+//   printf("ray_3=%f\n", ray_3.GetDistance()); fflush(stdout);
+//   if (ray_3.GetDistance() < .5) {
+//      return true;
+//   }
+
+//   const Ray ray_4(GetPosition(), {0, -1}, mLevel);
+//   if (ray_4.GetDistance() < .5) {
+//      return true;
+//   }
+
+//   return false;
+//}

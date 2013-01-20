@@ -16,9 +16,15 @@ public:
    ~ResourceCache();
 
    SDL_Surface* GetWall(int id) const;
+//   SDL_Surface* GetCeiling(int id) const;
+   SDL_Surface* GetFloor(int id) const;
+   SDL_Surface* GetSky(int id) const;
 
 private:
    void LoadWallResources();
+//   void LoadCeilingResources();
+   void LoadFloorResources();
+   void LoadSkyResources();
 
    SDL_Surface* LoadTexture(const std::string& file, int width, int height);
 
@@ -26,6 +32,9 @@ private:
    const int mResX;
    const int mResY;
    std::vector<SDL_Surface*> mWallCache;
+//   std::vector<SDL_Surface*> mCeilingCache;
+   std::vector<SDL_Surface*> mFloorCache;
+   std::vector<SDL_Surface*> mSkyCache;
    std::vector<SDL_Surface*> mSurfaceCache;
 };
 

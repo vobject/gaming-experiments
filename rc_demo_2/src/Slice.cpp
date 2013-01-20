@@ -74,8 +74,8 @@ void Slice::Draw(Ray ray, Vector pos, Vector dir, const Level& level, const Reso
    }
 
    // Get the texture for the ceiling and floor.
-//   const auto ceiling_tex = res.GetWall(5);
-   const auto floor_tex = res.GetWall(4);
+//   const auto ceiling_tex = res.GetCeiling(0);
+   const auto floor_tex = res.GetFloor(0);
 
    // Position of the floor at the bottom of the wall.
    double floor_x_wall;

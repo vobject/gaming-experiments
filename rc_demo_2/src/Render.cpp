@@ -13,7 +13,7 @@
 #include <cmath>
 
 void render_thread(const Level& level, const Player& player, const ResourceCache& res,
-                   int resx_start, int resx_stop, int resx, int resy, SDL_Surface* screen)
+                   int resx_start, int resx_stop, SDL_Surface* screen)
 {
    const Vector player_pos = player.GetPosition();
    const Vector player_dir = player.GetDirection();
@@ -23,7 +23,7 @@ void render_thread(const Level& level, const Player& player, const ResourceCache
    {
       // Current column position relative to the center of the screen.
       // Left edge is -1, right edge is 1, and center is 0.
-      const double cam_x = 2. * x / resx - 1;
+      const double cam_x = 2. * x / screen->w - 1;
 
       // Starting direction of the current ray to be cast.
       const auto ray_dir = player_dir + (player_plane * cam_x);
@@ -45,6 +45,7 @@ Render::Render(const int res_x, const int res_y, const int threads)
    }
    atexit(SDL_Quit);
 
+   // We will always use 32bit surfaces and 32bit textures.
    const auto screen = SDL_SetVideoMode(mResX, mResY, 32, SDL_ANYFORMAT |
                                                           SDL_SWSURFACE |
                                                           SDL_DOUBLEBUF);
@@ -130,7 +131,6 @@ void Render::DrawPlayerView(const Level& level, const Player& player)
                                std::ref(player),
                                std::ref(*mResCache),
                                slice_start, slice_stop,
-                               mResX, mResY,
                                mScreen};
    }
 
@@ -191,11 +191,3 @@ void Render::DrawMinimap(const Level& level, const Player& player)
       wall_rect.y += cell_size_y;
    }
 }
-
-//void Render::SetPixel(const int x, const int y, const SDL_Color color)
-//{
-//   // We will always use 32bit surfaces.
-//   const auto offset = (mScreen->pitch * y) + (x * 4);
-//   const auto ptr = static_cast<Uint8*>(mScreen->pixels) + offset;
-//   memcpy(ptr, &color, sizeof(color));
-//}

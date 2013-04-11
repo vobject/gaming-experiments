@@ -262,7 +262,7 @@ void SwRenderer::DrawVerticalLine(
    const auto offset = (mScreen->pitch * y_start) + (x * bpp);
    auto bufp = static_cast<char*>(mScreen->pixels) + offset;
 
-   for(int y = y_start; y <= y_end; y++)
+   for (int y = y_start; y <= y_end; y++)
    {
       *(Uint32*)bufp = screen_color;
       bufp += mScreen->pitch;

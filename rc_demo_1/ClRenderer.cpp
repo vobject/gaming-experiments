@@ -11,37 +11,6 @@
 #include <cstdint>
 #include <cmath>
 
-static const int32_t LEVEL_WIDTH = 24;
-static const int32_t LEVEL_HEIGHT = 24;
-
-static int32_t LEVEL[LEVEL_WIDTH][LEVEL_HEIGHT] =
-{
-  {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
-  {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-  {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-  {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-  {1,0,0,0,0,0,2,2,2,2,2,0,0,0,0,3,0,3,0,3,0,0,0,1},
-  {1,0,0,0,0,0,2,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,1},
-  {1,0,0,0,0,0,2,0,0,0,2,0,0,0,0,3,0,0,0,3,0,0,0,1},
-  {1,0,0,0,0,0,2,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,1},
-  {1,0,0,0,0,0,2,2,0,2,2,0,0,0,0,3,0,3,0,3,0,0,0,1},
-  {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-  {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-  {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-  {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-  {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-  {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-  {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-  {1,4,4,4,4,4,4,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-  {1,4,0,4,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-  {1,4,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-  {1,4,0,4,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-  {1,4,0,4,4,4,4,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-  {1,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-  {1,4,4,4,4,4,4,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-  {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}
-};
-
 ClRenderer::ClRenderer(const int res_x, const int res_y)
    : mResX(res_x)
    , mResY(res_y)
@@ -73,24 +42,13 @@ void ClRenderer::PreRender()
 
 void ClRenderer::DoRender(const Level& level, const Player& player)
 {
-   cl_int rc;
-
    if (!mLevelBuf)
    {
       // We did not yet initialize the level buffer. Do it now.
-      mLevelBufSize = LEVEL_WIDTH * LEVEL_HEIGHT * sizeof(int32_t);
-      mLevelBuf = clCreateBuffer(mContext, CL_MEM_READ_ONLY, mLevelBufSize, nullptr, &rc);
-      if (CL_SUCCESS != rc) {
-         throw "clCreateBuffer(level) failed.";
-      }
-
-      rc = clEnqueueWriteBuffer(mQueue, mLevelBuf, CL_TRUE, 0, mLevelBufSize,
-                                LEVEL, 0, nullptr, nullptr);
-      if (CL_SUCCESS != rc) {
-         throw "clEnqueueWriteBuffer(level) failed.";
-      }
+      InitLevelBuffer(level);
    }
 
+   cl_int rc;
    const cl::screen_params sp = GetScreenKernelArg();
    const cl::player_params pp = GetPlayerKernelArg(player);
    const cl::level_params lp = GetLevelKernelArg(level);
@@ -106,7 +64,7 @@ void ClRenderer::DoRender(const Level& level, const Player& player)
    }
 
    const size_t global_work_size = mResX;
-   const size_t local_work_size = 64;
+   const size_t local_work_size = 128;
    rc = clEnqueueNDRangeKernel(mQueue, mKernel, 1, nullptr, &global_work_size,
                                &local_work_size, 0, nullptr, nullptr);
    if (CL_SUCCESS != rc) {
@@ -117,7 +75,6 @@ void ClRenderer::DoRender(const Level& level, const Player& player)
       SDL_LockSurface(mScreen);
    }
 
-   clFinish(mQueue);
    rc = clEnqueueReadBuffer(mQueue, mPixelBuf, CL_TRUE, 0, mPixelBufSize,
                             mScreen->pixels, 0, nullptr, nullptr);
    if (CL_SUCCESS != rc) {
@@ -128,7 +85,7 @@ void ClRenderer::DoRender(const Level& level, const Player& player)
       SDL_UnlockSurface(mScreen);
    }
 
-//   DrawMinimap(level, player);
+   //DrawMinimap(level, player);
 }
 
 void ClRenderer::PostRender()
@@ -218,6 +175,31 @@ void ClRenderer::ShutdownOpenCl()
    clReleaseContext(mContext);
 }
 
+void ClRenderer::InitLevelBuffer(const Level& level)
+{
+   cl_int rc;
+
+   mLevelBufSize = level.mGrid.size() * level.mGrid[0].size() * sizeof(int32_t);
+   mLevelBuf = clCreateBuffer(mContext, CL_MEM_READ_ONLY, mLevelBufSize, nullptr, &rc);
+   if (CL_SUCCESS != rc) {
+      throw "clCreateBuffer(level) failed.";
+   }
+
+   // Copy the level data into one continuous array.
+   std::vector<int32_t> buf;
+   for (const auto& it : level.mGrid)
+   {
+      std::copy(std::begin(it), std::end(it), std::back_inserter(buf));
+   }
+
+   // Write the level data into the OpenCL memory.
+   rc = clEnqueueWriteBuffer(mQueue, mLevelBuf, CL_TRUE, 0, mLevelBufSize,
+                             &buf[0], 0, nullptr, nullptr);
+   if (CL_SUCCESS != rc) {
+      throw "clEnqueueWriteBuffer(level) failed.";
+   }
+}
+
 cl::screen_params ClRenderer::GetScreenKernelArg() const
 {
    return { mResX, mResY };
@@ -234,7 +216,7 @@ cl::player_params ClRenderer::GetPlayerKernelArg(const Player& player) const
 
 cl::level_params ClRenderer::GetLevelKernelArg(const Level& level) const
 {
-   return { LEVEL_WIDTH, LEVEL_HEIGHT };
+   return { level.mGrid.size(), level.mGrid[0].size() };
 }
 
 void ClRenderer::DrawMinimap(const Level& level, const Player& player)

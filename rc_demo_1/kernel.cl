@@ -30,36 +30,45 @@ struct pixel
     uchar unused;
 };
 
-__constant int world_map[24][24]=
+__constant struct pixel ceiling_color = { 0x60, 0x60, 0x60 };
+__constant struct pixel floor_color = { 0x80, 0x80, 0x80 };
+
+
+void swap(int* i, int* j)
 {
-    {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
-    {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-    {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-    {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-    {1,0,0,0,0,0,2,2,2,2,2,0,0,0,0,3,0,3,0,3,0,0,0,1},
-    {1,0,0,0,0,0,2,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,1},
-    {1,0,0,0,0,0,2,0,0,0,2,0,0,0,0,3,0,0,0,3,0,0,0,1},
-    {1,0,0,0,0,0,2,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,1},
-    {1,0,0,0,0,0,2,2,0,2,2,0,0,0,0,3,0,3,0,3,0,0,0,1},
-    {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-    {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-    {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-    {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-    {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-    {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-    {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-    {1,4,4,4,4,4,4,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-    {1,4,0,4,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-    {1,4,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-    {1,4,0,4,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-    {1,4,0,4,4,4,4,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-    {1,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-    {1,4,4,4,4,4,4,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-    {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}
-};
+    const int tmp = *i;
+    *i = *j;
+    *j = tmp;
+}
 
+void draw_vertical_line(
+    __global struct pixel* data,
+    const struct screen_params scr,
+    const int x,
+    int y_start,
+    int y_end,
+    const struct pixel wall_color
+)
+{
+    // Make sure y_end is always be greater than y_start.
+    if (y_end < y_start) { swap(&y_start, &y_end); }
 
+    // Check if any point of the line appears on screen.
+    if ((x < 0) || (x >= scr.res_x) || (y_end < 0) || (y_start >= scr.res_y)) { return; }
 
+    // Clip start and end coordinates of the line onto the screen.
+    if (y_start < 0)        { y_start = 0; }
+    if (y_end >= scr.res_x) { y_end = scr.res_y - 1; }
+
+    for (int y = 0; y < scr.res_y; y++)
+    {
+        const int xy = x + (y * scr.res_x);
+
+        if (y < y_start)      { data[xy] = ceiling_color; } // Ceiling
+        else if (y <= y_end)  { data[xy] = wall_color; }    // Wall
+        else                  { data[xy] = floor_color; }   // Floor
+    }
+}
 
 __kernel void rc_demo_1(
     __global struct pixel* data,
@@ -73,7 +82,10 @@ __kernel void rc_demo_1(
     if (x >= scr.res_x) {
         return;
     }
-
+/*
+    struct pixel color = { 0xff, 0xff, 0x00 };
+    draw_vertical_line(data, scr, x, 100, 300, color);
+*/
     // Current column position relative to the center of the screen.
     // Left edge is -1, right edge is 1, and center is 0.
     const float cam_x = 2.f * x / scr.res_x - 1;
@@ -123,8 +135,7 @@ __kernel void rc_demo_1(
         }
 
         // Check if the ray has hit a wall.
-//        wall_hit = lvl[map_x + (map_y * lp.level_x)] > 0;
-        wall_hit = world_map[map_x][map_y] > 0;
+        wall_hit = lvl[map_y + (map_x * lp.level_y)] > 0;
     }
 
     // Calculate the perpendicular distance projected on camera direction.
@@ -149,9 +160,7 @@ __kernel void rc_demo_1(
     }
 
     struct pixel color;
-
-//    switch (lvl[map_x + (map_y * lp.level_x)])
-    switch (world_map[map_x][map_y])
+    switch (lvl[map_y + (map_x * lp.level_y)])
     {
         case 1:  color = (struct pixel) { 0x00, 0x00, 0xff }; break; // red
         case 2:  color = (struct pixel) { 0x00, 0xff, 0x00 }; break; // green
@@ -169,54 +178,6 @@ __kernel void rc_demo_1(
         color.b = color.b * .7f;
     }
 
-    // DrawVerticalLine
+    draw_vertical_line(data, scr, x, line_start, line_end, color);
 
-    if (line_end < line_start)
-    {
-        // Make sure y_end is always greater than y_start.
-        const int tmp = line_start;
-        line_start = line_end;
-        line_end = tmp;
-    }
-
-    if (line_end < 0 || line_start >= scr.res_y || x < 0 || x >= scr.res_x) {
-        return; // Not a single point of the line is on screen.
-    }
-
-    if (line_start < 0)
-    {
-        line_start = 0; // clip
-    }
-
-    if (line_end >= scr.res_x)
-    {
-        line_end = scr.res_y - 1; // clip
-    }
-
-    // Ceiling
-    for (int y = 0; y < line_start; y++)
-    {
-        const int xy = x + (y * scr.res_x);
-        data[xy].b = 96; // B
-        data[xy].g = 96; // G
-        data[xy].r = 96; // R
-    }
-
-    // Wall
-    for (int y = line_start; y <= line_end; y++)
-    {
-        const int xy = x + (y * scr.res_x);
-        data[xy].b = color.b; // B
-        data[xy].g = color.g; // G
-        data[xy].r = color.r; // R
-    }
-
-    // Floor
-    for (int y = line_end; y < scr.res_y; y++)
-    {
-        const int xy = x + (y * scr.res_x);
-        data[xy].b = 128; // B
-        data[xy].g = 128; // G
-        data[xy].r = 128; // R
-    }
 }

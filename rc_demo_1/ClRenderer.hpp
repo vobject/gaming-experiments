@@ -26,6 +26,7 @@ public:
 private:
    void InitOpenCl();
    void ShutdownOpenCl();
+   void InitLevelBuffer(const Level& level);
 
    cl::screen_params GetScreenKernelArg() const;
    cl::player_params GetPlayerKernelArg(const Player& player) const;

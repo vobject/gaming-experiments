@@ -1,4 +1,4 @@
-#include "Render.hpp"
+#include "SwRenderer.hpp"
 #include "Level.hpp"
 #include "Player.hpp"
 
@@ -6,7 +6,7 @@
 
 #include <cmath>
 
-Render::Render(const int res_x, const int res_y)
+SwRenderer::SwRenderer(const int res_x, const int res_y)
    : mResX(res_x)
    , mResY(res_y)
 {
@@ -26,18 +26,18 @@ Render::Render(const int res_x, const int res_y)
    //  by the caller. The man page tells us to rely on SDL_Quit() to do this.
 }
 
-Render::~Render()
+SwRenderer::~SwRenderer()
 {
 
 }
 
-void Render::PreRender()
+void SwRenderer::PreRender()
 {
    // Screen size might have changed.
    mScreen = SDL_GetVideoSurface();
 }
 
-void Render::DoRender(const Level& level, const Player& player)
+void SwRenderer::DoRender(const Level& level, const Player& player)
 {
    DrawCeiling({ 0x60, 0x60, 0x60 });
    DrawFloor({ 0x80, 0x80, 0x80 });
@@ -45,12 +45,17 @@ void Render::DoRender(const Level& level, const Player& player)
    DrawMinimap(level, player);
 }
 
-void Render::PostRender()
+void SwRenderer::PostRender()
 {
    SDL_Flip(mScreen);
 }
 
-void Render::DrawCeiling(const SDL_Color color)
+std::string SwRenderer::GetName() const
+{
+   return "Software";
+}
+
+void SwRenderer::DrawCeiling(const SDL_Color color)
 {
    const auto ceiling = SDL_MapRGB(mScreen->format, color.r, color.g, color.b);
    SDL_Rect ceiling_rect = { 0,
@@ -60,7 +65,7 @@ void Render::DrawCeiling(const SDL_Color color)
    SDL_FillRect(mScreen, &ceiling_rect, ceiling);
 }
 
-void Render::DrawFloor(const SDL_Color color)
+void SwRenderer::DrawFloor(const SDL_Color color)
 {
    const auto floor = SDL_MapRGB(mScreen->format, color.r, color.g, color.b);
    SDL_Rect floor_rect = { 0,
@@ -70,7 +75,7 @@ void Render::DrawFloor(const SDL_Color color)
    SDL_FillRect(mScreen, &floor_rect, floor);
 }
 
-void Render::DrawPlayerView(const Level& level, const Player& player)
+void SwRenderer::DrawPlayerView(const Level& level, const Player& player)
 {
    for (auto x = 0; x < mResX; x++)
    {
@@ -175,7 +180,7 @@ void Render::DrawPlayerView(const Level& level, const Player& player)
    }
 }
 
-void Render::DrawMinimap(const Level& level, const Player& player)
+void SwRenderer::DrawMinimap(const Level& level, const Player& player)
 {
    const auto cells_x = level.mGrid.at(0).size();
    const auto cells_y = level.mGrid.size();
@@ -223,7 +228,7 @@ void Render::DrawMinimap(const Level& level, const Player& player)
    }
 }
 
-void Render::DrawVerticalLine(
+void SwRenderer::DrawVerticalLine(
    const int x,
    int y_start,
    int y_end,

@@ -5,7 +5,8 @@
 
 class Level
 {
-   friend class Render;
+   friend class SwRenderer;
+   friend class ClRenderer;
 
 public:
    Level();

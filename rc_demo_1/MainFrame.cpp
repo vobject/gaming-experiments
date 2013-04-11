@@ -34,6 +34,11 @@ void MainFrame::FrameDone()
    mFrameCount++;
 }
 
+void MainFrame::SetRendererName(const std::string& name)
+{
+   mRenderer = name;
+}
+
 Uint32 MainFrame::DefaultFrameTimerCallback(const Uint32 interval, void* param)
 {
    MainFrame* obj = static_cast<MainFrame*>(param);
@@ -51,6 +56,7 @@ Uint32 MainFrame::DefaultFrameTimerCallback(const Uint32 interval, void* param)
 #else
    caption << " (Debug) - ";
 #endif
+   caption << "render:" << obj->mRenderer << " - ";
    caption << obj->mUPS << " UPS";
    caption << " - ";
    caption << obj->mFPS << " FPS";

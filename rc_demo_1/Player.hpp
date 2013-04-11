@@ -6,7 +6,8 @@ class Input;
 
 class Player
 {
-   friend class Render;
+   friend class SwRenderer;
+   friend class ClRenderer;
 
 public:
    Player(const Level& level, const Input& input);

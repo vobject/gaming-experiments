@@ -26,7 +26,10 @@ FILE(GLOB HDR_LIST ./RcDemo.hpp
                    ./Level.hpp
                    ./Player.hpp
                    ./Input.hpp
-                   ./Render.hpp)
+                   ./Renderer.hpp
+                   ./SwRenderer.hpp
+                   ./ClRenderer.hpp
+                   ./kernel_params.h)
 
 FILE(GLOB SRC_LIST ./main.cpp
                    ./RcDemo.cpp
@@ -34,12 +37,16 @@ FILE(GLOB SRC_LIST ./main.cpp
                    ./Level.cpp
                    ./Player.cpp
                    ./Input.cpp
-                   ./Render.cpp)
+                   ./SwRenderer.cpp
+                   ./ClRenderer.cpp)
 
-ADD_EXECUTABLE(${PROJECT_NAME} ${HDR_LIST} ${SRC_LIST})
+FILE(GLOB KRNL_LIST ./kernel.cl)
+
+ADD_EXECUTABLE(${PROJECT_NAME} ${HDR_LIST} ${SRC_LIST} ${KRNL_LIST})
 
 TARGET_LINK_LIBRARIES(
    ${PROJECT_NAME}
    ${X11_LIBRARIES}
    ${SDL_LIBRARY}
+   OpenCL
 )

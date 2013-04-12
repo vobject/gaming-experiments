@@ -2,12 +2,13 @@
 #define RCDEMO_HPP
 
 #include <memory>
+#include <vector>
 
 class MainFrame;
 class Level;
 class Input;
 class Player;
-class Render;
+class Renderer;
 
 class RcDemo
 {
@@ -25,14 +26,17 @@ private:
    void UpdateScene(int app_time, int elapsed_time);
    void RenderScene();
 
+   void NextRenderer();
+
    bool mQuitRequested = false;
 
    std::shared_ptr<MainFrame> mMainFrame;
    std::shared_ptr<Level> mLevel;
    std::shared_ptr<Input> mInput;
    std::shared_ptr<Player> mPlayer;
-   std::shared_ptr<Render> mRenderer;
-//   std::shared_ptr<Logic> mLogic;
+
+   std::vector<std::shared_ptr<Renderer>> mRenderers;
+   unsigned int mActiveRenderer = 0;
 };
 
 #endif // RCDEMO_HPP

@@ -3,7 +3,7 @@
 #include "Input.hpp"
 
 // 24x24
-static std::vector<std::vector<int>> world_map =
+static std::vector<std::vector<int32_t>> world_map =
 {
   {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
   {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},

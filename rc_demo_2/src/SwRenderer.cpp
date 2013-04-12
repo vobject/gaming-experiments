@@ -1,4 +1,4 @@
-#include "Render.hpp"
+#include "SwRenderer.hpp"
 #include "ResourceCache.hpp"
 #include "Level.hpp"
 #include "Player.hpp"
@@ -35,7 +35,7 @@ void render_thread(const Level& level, const Player& player, const ResourceCache
    }
 }
 
-Render::Render(const int res_x, const int res_y, const int threads)
+SwRenderer::SwRenderer(const int res_x, const int res_y, const int threads)
    : mResX(res_x)
    , mResY(res_y)
    , mThreadCnt(threads)
@@ -56,30 +56,35 @@ Render::Render(const int res_x, const int res_y, const int threads)
    mResCache = make_unique<ResourceCache>("res", mResX, mResY);
 }
 
-Render::~Render()
+SwRenderer::~SwRenderer()
 {
 
 }
 
-void Render::PreRender()
+void SwRenderer::PreRender()
 {
    // Screen size might have changed.
    mScreen = SDL_GetVideoSurface();
 }
 
-void Render::DoRender(const Level& level, const Player& player)
+void SwRenderer::DoRender(const Level& level, const Player& player)
 {
    DrawSky(player);
    DrawPlayerView(level, player);
    DrawMinimap(level, player);
 }
 
-void Render::PostRender()
+void SwRenderer::PostRender()
 {
    SDL_Flip(mScreen);
 }
 
-void Render::DrawSky(const Player& player)
+std::string SwRenderer::GetName() const
+{
+   return "Software";
+}
+
+void SwRenderer::DrawSky(const Player& player)
 {
    const auto sky_tex = mResCache->GetSky(0);
    const int sky_x = sky_tex->w - (sky_tex->w / 360.) * player.GetRotation();
@@ -111,7 +116,7 @@ void Render::DrawSky(const Player& player)
    }
 }
 
-void Render::DrawPlayerView(const Level& level, const Player& player)
+void SwRenderer::DrawPlayerView(const Level& level, const Player& player)
 {
    const int thread_slice = mResX / mThreadCnt;
    std::vector<std::thread> threads(mThreadCnt);
@@ -144,7 +149,7 @@ void Render::DrawPlayerView(const Level& level, const Player& player)
    }
 }
 
-void Render::DrawMinimap(const Level& level, const Player& player)
+void SwRenderer::DrawMinimap(const Level& level, const Player& player)
 {
    const auto cells_x = level.mGrid.at(0).size();
    const auto cells_y = level.mGrid.size();

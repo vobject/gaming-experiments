@@ -7,7 +7,7 @@ class Vector;
 
 class Player
 {
-   friend class Render;
+   friend class SwRenderer;
 
 public:
    Player(const Level& level, const Input& input);

@@ -3,7 +3,7 @@
 #include "Level.hpp"
 #include "Input.hpp"
 #include "Player.hpp"
-#include "Render.hpp"
+#include "SwRenderer.hpp"
 
 #if !defined(_WIN32)
 #include <X11/Xlib.h>
@@ -66,14 +66,24 @@ void RcDemo::Mainloop()
 void RcDemo::Initialize()
 {
 #if !defined(_WIN32)
-   // HACK for ubuntu1204: https://github.com/DrMcCoy/xoreos/commit/9a6c84d5458256ac5a0ff7525055ef2d8761e683
+   // HACK: How can I get rid of this? Could not find a solution yet. *sadface*
+   //  https://github.com/DrMcCoy/xoreos/commit/9a6c84d5458256ac5a0ff7525055ef2d8761e683
+   //  http://stackoverflow.com/questions/13128272/sdl-locksurface-for-multithreading
    if (!XInitThreads()) {
       throw "Failed to initialize Xlib muti-threading support";
    }
 #endif
 
-   mRenderer = std::make_shared<Render>(800, 600, sysconf(_SC_NPROCESSORS_ONLN));
+   const auto res_x = 640;
+   const auto res_y = 480;
+
+   mRenderers = {
+      std::make_shared<SwRenderer>(res_x, res_y, sysconf(_SC_NPROCESSORS_ONLN))
+   };
+   mActiveRenderer = 0;
+
    mMainFrame = std::make_shared<MainFrame>("RcDemo_2");
+   mMainFrame->SetRendererName(mRenderers[mActiveRenderer]->GetName());
 
    mLevel = std::make_shared<Level>();
    mInput = std::make_shared<Input>(SDLK_UP, SDLK_DOWN,
@@ -94,6 +104,16 @@ void RcDemo::ProcessInput()
    if(SDL_QUIT == event.type) {
       // The user closed the window.
       mQuitRequested = true;
+      return;
+   }
+
+   // Handle application-level requests, e.g. switching of renderer.
+   if ((SDL_KEYDOWN == event.type) && (event.key.keysym.mod & KMOD_LCTRL))
+   {
+      if (SDLK_r == event.key.keysym.sym)
+      {
+         NextRenderer();
+      }
       return;
    }
 
@@ -120,9 +140,18 @@ void RcDemo::UpdateScene(const int app_time, const int elapsed_time)
 
 void RcDemo::RenderScene()
 {
-   mRenderer->PreRender();
-   mRenderer->DoRender(*mLevel, *mPlayer);
-   mRenderer->PostRender();
+   mRenderers[mActiveRenderer]->PreRender();
+   mRenderers[mActiveRenderer]->DoRender(*mLevel, *mPlayer);
+   mRenderers[mActiveRenderer]->PostRender();
 
    mMainFrame->FrameDone();
+}
+
+void RcDemo::NextRenderer()
+{
+   if (++mActiveRenderer >= mRenderers.size())
+   {
+      mActiveRenderer = 0;
+   }
+   mMainFrame->SetRendererName(mRenderers[mActiveRenderer]->GetName());
 }

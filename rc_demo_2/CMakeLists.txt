@@ -41,7 +41,8 @@ FILE(GLOB HDR_LIST src/RcDemo.hpp
                    src/Level.hpp
                    src/Player.hpp
                    src/Input.hpp
-                   src/Render.hpp
+                   src/Renderer.hpp
+                   src/SwRenderer.hpp
                    src/ResourceCache.hpp
                    src/Ray.hpp
                    src/Slice.hpp
@@ -53,7 +54,7 @@ FILE(GLOB SRC_LIST src/main.cpp
                    src/Level.cpp
                    src/Player.cpp
                    src/Input.cpp
-                   src/Render.cpp
+                   src/SwRenderer.cpp
                    src/ResourceCache.cpp
                    src/Ray.cpp
                    src/Slice.cpp)

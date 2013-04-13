@@ -20,7 +20,7 @@ private:
    static Uint32 DefaultFrameTimerCallback(Uint32 interval, void *param);
 
    std::string mTitle;
-   std::string mRenderer;
+   std::string mRenderer = "noname";
 
    const int mFrameTimerUpdateRate = 1000; // 1 second
    SDL_TimerID mFrameTimer = nullptr;

@@ -66,7 +66,9 @@ void RcDemo::Mainloop()
 void RcDemo::Initialize()
 {
 #if !defined(_WIN32)
-   // HACK for ubuntu1204: https://github.com/DrMcCoy/xoreos/commit/9a6c84d5458256ac5a0ff7525055ef2d8761e683
+   // HACK: How can I get rid of this? Could not find a solution yet. *sadface*
+   //  https://github.com/DrMcCoy/xoreos/commit/9a6c84d5458256ac5a0ff7525055ef2d8761e683
+   //  http://stackoverflow.com/questions/13128272/sdl-locksurface-for-multithreading
    if (!XInitThreads()) {
       throw "Failed to initialize Xlib muti-threading support";
    }
@@ -107,7 +109,7 @@ void RcDemo::ProcessInput()
    }
 
    // Handle application-level requests, e.g. switching of renderer.
-   if (SDL_KEYDOWN == event.type && (event.key.keysym.mod & KMOD_LCTRL))
+   if ((SDL_KEYDOWN == event.type) && (event.key.keysym.mod & KMOD_LCTRL))
    {
       if (SDLK_r == event.key.keysym.sym)
       {

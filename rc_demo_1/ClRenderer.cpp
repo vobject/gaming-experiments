@@ -9,7 +9,6 @@
 #include <iterator>
 #include <iostream>
 #include <cstdint>
-#include <cmath>
 
 ClRenderer::ClRenderer(const int res_x, const int res_y)
    : mResX(res_x)
@@ -64,7 +63,7 @@ void ClRenderer::DoRender(const Level& level, const Player& player)
    }
 
    const size_t global_work_size = mResX;
-   const size_t local_work_size = 128;
+   const size_t local_work_size = 64;
    rc = clEnqueueNDRangeKernel(mQueue, mKernel, 1, nullptr, &global_work_size,
                                &local_work_size, 0, nullptr, nullptr);
    if (CL_SUCCESS != rc) {
@@ -132,6 +131,7 @@ void ClRenderer::InitOpenCl()
    const auto cl_path = "kernel.cl";
    std::ifstream cl_file(cl_path, std::ios::binary);
    std::vector<char> cl_data((std::istreambuf_iterator<char>(cl_file)), std::istreambuf_iterator<char>());
+   cl_data.push_back('\0');
    cl_file.close();
 
    const auto* prog = cl_data.data();
@@ -179,7 +179,7 @@ void ClRenderer::InitLevelBuffer(const Level& level)
 {
    cl_int rc;
 
-   mLevelBufSize = level.mGrid.size() * level.mGrid[0].size() * sizeof(int32_t);
+   mLevelBufSize = level.GetWidth() * level.GetHeight() * sizeof(int32_t);
    mLevelBuf = clCreateBuffer(mContext, CL_MEM_READ_ONLY, mLevelBufSize, nullptr, &rc);
    if (CL_SUCCESS != rc) {
       throw "clCreateBuffer(level) failed.";

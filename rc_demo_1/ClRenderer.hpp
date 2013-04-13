@@ -1,13 +1,14 @@
 #ifndef CL_RENDERER_HPP
 #define CL_RENDERER_HPP
 
-#include <SDL.h>
+#include "Renderer.hpp"
+#include "kernel_params.hpp"
 
 #include <CL/cl.h>
 
-#include "Renderer.hpp"
-#include "kernel_params.h"
+#include <memory>
 
+struct SDL_Surface;
 class Level;
 class Player;
 

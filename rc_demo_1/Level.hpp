@@ -13,6 +13,9 @@ public:
    Level();
    ~Level();
 
+   int GetWidth() const;
+   int GetHeight() const;
+
    bool IsBlocking(int pos_x, int pos_y) const;
 
 private:

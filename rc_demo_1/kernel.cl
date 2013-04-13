@@ -82,10 +82,7 @@ __kernel void rc_demo_1(
     if (x >= scr.res_x) {
         return;
     }
-/*
-    struct pixel color = { 0xff, 0xff, 0x00 };
-    draw_vertical_line(data, scr, x, 100, 300, color);
-*/
+
     // Current column position relative to the center of the screen.
     // Left edge is -1, right edge is 1, and center is 0.
     const float cam_x = 2.f * x / scr.res_x - 1;
@@ -117,7 +114,7 @@ __kernel void rc_demo_1(
     // Y walls (EW) will be drawn darker.
     bool y_side_hit;
 
-    for (bool wall_hit = false; !wall_hit;) // Run the DDA algorithm.
+    for (;;) // Run the DDA algorithm.
     {
         if (side_dist_x < side_dist_y)
         {
@@ -135,7 +132,9 @@ __kernel void rc_demo_1(
         }
 
         // Check if the ray has hit a wall.
-        wall_hit = lvl[map_y + (map_x * lp.level_y)] > 0;
+        if (lvl[map_y + (map_x * lp.level_y)] != 0) {
+            break;
+        }
     }
 
     // Calculate the perpendicular distance projected on camera direction.
@@ -145,18 +144,18 @@ __kernel void rc_demo_1(
                 fabs((map_x - ray_pos_x + (1 - step_x) / 2) / ray_dir_x);
 
     // Calculate the height of the vertical line to draw on screen.
-    const int line_height = abs((int)(scr.res_y / perp_wall_dist));
+    const int wall_height = abs((int)(scr.res_y / perp_wall_dist));
 
     // Set where the vertical line should be drawn.
-    int line_start = (-line_height / 2) + (scr.res_y / 2);
-    int line_end = line_height / 2 + scr.res_y / 2;
+    int wall_start = (-wall_height / 2) + (scr.res_y / 2);
+    int wall_end = wall_height / 2 + scr.res_y / 2;
 
-    if (line_start < 0) {
-        line_start = 0;
+    if (wall_start < 0) {
+        wall_start = 0;
     }
 
-    if (line_end >= scr.res_y) {
-        line_end = scr.res_y - 1;
+    if (wall_end >= scr.res_y) {
+        wall_end = scr.res_y - 1;
     }
 
     struct pixel color;
@@ -173,11 +172,10 @@ __kernel void rc_demo_1(
     if (y_side_hit)
     {
         // Give X and Y-sides different brightness.
-        color.r = color.r * .7f;
-        color.g = color.g * .7f;
-        color.b = color.b * .7f;
+        color.r *= .7f;
+        color.g *= .7f;
+        color.b *= .7f;
     }
 
-    draw_vertical_line(data, scr, x, line_start, line_end, color);
-
+    draw_vertical_line(data, scr, x, wall_start, wall_end, color);
 }

@@ -29,7 +29,7 @@ FILE(GLOB HDR_LIST ./RcDemo.hpp
                    ./Renderer.hpp
                    ./SwRenderer.hpp
                    ./ClRenderer.hpp
-                   ./kernel_params.h)
+                   ./kernel_params.hpp)
 
 FILE(GLOB SRC_LIST ./main.cpp
                    ./RcDemo.cpp

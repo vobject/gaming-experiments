@@ -6,8 +6,9 @@
 
 class Level
 {
-   friend class SwRenderer;
    friend class Slice;
+   friend class SwRenderer;
+   friend class ClRenderer;
 
 public:
    Level();

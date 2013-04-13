@@ -4,6 +4,7 @@
 #include "Input.hpp"
 #include "Player.hpp"
 #include "SwRenderer.hpp"
+#include "ClRenderer.hpp"
 
 #if !defined(_WIN32)
 #include <X11/Xlib.h>
@@ -74,16 +75,9 @@ void RcDemo::Initialize()
    }
 #endif
 
-   const auto res_x = 640;
-   const auto res_y = 480;
-
-   mRenderers = {
-      std::make_shared<SwRenderer>(res_x, res_y, sysconf(_SC_NPROCESSORS_ONLN))
-   };
-   mActiveRenderer = 0;
-
+   mRenderer = std::make_shared<ClRenderer>(mResX, mResY);
    mMainFrame = std::make_shared<MainFrame>("RcDemo_2");
-   mMainFrame->SetRendererName(mRenderers[mActiveRenderer]->GetName());
+   mMainFrame->SetRendererName(mRenderer->GetName());
 
    mLevel = std::make_shared<Level>();
    mInput = std::make_shared<Input>(SDLK_UP, SDLK_DOWN,
@@ -110,9 +104,17 @@ void RcDemo::ProcessInput()
    // Handle application-level requests, e.g. switching of renderer.
    if ((SDL_KEYDOWN == event.type) && (event.key.keysym.mod & KMOD_LCTRL))
    {
-      if (SDLK_r == event.key.keysym.sym)
-      {
-         NextRenderer();
+      if (SDLK_1 == event.key.keysym.sym) {
+         mRenderer = std::make_shared<SwRenderer>(mResX, mResY, 1);
+         mMainFrame->SetRendererName(mRenderer->GetName());
+      }
+      else if (SDLK_2 == event.key.keysym.sym) {
+         mRenderer = std::make_shared<SwRenderer>(mResX, mResY, sysconf(_SC_NPROCESSORS_ONLN));
+         mMainFrame->SetRendererName(mRenderer->GetName());
+      }
+      else if (SDLK_3 == event.key.keysym.sym) {
+         mRenderer = std::make_shared<ClRenderer>(mResX, mResY);
+         mMainFrame->SetRendererName(mRenderer->GetName());
       }
       return;
    }
@@ -140,18 +142,9 @@ void RcDemo::UpdateScene(const int app_time, const int elapsed_time)
 
 void RcDemo::RenderScene()
 {
-   mRenderers[mActiveRenderer]->PreRender();
-   mRenderers[mActiveRenderer]->DoRender(*mLevel, *mPlayer);
-   mRenderers[mActiveRenderer]->PostRender();
+   mRenderer->PreRender();
+   mRenderer->DoRender(*mLevel, *mPlayer);
+   mRenderer->PostRender();
 
    mMainFrame->FrameDone();
-}
-
-void RcDemo::NextRenderer()
-{
-   if (++mActiveRenderer >= mRenderers.size())
-   {
-      mActiveRenderer = 0;
-   }
-   mMainFrame->SetRendererName(mRenderers[mActiveRenderer]->GetName());
 }

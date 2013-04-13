@@ -43,10 +43,12 @@ FILE(GLOB HDR_LIST src/RcDemo.hpp
                    src/Input.hpp
                    src/Renderer.hpp
                    src/SwRenderer.hpp
+                   src/ClRenderer.hpp
                    src/ResourceCache.hpp
                    src/Ray.hpp
                    src/Slice.hpp
-                   src/Utils.hpp)
+                   src/Utils.hpp
+                   src/kernel_params.hpp)
 
 FILE(GLOB SRC_LIST src/main.cpp
                    src//RcDemo.cpp
@@ -55,11 +57,14 @@ FILE(GLOB SRC_LIST src/main.cpp
                    src/Player.cpp
                    src/Input.cpp
                    src/SwRenderer.cpp
+                   src/ClRenderer.cpp
                    src/ResourceCache.cpp
                    src/Ray.cpp
                    src/Slice.cpp)
 
-ADD_EXECUTABLE(${PROJECT_NAME} ${HDR_LIST} ${SRC_LIST})
+FILE(GLOB KRNL_LIST ocl/kernel.cl)
+
+ADD_EXECUTABLE(${PROJECT_NAME} ${HDR_LIST} ${SRC_LIST} ${KRNL_LIST})
 
 TARGET_LINK_LIBRARIES(
    ${PROJECT_NAME}
@@ -67,4 +72,5 @@ TARGET_LINK_LIBRARIES(
    ${SDL_LIBRARY}
    ${SDLIMAGE_LIBRARY}
    ${SDLGFX_LIBRARY}
+   OpenCL
 )

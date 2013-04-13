@@ -35,6 +35,7 @@ void Slice::Draw(Ray ray, Vector pos, Vector dir, const Level& level, const Reso
 
    // Get the texture that matches the cell type.
    const auto cell_id = level.mGrid[ray.GetMapIntersectionX()][ray.GetMapIntersectionY()] - 1;
+   //const auto cell_id = level.mGrid[ray.GetMapIntersectionX()][ray.GetMapIntersectionY()] - 1;
    const auto wall_tex = res.GetWall(cell_id);
 
    // Where exactly the wall was hit.
@@ -75,7 +76,7 @@ void Slice::Draw(Ray ray, Vector pos, Vector dir, const Level& level, const Reso
 
    // Get the texture for the ceiling and floor.
 //   const auto ceiling_tex = res.GetCeiling(0);
-   const auto floor_tex = res.GetFloor(0);
+   const auto floor_tex = res.GetWall(2);
 
    // Position of the floor at the bottom of the wall.
    double floor_x_wall;

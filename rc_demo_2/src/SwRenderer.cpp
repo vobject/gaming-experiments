@@ -10,6 +10,7 @@
 #include <SDL_image.h>
 
 #include <thread>
+#include <sstream>
 #include <cmath>
 
 void render_thread(const Level& level, const Player& player, const ResourceCache& res,
@@ -81,7 +82,9 @@ void SwRenderer::PostRender()
 
 std::string SwRenderer::GetName() const
 {
-   return "Software";
+   std::stringstream os;
+   os << "Software(threads:" << mThreadCnt << ")";
+   return os.str();
 }
 
 void SwRenderer::DrawSky(const Player& player)
@@ -171,8 +174,7 @@ void SwRenderer::DrawMinimap(const Level& level, const Player& player)
 
    // Draw the individual walls to the minimap.
    SDL_Rect wall_rect = { map_rect.x, map_rect.y, cell_size_x, cell_size_y };
-   const unsigned int player_cell_x = player.mPosY;
-   const unsigned int player_cell_y = player.mPosX;
+   const Vector player_cell = player.GetPosition();
 
    for (unsigned int cell_y = 0; cell_y < level.mGrid.size(); cell_y++)
    {
@@ -184,7 +186,7 @@ void SwRenderer::DrawMinimap(const Level& level, const Player& player)
             SDL_FillRect(mScreen, &wall_rect, color_wall);
          }
 
-         if ((cell_y == player_cell_y) && (cell_x == player_cell_x))
+         if ((cell_y == player_cell.GetY()) && (cell_x == player_cell.GetX()))
          {
             //Draw player to minimap.
             SDL_FillRect(mScreen, &wall_rect, color_player);

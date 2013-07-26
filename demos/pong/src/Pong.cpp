@@ -1,4 +1,5 @@
 #include "Pong.hpp"
+#include "Console.hpp"
 #include "MainFrame.hpp"
 #include "Input.hpp"
 #include "Game.hpp"
@@ -56,6 +57,7 @@ void Pong::Mainloop()
          accumulator -= delta_time;
          game_time += delta_time;
       }
+
       RenderScene();
    }
 }
@@ -64,14 +66,15 @@ void Pong::Initialize()
 {
    const auto res_x = 800;
    const auto res_y = 600;
-
-   mRenderers = {
-      std::make_shared<SwRenderer>(res_x, res_y)
-   };
-   mActiveRenderer = 0;
+   mRenderer = std::make_shared<SwRenderer>(res_x, res_y);
 
    mMainFrame = std::make_shared<MainFrame>("Pong");
-   mMainFrame->SetRendererName(mRenderers[mActiveRenderer]->GetName());
+   mMainFrame->SetRendererName(mRenderer->GetName());
+
+   mConsole.reset(new Console("font.bmp", *mRenderer));
+   mConsole->RegisterCVar("exit", [this](Console& c, const std::string& val){ mQuitRequested = true; });
+   mConsole->RegisterCVar("close", [this](Console& c, const std::string& val){ mConsole->ToggleVisible(); });
+   mConsole->RegisterCVar("help", [this](Console& c, const std::string& val){ mConsole->Print("Help yourself!"); });
 
    mInputs = {
       std::make_shared<Input>(SDLK_w, SDLK_s),
@@ -86,7 +89,6 @@ void Pong::Initialize()
    mGame->SetPlayer2Goal(std::make_shared<Goal>(0.945f, 0.2f, 0.01f, 0.75));
    mGame->AddBall(std::make_shared<Ball>(0.3f, 0.5f, 0.025f, 0.025f));
    mGame->AddBall(std::make_shared<Ball>(0.6f, 0.4f, 0.05f, 0.05f));
-
 }
 
 void Pong::ProcessInput()
@@ -101,6 +103,25 @@ void Pong::ProcessInput()
       // The user closed the window.
       mQuitRequested = true;
       return;
+   }
+
+   if(!mConsole->ProcessInput(&event)) {
+      return;
+   }
+
+   // Handle application-level requests, e.g. switching of renderer.
+   if (SDL_KEYDOWN == event.type)
+   {
+      if (event.key.keysym.mod & KMOD_LCTRL)
+      {
+         return;
+      }
+
+      if (event.key.keysym.sym == SDLK_BACKQUOTE)
+      {
+         mConsole->ToggleVisible();
+         return;
+      }
    }
 
    switch (event.type)
@@ -130,11 +151,9 @@ void Pong::UpdateScene(const int app_time, const int elapsed_time)
 
 void Pong::RenderScene()
 {
-   auto& renderer = *(mRenderers[mActiveRenderer]);
-
-   renderer.PreRender();
-   renderer.DoRender(*mGame);
-   renderer.PostRender();
+   mRenderer->PreRender();
+   mRenderer->DoRender(*mGame);
+   mRenderer->PostRender();
 
    mMainFrame->FrameDone();
 }

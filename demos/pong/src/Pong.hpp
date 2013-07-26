@@ -4,6 +4,7 @@
 #include <memory>
 #include <vector>
 
+class Console;
 class MainFrame;
 class Input;
 class Game;
@@ -27,12 +28,11 @@ private:
 
    bool mQuitRequested = false;
 
+   std::shared_ptr<Renderer> mRenderer;
    std::shared_ptr<MainFrame> mMainFrame;
    std::vector<std::shared_ptr<Input>> mInputs;
    std::unique_ptr<Game> mGame;
-
-   std::vector<std::shared_ptr<Renderer>> mRenderers;
-   unsigned int mActiveRenderer = 0;
+   std::unique_ptr<Console> mConsole;
 };
 
 #endif // RCDEMO_HPP

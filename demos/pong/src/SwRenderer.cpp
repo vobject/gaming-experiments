@@ -18,9 +18,9 @@ SwRenderer::SwRenderer(const int res_x, const int res_y)
    }
    atexit(SDL_Quit);
 
-   const auto screen = SDL_SetVideoMode(mResX, mResY, 32, SDL_SWSURFACE |
-                                                          SDL_DOUBLEBUF);
-   if (!screen) {
+   mScreen = SDL_SetVideoMode(mResX, mResY, 32, SDL_SWSURFACE |
+                                                SDL_DOUBLEBUF);
+   if (!mScreen) {
       throw "SDL_SetVideoMode() failed.";
    }
 
@@ -59,12 +59,26 @@ void SwRenderer::DoRender(const Game& game)
 
 void SwRenderer::PostRender()
 {
-   SDL_Flip(mScreen);
+    for (const auto& cb : mCallbacks) {
+       cb(mScreen);
+    }
+
+    SDL_Flip(mScreen);
+}
+
+void SwRenderer::RegisterPostRenderHook(std::function<void(void*)> callback)
+{
+   mCallbacks.push_back(callback);
 }
 
 std::string SwRenderer::GetName() const
 {
    return "Software";
+}
+
+void* SwRenderer::GetUnderlying() const
+{
+   return mScreen;
 }
 
 void SwRenderer::ClearScreen(const SDL_Color& color)

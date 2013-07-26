@@ -3,6 +3,8 @@
 
 #include "Renderer.hpp"
 
+#include <vector>
+
 struct SDL_Color;
 struct SDL_Surface;
 class Game;
@@ -21,7 +23,10 @@ public:
    void DoRender(const Game& game) override;
    void PostRender() override;
 
+   void RegisterPostRenderHook(std::function<void(void*)> callback) override;
+
    std::string GetName() const override;
+   void* GetUnderlying() const override;
 
 private:
    void ClearScreen(const SDL_Color& color);
@@ -33,6 +38,7 @@ private:
    const int mResX;
    const int mResY;
    SDL_Surface* mScreen = nullptr;
+   std::vector<std::function<void(void*)>> mCallbacks;
 };
 
 #endif // SW_RENDERER_HPP

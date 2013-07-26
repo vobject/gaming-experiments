@@ -212,14 +212,12 @@ int DT_FontWidth(int FontNumber) {
  * returns NULL if theres an error
  */
 BitFont *DT_FontPointer(int FontNumber) {
-	BitFont *CurrentFont = BitFonts;
-	BitFont *temp;
+    BitFont *CurrentFont = BitFonts;
 
 	while(CurrentFont)
 		if(CurrentFont->FontNumber == FontNumber)
 			return CurrentFont;
-		else {
-			temp = CurrentFont;
+        else {
 			CurrentFont = CurrentFont->NextFont;
 		}
 

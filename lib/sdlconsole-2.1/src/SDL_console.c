@@ -34,6 +34,9 @@
 #include "DT_drawtext.h"
 #include "internal.h"
 
+// for SDL_GetTicks()
+#include <SDL.h>
+
 #ifdef HAVE_SDLIMAGE
 #include "SDL_image.h"
 #endif
@@ -227,17 +230,14 @@ void CON_AlphaGL(SDL_Surface *s, int alpha) {
 	default:
 		/* we have no choice but to do this slowly.  <sigh> */
 		for(y = 0; y < h; ++y)
-			for(x = 0; x < w; ++x) {
-				char print = 0;
+            for(x = 0; x < w; ++x) {
 				/* Lock the surface for direct access to the pixels */
 				if(SDL_MUSTLOCK(s) && SDL_LockSurface(s) < 0) {
 					PRINT_ERROR("Can't lock surface: ");
 					fprintf(stderr, "%s\n", SDL_GetError());
 					return;
 				}
-				pixel = DT_GetPixel(s, x, y);
-				if(x == 0 && y == 0)
-					print = 1;
+                pixel = DT_GetPixel(s, x, y);
 				SDL_GetRGBA(pixel, format, &r, &g, &b, &a);
 				pixel = SDL_MapRGBA(format, r, g, b, val);
 				SDL_GetRGBA(pixel, format, &r, &g, &b, &a);
@@ -892,7 +892,7 @@ void CON_Topmost(ConsoleInformation *console) {
 }
 
 /* Sets the Prompt for console */
-void CON_SetPrompt(ConsoleInformation *console, char* newprompt) {
+void CON_SetPrompt(ConsoleInformation *console, const char* newprompt) {
 	if(!console)
 		return;
 

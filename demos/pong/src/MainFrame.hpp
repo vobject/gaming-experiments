@@ -3,7 +3,6 @@
 
 #include <SDL.h>
 
-#include <sstream>
 #include <string>
 
 class MainFrame

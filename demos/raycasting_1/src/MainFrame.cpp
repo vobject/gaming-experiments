@@ -2,10 +2,11 @@
 
 #include <sstream>
 
-MainFrame::MainFrame(const std::string title)
-   : mTitle(title)
+MainFrame::MainFrame(const std::string appname)
+   : mAppName(appname)
+   , mCaption(mAppName)
 {
-   SDL_WM_SetCaption(mTitle.c_str(), NULL);
+   SDL_WM_SetCaption(mCaption.c_str(), NULL);
 
 #ifdef WIN32
    if (0 > SDL_Init(SDL_INIT_TIMER)) {
@@ -32,6 +33,8 @@ void MainFrame::UpdateDone()
 void MainFrame::FrameDone()
 {
    mFrameCount++;
+
+   SDL_WM_SetCaption(mCaption.c_str(), nullptr);
 }
 
 void MainFrame::SetRendererName(const std::string& name)
@@ -49,8 +52,8 @@ Uint32 MainFrame::DefaultFrameTimerCallback(const Uint32 interval, void* param)
    obj->mFPS = (obj->mFrameCount / static_cast<float>(interval)) * obj->mFrameTimerUpdateRate;
    obj->mFrameCount = 0;
 
-   std::ostringstream caption;
-   caption << obj->mTitle;
+   std::stringstream caption;
+   caption << obj->mAppName;
 #ifdef NDEBUG
    caption << " (Release) - ";
 #else
@@ -61,6 +64,7 @@ Uint32 MainFrame::DefaultFrameTimerCallback(const Uint32 interval, void* param)
    caption << " - ";
    caption << obj->mFPS << " FPS";
 
-   SDL_WM_SetCaption(caption.str().c_str(), NULL);
+   std::string captionStr(caption.str());
+   obj->mCaption.swap(captionStr);
    return interval;
 }

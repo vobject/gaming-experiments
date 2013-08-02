@@ -6,10 +6,6 @@
 #include "SwRenderer.hpp"
 #include "ClRenderer.hpp"
 
-#if !defined(_WIN32)
-#include <X11/Xlib.h>
-#endif
-
 #include <SDL.h>
 
 #include <chrono>
@@ -65,25 +61,18 @@ void RcDemo::Mainloop()
 
 void RcDemo::Initialize()
 {
-#if !defined(_WIN32)
-   // HACK: How can I get rid of this? Could not find a solution yet. *sadface*
-   //  https://github.com/DrMcCoy/xoreos/commit/9a6c84d5458256ac5a0ff7525055ef2d8761e683
-   //  http://stackoverflow.com/questions/13128272/sdl-locksurface-for-multithreading
-   if (!XInitThreads()) {
-      throw "Failed to initialize Xlib muti-threading support";
-   }
-#endif
-
    const auto res_x = 640;
    const auto res_y = 480;
 
    mRenderers = {
-      std::make_shared<SwRenderer>(res_x, res_y),
-      std::make_shared<ClRenderer>(res_x, res_y)
+      std::make_shared<SwRenderer>(res_x, res_y)
+#ifdef WITH_OPENGL
+      , std::make_shared<ClRenderer>(res_x, res_y)
+#endif // WITH_OPENGL
    };
-   mActiveRenderer = 1;
+   mActiveRenderer = 0;
 
-   mMainFrame = std::make_shared<MainFrame>("RcDemo_1");
+   mMainFrame = std::make_shared<MainFrame>("RayCasting_1");
    mMainFrame->SetRendererName(mRenderers[mActiveRenderer]->GetName());
 
    mLevel = std::make_shared<Level>();

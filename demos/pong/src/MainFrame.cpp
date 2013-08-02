@@ -1,5 +1,7 @@
 #include "MainFrame.hpp"
 
+#include <sstream>
+
 MainFrame::MainFrame(const std::string appname)
    : mAppName(appname)
    , mCaption(mAppName)

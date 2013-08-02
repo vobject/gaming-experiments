@@ -1,6 +1,8 @@
 #ifndef CL_RENDERER_HPP
 #define CL_RENDERER_HPP
 
+#ifdef WITH_OPENGL
+
 #include "Renderer.hpp"
 #include "kernel_params.hpp"
 
@@ -52,5 +54,7 @@ private:
    cl_mem mLevelBuf = nullptr;
    size_t mLevelBufSize = 0;
 };
+
+#endif // WITH_OPENGL
 
 #endif // CL_RENDERER_HPP

@@ -70,7 +70,7 @@ void draw_vertical_line(
     }
 }
 
-__kernel void rc_demo_1(
+__kernel void rc_1(
     __global struct pixel* data,
     const struct screen_params scr,
     const struct player_params player,

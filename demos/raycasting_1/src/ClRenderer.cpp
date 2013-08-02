@@ -1,3 +1,5 @@
+#ifdef WITH_OPENGL
+
 #include "ClRenderer.hpp"
 #include "Level.hpp"
 #include "Player.hpp"
@@ -153,9 +155,9 @@ void ClRenderer::InitOpenCl()
       throw "clBuildProgram() failed.";
    }
 
-   mKernel = clCreateKernel(mProgram, "rc_demo_1", &rc);
+   mKernel = clCreateKernel(mProgram, "rc_1", &rc);
    if (CL_SUCCESS != rc) {
-      throw "clCreateKernel(\"rc_demo_1\") failed.";
+      throw "clCreateKernel(\"rc_1\") failed.";
    }
 
    mPixelBufSize = mResX * mResY * mScreen->format->BytesPerPixel;
@@ -266,3 +268,5 @@ void ClRenderer::DrawMinimap(const Level& level, const Player& player)
       wall_rect.y += cell_size_y;
    }
 }
+
+#endif // WITH_OPENGL

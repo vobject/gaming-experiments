@@ -1,14 +1,29 @@
 #include "Console.hpp"
 #include "Renderer.hpp"
 
-#include <iostream>
+#include <sstream>
+
+static std::vector<std::string> split_args(const std::string& args)
+{
+    std::vector<std::string> elems;
+    std::stringstream ss(args);
+    std::string item;
+    while (std::getline(ss, item, ' ')) {
+        elems.push_back(item);
+    }
+    return elems;
+}
 
 // ugly hack! is there any nicer way to access Consoles members?
 static std::map<ConsoleInformation*, Console*> gConsoleMap;
 
 static void ConsoleCmdHandler(ConsoleInformation* console, char* args)
 {
-    gConsoleMap[console]->ExecuteCommand(args);
+    printf("args to unpack: %s\n", args); fflush(stdout);
+    auto argsSplit = split_args(args);
+    const auto cmd(argsSplit.front());
+    argsSplit.erase(argsSplit.begin());
+    gConsoleMap[console]->ExecuteCommand(cmd, argsSplit);
 }
 
 static char* ConsoleTabHandler(char* command)
@@ -40,7 +55,6 @@ Console::Console(const std::string& font, Renderer& r)
 
     r.RegisterPostRenderHook([&](void*){ CON_DrawConsole(mSdlConsole); });
 
-//    gConsole = this;
     gConsoleMap[mSdlConsole] = this;
 }
 
@@ -69,19 +83,24 @@ void Console::Print(const std::string& msg)
     CON_Out(mSdlConsole, msg.c_str());
 }
 
-void Console::RegisterCommand(const std::string& cmd, CmdCallback cb)
+void Console::RegisterCommand(const std::string& cmd, CmdCallbackWithArgs cb)
 {
     mCmdCallbacks[cmd] = cb;
 }
 
 void Console::ExecuteCommand(const std::string& cmd)
 {
+    ExecuteCommand(cmd, {});
+}
+
+void Console::ExecuteCommand(const std::string& cmd, const std::vector<std::string>& args)
+{
     const auto it = mCmdCallbacks.find(cmd);
     if (it == mCmdCallbacks.end()) {
         CON_Out(mSdlConsole, (std::string("Unknown command: \"") + cmd + "\"").c_str());
         return;
     }
-    it->second(*this, cmd);
+    it->second(*this, cmd, args);
 }
 
 SDL_Surface *Console::GetSdlSurface(const Renderer& r) const

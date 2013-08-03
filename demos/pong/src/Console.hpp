@@ -5,27 +5,13 @@
 
 #include <functional>
 #include <map>
-#include <memory>
 #include <string>
+#include <vector>
 
 class Console;
 class Renderer;
 
-//template<typename... Args>
-//class Callback {
-//    Callback(Console& con, const std::string& val) {
-
-//    }
-//};
-
-typedef std::function<void(Console&, const std::string&)> CmdCallback;
-
-//template<typename ...Args> using CVarCallback2 =
-//std::function<void(Console&, const std::string&, Args&&...)>;
-
-//static void regvar(CVarCallback&& s) {
-
-//}
+typedef std::function<void(Console&, const std::string&, const std::vector<std::string>&)> CmdCallbackWithArgs;
 
 class Console
 {
@@ -37,20 +23,10 @@ public:
     void ToggleVisible();
     void Print(const std::string& msg);
 
-    void RegisterCommand(const std::string& cmd, CmdCallback cb);
+    void RegisterCommand(const std::string& cmd, CmdCallbackWithArgs cb);
+
     void ExecuteCommand(const std::string& cmd);
-
-//    template<typename... Args>
-//    void RegisterCVar2(const std::string& var, Args&&... args) {
-////        regvar(std::forward<Args>(args)...);
-//    }
-
-//    template<typename ...Args>
-//    void RegisterCVar3(const std::string& var, Args&&... args) {
-////        regvar(std::forward<Args>(args)...);
-//        std::function<void(Console&, const std::string&)> f;
-//        CVarCallback2<Args...> f2(*this, "", std::forward<Args>(args)...);
-//    }
+    void ExecuteCommand(const std::string& cmd, const std::vector<std::string>& args);
 
 private:
     static const int LINE_COUNT = 128;
@@ -59,8 +35,7 @@ private:
     SDL_Surface* GetSdlSurface(const Renderer& r) const;
 
     ConsoleInformation* mSdlConsole = nullptr;
-    std::map<std::string, CmdCallback> mCmdCallbacks;
-//    std::map<std::string, CVarCallback2> mCVarCallbacks2;
+    std::map<std::string, CmdCallbackWithArgs> mCmdCallbacks;
 };
 
 #endif // CONSOLE_HPP

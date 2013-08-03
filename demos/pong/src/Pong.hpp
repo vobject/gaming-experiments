@@ -1,10 +1,11 @@
 #ifndef RCDEMO_HPP
 #define RCDEMO_HPP
 
+#include "Console.hpp"
+
 #include <memory>
 #include <vector>
 
-class Console;
 class MainFrame;
 class Input;
 class Game;
@@ -13,26 +14,28 @@ class Renderer;
 class Pong
 {
 public:
-   Pong();
-   ~Pong();
+    Pong();
+    ~Pong();
 
-   void Start();
+    void Start();
 
 private:
-   void Mainloop();
+    void Mainloop();
 
-   void Initialize();
-   void ProcessInput();
-   void UpdateScene(int app_time, int elapsed_time);
-   void RenderScene();
+    void Initialize();
+    void ProcessInput();
+    void UpdateScene(int app_time, int elapsed_time);
+    void RenderScene();
 
-   bool mQuitRequested = false;
+    std::vector<std::pair<std::string, CmdCallbackWithArgs>> InitConsoleCommands();
 
-   std::shared_ptr<Renderer> mRenderer;
-   std::shared_ptr<MainFrame> mMainFrame;
-   std::vector<std::shared_ptr<Input>> mInputs;
-   std::unique_ptr<Game> mGame;
-   std::unique_ptr<Console> mConsole;
+    bool mQuitRequested = false;
+
+    std::shared_ptr<Renderer> mRenderer;
+    std::shared_ptr<MainFrame> mMainFrame;
+    std::vector<std::shared_ptr<Input>> mInputs;
+    std::unique_ptr<Game> mGame;
+    std::unique_ptr<Console> mConsole;
 };
 
 #endif // RCDEMO_HPP

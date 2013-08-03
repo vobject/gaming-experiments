@@ -3,6 +3,7 @@
 
 #include "Console.hpp"
 
+#include <map>
 #include <memory>
 #include <vector>
 
@@ -33,7 +34,7 @@ private:
 
     std::shared_ptr<Renderer> mRenderer;
     std::shared_ptr<MainFrame> mMainFrame;
-    std::vector<std::shared_ptr<Input>> mInputs;
+    std::map<int, std::shared_ptr<Input>> mInputs;
     std::unique_ptr<Game> mGame;
     std::unique_ptr<Console> mConsole;
 };

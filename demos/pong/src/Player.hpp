@@ -29,8 +29,8 @@ public:
                const std::shared_ptr<Field>& field,
                std::vector<std::shared_ptr<Ball>>& balls);
 
-   void SetOpponent(const std::shared_ptr<Player>& opponent);
-   std::shared_ptr<Player> GetOpponent() const;
+//   void SetOpponent(const std::shared_ptr<Player>& opponent);
+//   std::shared_ptr<Player> GetOpponent() const;
 
    void IncreaseScore();
    int GetScore() const;
@@ -50,7 +50,7 @@ private:
    MovementDir mDir = MovementDir::None;
 
    int mScore = 0;
-   std::shared_ptr<Player> mOpponent;
+//   std::shared_ptr<Player> mOpponent;
 };
 
 #endif // PLAYER_HPP

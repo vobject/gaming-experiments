@@ -38,15 +38,15 @@ void Player::Update(
    }
 }
 
-void Player::SetOpponent(const std::shared_ptr<Player>& opponent)
-{
-   mOpponent = opponent;
-}
+//void Player::SetOpponent(const std::shared_ptr<Player>& opponent)
+//{
+//   mOpponent = opponent;
+//}
 
-std::shared_ptr<Player> Player::GetOpponent() const
-{
-   return mOpponent;
-}
+//std::shared_ptr<Player> Player::GetOpponent() const
+//{
+//   return mOpponent;
+//}
 
 void Player::IncreaseScore()
 {

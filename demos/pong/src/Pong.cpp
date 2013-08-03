@@ -78,18 +78,12 @@ void Pong::Initialize()
         mConsole->RegisterCommand(cmd.first, cmd.second);
     }
 
-    mInputs = {
-        std::make_shared<Input>(SDLK_w, SDLK_s),
-        std::make_shared<Input>(SDLK_UP, SDLK_DOWN)
-    };
-
-    mGame.reset(new Game());
-    mGame->SetField(std::make_shared<Field>(0.05f, 0.2f, 0.9f, 0.75f));
-    mGame->SetPlayer1(std::make_shared<Player>("Player_1", *mInputs.at(0), .2f, .5f, .03f, .15f));
-    mGame->SetPlayer2(std::make_shared<Player>("Player_2", *mInputs.at(1), .8f, .5f, .03f, .15f));
-    mGame->SetPlayer1Goal(std::make_shared<Goal>(0.045f, 0.2f, 0.01f, 0.75));
-    mGame->SetPlayer2Goal(std::make_shared<Goal>(0.945f, 0.2f, 0.01f, 0.75));
-
+    mConsole->ExecuteCommand("input", { "1", "119", "115" }); // w, s
+    mConsole->ExecuteCommand("input", { "2", "273", "274" }); // up, down key
+    mConsole->ExecuteCommand("game");
+    mConsole->ExecuteCommand("field", { ".05f", ".2f", ".9f", ".75f" });
+    mConsole->ExecuteCommand("player", { "P1", "1", ".2f", ".5f", ".03f", ".15f" });
+    mConsole->ExecuteCommand("player", { "P2", "2", ".8f", ".5f", ".03f", ".15f" });
     mConsole->ExecuteCommand("ball", { ".3f", ".5f", ".025f", ".025f" });
     mConsole->ExecuteCommand("ball", { ".6f", ".4f", ".05f", ".05f" });
 }
@@ -131,12 +125,12 @@ void Pong::ProcessInput()
     {
     case SDL_KEYDOWN:
         for (auto& input : mInputs) {
-            input->Press(event.key.keysym.sym);
+            input.second->Press(event.key.keysym.sym);
         }
         break;
     case SDL_KEYUP:
         for (auto& input : mInputs) {
-            input->Release(event.key.keysym.sym);
+            input.second->Release(event.key.keysym.sym);
         }
         break;
     default:
@@ -163,31 +157,68 @@ void Pong::RenderScene()
 
 std::vector<std::pair<std::string, CmdCallbackWithArgs>> Pong::InitConsoleCommands()
 {
-    auto exit_cb = [this](Console& c,
-                          const std::string& val,
-                          const std::vector<std::string>& args) {
+    auto exit_cb = [this](Console& c, const std::string& val, const std::vector<std::string>& args) {
         mQuitRequested = true;
     };
 
-    auto close_cb = [this](Console& c,
-                           const std::string& val,
-                           const std::vector<std::string>& args) {
+    auto close_cb = [this](Console& c, const std::string& val, const std::vector<std::string>& args) {
         mConsole->ToggleVisible();
     };
 
-    auto help_cb = [this](Console& c,
-                          const std::string& val,
-                          const std::vector<std::string>& args){
+    auto help_cb = [this](Console& c, const std::string& val, const std::vector<std::string>& args){
         // print available commands
-        mConsole->Print("ball");
         mConsole->Print("close");
-        mConsole->Print("exit");
         mConsole->Print("help");
+        mConsole->Print("exit");
+        mConsole->Print("input");
+        mConsole->Print("game");
+        mConsole->Print("field");
+        mConsole->Print("player");
+        mConsole->Print("ball");
     };
 
-    auto ball_cb = [this](Console& c,
-                          const std::string& val,
-                          const std::vector<std::string>& args) {
+    auto input_cb = [this](Console& c, const std::string& val, const std::vector<std::string>& args) {
+        if (args.size() != 3) {
+            mConsole->Print("Command: input <id> <up> <down>");
+            return;
+        }
+        const int id = atoi(args[0].c_str());
+        const SDLKey up = static_cast<SDLKey>(atoi(args[1].c_str()));
+        const SDLKey down = static_cast<SDLKey>(atoi(args[2].c_str()));
+        mInputs[id] = std::make_shared<Input>(id, up, down);
+    };
+
+    auto game_cb = [this](Console& c, const std::string& val, const std::vector<std::string>& args) {
+        mGame.reset(new Game());
+    };
+
+    auto field_cb = [this](Console& c, const std::string& val, const std::vector<std::string>& args) {
+        if (args.size() != 4) {
+            mConsole->Print("Command: field <x> <y> <w> <h>");
+            return;
+        }
+        const float x = atof(args[0].c_str());
+        const float y = atof(args[1].c_str());
+        const float w = atof(args[2].c_str());
+        const float h = atof(args[3].c_str());
+        mGame->SetField(std::make_shared<Field>(x, y, w, h));
+    };
+
+    auto player_cb = [this](Console& c, const std::string& val, const std::vector<std::string>& args) {
+        if (args.size() != 6) {
+            mConsole->Print("Command: player <name> <input> <x> <y> <w> <h>");
+            return;
+        }
+        const std::string name = args[0];
+        const int input = atoi(args[1].c_str());
+        const float x = atof(args[2].c_str());
+        const float y = atof(args[3].c_str());
+        const float w = atof(args[4].c_str());
+        const float h = atof(args[5].c_str());
+        mGame->AddPlayer(std::make_shared<Player>(name, *mInputs[input], x, y, w, h));
+    };
+
+    auto ball_cb = [this](Console& c, const std::string& val, const std::vector<std::string>& args) {
         if (args.size() != 4) {
             mConsole->Print("Command: ball <x> <y> <w> <h>");
             return;
@@ -204,6 +235,11 @@ std::vector<std::pair<std::string, CmdCallbackWithArgs>> Pong::InitConsoleComman
         {"exit", exit_cb}
       , {"close", close_cb}
       , {"help", help_cb}
+
+      , {"input", input_cb}
+      , {"game", game_cb}
+      , {"field", field_cb}
+      , {"player", player_cb}
       , {"ball", ball_cb}
     };
 }

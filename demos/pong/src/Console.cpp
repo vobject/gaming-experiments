@@ -19,7 +19,6 @@ static std::map<ConsoleInformation*, Console*> gConsoleMap;
 
 static void ConsoleCmdHandler(ConsoleInformation* console, char* args)
 {
-    printf("args to unpack: %s\n", args); fflush(stdout);
     auto argsSplit = split_args(args);
     const auto cmd(argsSplit.front());
     argsSplit.erase(argsSplit.begin());

@@ -13,6 +13,7 @@ class Renderer;
 
 typedef std::function<void(Console&, const std::string&, const std::vector<std::string>&)> CmdCallbackWithArgs;
 
+// Works only when using an SDL-based renderer.
 class Console
 {
 public:

@@ -1,11 +1,13 @@
 #include "Input.hpp"
 
 Input::Input(
-   const SDLKey up_keycode,
-   const SDLKey down_keycode
+    const int id,
+    const SDLKey up_keycode,
+    const SDLKey down_keycode
 )
-   : mUpKey(up_keycode)
-   , mDownKey(down_keycode)
+    : mId(id)
+    , mUpKey(up_keycode)
+    , mDownKey(down_keycode)
 {
 
 }
@@ -15,36 +17,41 @@ Input::~Input()
 
 }
 
+int Input::GetId() const
+{
+    return mId;
+}
+
 void Input::Press(const SDLKey key)
 {
-   if (key == mUpKey)
-   {
-      mUpKeyPressed = true;
-   }
-   else if (key == mDownKey)
-   {
-      mDownKeyPressed = true;
-   }
+    if (key == mUpKey)
+    {
+        mUpKeyPressed = true;
+    }
+    else if (key == mDownKey)
+    {
+        mDownKeyPressed = true;
+    }
 }
 
 void Input::Release(const SDLKey key)
 {
-   if (key == mUpKey)
-   {
-      mUpKeyPressed = false;
-   }
-   else if (key == mDownKey)
-   {
-      mDownKeyPressed = false;
-   }
+    if (key == mUpKey)
+    {
+        mUpKeyPressed = false;
+    }
+    else if (key == mDownKey)
+    {
+        mDownKeyPressed = false;
+    }
 }
 
 bool Input::TestUp() const
 {
-   return mUpKeyPressed;
+    return mUpKeyPressed;
 }
 
 bool Input::TestDown() const
 {
-   return mDownKeyPressed;
+    return mDownKeyPressed;
 }

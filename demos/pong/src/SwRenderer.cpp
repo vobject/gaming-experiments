@@ -43,18 +43,20 @@ void SwRenderer::PreRender()
 
 void SwRenderer::DoRender(const Game& game)
 {
-   Draw(*game.GetField());
+    if (game.GetField()) {
+        Draw(*game.GetField());
+    }
 
-   Draw(*game.GetPlayer1());
-   Draw(*game.GetPlayer2());
+    for (auto&& obj : game.GetPlayers()) {
+        Draw(*obj);
+    }
 
-   Draw(*game.GetPlayer1Goal());
-   Draw(*game.GetPlayer2Goal());
+//    Draw(*game.GetPlayer1Goal());
+//    Draw(*game.GetPlayer2Goal());
 
-   const auto balls = game.GetBalls();
-   for (const auto& obj : balls) {
-      Draw(*obj);
-   }
+    for (auto&& obj : game.GetBalls()) {
+        Draw(*obj);
+    }
 }
 
 void SwRenderer::PostRender()

@@ -16,52 +16,65 @@ Game::~Game()
 
 void Game::Update(const int elapsed_time)
 {
-   mPlayer1->Update(elapsed_time, mField, mBalls);
-   mPlayer2->Update(elapsed_time, mField, mBalls);
+//    if (mPlayer1) {
+//        mPlayer1->Update(elapsed_time, mField, mBalls);
+//    }
+//    if (mPlayer2) {
+//        mPlayer2->Update(elapsed_time, mField, mBalls);
+//    }
 
-   for (auto& obj : mBalls) {
-      obj->Update(elapsed_time, mField);
-   }
+    for (auto& obj : mPlayers) {
+        obj->Update(elapsed_time, mField, mBalls);
+    }
+
+    for (auto& obj : mBalls) {
+        obj->Update(elapsed_time, mField);
+    }
 }
 
 void Game::SetField(std::shared_ptr<Field> field)
 {
-   mField = field;
+    mField = field;
 }
 
-void Game::SetPlayer1(std::shared_ptr<Player> player)
+void Game::AddPlayer(std::shared_ptr<Player> player)
 {
-   mPlayer1 = player;
-
-   if (mPlayer2)
-   {
-      mPlayer1->SetOpponent(mPlayer2);
-      mPlayer2->SetOpponent(mPlayer1);
-   }
+    mPlayers.push_back(player);
 }
 
-void Game::SetPlayer2(std::shared_ptr<Player> player)
-{
-   mPlayer2 = player;
+//void Game::SetPlayer1(std::shared_ptr<Player> player)
+//{
+//   mPlayer1 = player;
 
-   if (mPlayer1)
-   {
-      mPlayer2->SetOpponent(mPlayer1);
-      mPlayer1->SetOpponent(mPlayer2);
-   }
-}
+//   if (mPlayer2)
+//   {
+//      mPlayer1->SetOpponent(mPlayer2);
+//      mPlayer2->SetOpponent(mPlayer1);
+//   }
+//}
 
-void Game::SetPlayer1Goal(std::shared_ptr<Goal> goal)
-{
-   mPlayer1Goal = goal;
-   mPlayer1Goal->SetOwner(mPlayer1);
-}
+//void Game::SetPlayer2(std::shared_ptr<Player> player)
+//{
+//   mPlayer2 = player;
 
-void Game::SetPlayer2Goal(std::shared_ptr<Goal> goal)
-{
-   mPlayer2Goal = goal;
-   mPlayer2Goal->SetOwner(mPlayer2);
-}
+//   if (mPlayer1)
+//   {
+//      mPlayer2->SetOpponent(mPlayer1);
+//      mPlayer1->SetOpponent(mPlayer2);
+//   }
+//}
+
+//void Game::SetPlayer1Goal(std::shared_ptr<Goal> goal)
+//{
+//   mPlayer1Goal = goal;
+//   mPlayer1Goal->SetOwner(mPlayer1);
+//}
+
+//void Game::SetPlayer2Goal(std::shared_ptr<Goal> goal)
+//{
+//   mPlayer2Goal = goal;
+//   mPlayer2Goal->SetOwner(mPlayer2);
+//}
 
 void Game::AddBall(std::shared_ptr<Ball> ball)
 {
@@ -70,28 +83,33 @@ void Game::AddBall(std::shared_ptr<Ball> ball)
 
 std::shared_ptr<Field> Game::GetField() const
 {
-   return mField;
+    return mField;
 }
 
-std::shared_ptr<Player> Game::GetPlayer1() const
+std::vector<std::shared_ptr<Player>> Game::GetPlayers() const
 {
-   return mPlayer1;
+    return mPlayers;
 }
 
-std::shared_ptr<Player> Game::GetPlayer2() const
-{
-   return mPlayer2;
-}
+//std::shared_ptr<Player> Game::GetPlayer1() const
+//{
+//   return mPlayer1;
+//}
 
-std::shared_ptr<Goal> Game::GetPlayer1Goal() const
-{
-   return mPlayer1Goal;
-}
+//std::shared_ptr<Player> Game::GetPlayer2() const
+//{
+//   return mPlayer2;
+//}
 
-std::shared_ptr<Goal> Game::GetPlayer2Goal() const
-{
-   return mPlayer2Goal;
-}
+//std::shared_ptr<Goal> Game::GetPlayer1Goal() const
+//{
+//   return mPlayer1Goal;
+//}
+
+//std::shared_ptr<Goal> Game::GetPlayer2Goal() const
+//{
+//   return mPlayer2Goal;
+//}
 
 std::vector<std::shared_ptr<Ball>> Game::GetBalls() const
 {

@@ -1,4 +1,4 @@
-#ifdef WITH_OPENGL
+#ifdef WITH_OPENCL
 
 #include "ClRenderer.hpp"
 #include "Level.hpp"
@@ -269,4 +269,4 @@ void ClRenderer::DrawMinimap(const Level& level, const Player& player)
    }
 }
 
-#endif // WITH_OPENGL
+#endif // WITH_OPENCL

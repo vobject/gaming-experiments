@@ -66,9 +66,9 @@ void RcDemo::Initialize()
 
    mRenderers = {
       std::make_shared<SwRenderer>(res_x, res_y)
-#ifdef WITH_OPENGL
+#ifdef WITH_OPENCL
       , std::make_shared<ClRenderer>(res_x, res_y)
-#endif // WITH_OPENGL
+#endif // WITH_OPENCL
    };
    mActiveRenderer = 0;
 

@@ -52,7 +52,7 @@ Uint32 MainFrame::DefaultFrameTimerCallback(const Uint32 interval, void* param)
    obj->mFPS = (obj->mFrameCount / static_cast<float>(interval)) * obj->mFrameTimerUpdateRate;
    obj->mFrameCount = 0;
 
-   std::stringstream caption;
+   std::ostringstream caption;
    caption << obj->mAppName;
 #ifdef NDEBUG
    caption << " (Release) - ";

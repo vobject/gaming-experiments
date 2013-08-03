@@ -7,6 +7,10 @@
 #include <cmath>
 #include <cstdio>
 
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
 Player::Player(const Level& level, const Input& input)
    : mLevel(level)
    , mInput(input)

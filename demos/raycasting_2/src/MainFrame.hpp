@@ -8,7 +8,7 @@
 class MainFrame
 {
 public:
-   MainFrame(const std::string title);
+   MainFrame(const std::string appname);
    ~MainFrame();
 
    void UpdateDone();
@@ -17,9 +17,10 @@ public:
    void SetRendererName(const std::string& name);
 
 private:
-   static Uint32 DefaultFrameTimerCallback(Uint32 interval, void *param);
+   static Uint32 DefaultFrameTimerCallback(Uint32 interval, void* param);
 
-   std::string mTitle;
+   const std::string mAppName;
+   std::string mCaption;
    std::string mRenderer = "noname";
 
    const int mFrameTimerUpdateRate = 1000; // 1 second

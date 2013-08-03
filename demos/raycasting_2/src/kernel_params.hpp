@@ -1,6 +1,8 @@
 #ifndef KERNEL_PARAMS_HPP
 #define KERNEL_PARAMS_HPP
 
+#ifdef WITH_OPENCL
+
 #include <cstdint>
 
 namespace cl {
@@ -43,5 +45,7 @@ struct pixel
 };
 
 } // namespace cl
+
+#endif // WITH_OPENCL
 
 #endif // KERNEL_PARAMS_HPP

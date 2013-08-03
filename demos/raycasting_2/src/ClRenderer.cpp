@@ -1,3 +1,5 @@
+#ifdef WITH_OPENCL
+
 #include "ClRenderer.hpp"
 #include "ResourceCache.hpp"
 #include "Level.hpp"
@@ -328,3 +330,5 @@ void ClRenderer::DrawMinimap(const Level& level, const Player& player)
       wall_rect.y += cell_size_y;
    }
 }
+
+#endif // WITH_OPENCL

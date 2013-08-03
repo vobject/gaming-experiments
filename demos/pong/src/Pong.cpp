@@ -72,9 +72,10 @@ void Pong::Initialize()
    mMainFrame->SetRendererName(mRenderer->GetName());
 
    mConsole.reset(new Console("font.bmp", *mRenderer));
-   mConsole->RegisterCVar("exit", [this](Console& c, const std::string& val){ mQuitRequested = true; });
-   mConsole->RegisterCVar("close", [this](Console& c, const std::string& val){ mConsole->ToggleVisible(); });
-   mConsole->RegisterCVar("help", [this](Console& c, const std::string& val){ mConsole->Print("Help yourself!"); });
+   mConsole->RegisterCommand("exit", [this](Console& c, const std::string& val){ mQuitRequested = true; });
+   mConsole->RegisterCommand("close", [this](Console& c, const std::string& val){ mConsole->ToggleVisible(); });
+   mConsole->RegisterCommand("help", [this](Console& c, const std::string& val){ mConsole->Print("Help yourself!"); });
+   mConsole->RegisterCommand("ball", [this](Console& c, const std::string& val){ mGame->AddBall(std::make_shared<Ball>(0.6f, 0.4f, 0.05f, 0.05f)); });
 
    mInputs = {
       std::make_shared<Input>(SDLK_w, SDLK_s),
@@ -87,8 +88,8 @@ void Pong::Initialize()
    mGame->SetPlayer2(std::make_shared<Player>("Player_2", *mInputs.at(1), .8f, .5f, .03f, .15f));
    mGame->SetPlayer1Goal(std::make_shared<Goal>(0.045f, 0.2f, 0.01f, 0.75));
    mGame->SetPlayer2Goal(std::make_shared<Goal>(0.945f, 0.2f, 0.01f, 0.75));
-   mGame->AddBall(std::make_shared<Ball>(0.3f, 0.5f, 0.025f, 0.025f));
-   mGame->AddBall(std::make_shared<Ball>(0.6f, 0.4f, 0.05f, 0.05f));
+//   mGame->AddBall(std::make_shared<Ball>(0.3f, 0.5f, 0.025f, 0.025f));
+//   mGame->AddBall(std::make_shared<Ball>(0.6f, 0.4f, 0.05f, 0.05f));
 }
 
 void Pong::ProcessInput()

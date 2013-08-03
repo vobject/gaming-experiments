@@ -108,8 +108,10 @@ void Slice::Draw(Ray ray, Vector pos, Vector dir, const Level& level, const Reso
       const double cur_dist = mSurface->h / (2. * y - mSurface->h);
       const double weight = (cur_dist - dist_player) / (dist_wall - dist_player);
 
-      const double cur_floor_x = weight * floor_x_wall + (1.0 - weight) * pos.GetX();
-      const double cur_floor_y = weight * floor_y_wall + (1.0 - weight) * pos.GetY();
+      double cur_floor_x = weight * floor_x_wall + (1.0 - weight) * pos.GetX();
+      double cur_floor_y = weight * floor_y_wall + (1.0 - weight) * pos.GetY();
+      if (cur_floor_x < 0.) { cur_floor_x = 0.; }
+      if (cur_floor_y < 0.) { cur_floor_y = 0.; }
 
       const int floor_tex_x = int(cur_floor_x * floor_tex->w / 4) % floor_tex->w;
       const int floor_tex_y = int(cur_floor_y * floor_tex->h / 4) % floor_tex->h;

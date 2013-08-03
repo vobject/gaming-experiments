@@ -9,6 +9,7 @@ IF(NOT CMAKE_BUILD_TYPE)
     SET(CMAKE_BUILD_TYPE "Debug")
 ENDIF()
 
+OPTION(WITH_MTSWRENDERER "Enable multi-threaded software renderer." ON)
 OPTION(WITH_OPENCL "Enable OpenCL option for rendering." OFF)
 
 ADD_DEFINITIONS(-Wall)
@@ -31,12 +32,17 @@ IF(MINGW)
     MESSAGE("Set SDLDIR to: " "$ENV{MINGW_HOME}")
 
     FILE(COPY "$ENV{MINGW_HOME}/bin/SDL.dll" DESTINATION "${CMAKE_BINARY_DIR}")
+    FILE(COPY "$ENV{MINGW_HOME}/bin/SDL_image.dll" DESTINATION "${CMAKE_BINARY_DIR}")
+    FILE(COPY "$ENV{MINGW_HOME}/bin/libSDL_gfx-13.dll" DESTINATION "${CMAKE_BINARY_DIR}")
+    FILE(COPY "$ENV{MINGW_HOME}/bin/libjpeg-9.dll" DESTINATION "${CMAKE_BINARY_DIR}")
+    FILE(COPY "$ENV{MINGW_HOME}/bin/libpng16-16.dll" DESTINATION "${CMAKE_BINARY_DIR}")
+    FILE(COPY "$ENV{MINGW_HOME}/bin/zlib1.dll" DESTINATION "${CMAKE_BINARY_DIR}")
 
     # let the exe not have dependencies on external compiler DLLs.
     SET(CMAKE_EXE_LINKER_FLAGS "-static")
-ELSE()
-    # disable glext prototypes under Linux.
-    ADD_DEFINITIONS(-DGL_GLEXT_PROTOTYPES)
+
+    # stupid MinGW does not support C++11 std::thread atm.
+    SET(WITH_MTSWRENDERER OFF)
 ENDIF()
 
 FIND_PACKAGE(SDL REQUIRED)
@@ -63,6 +69,13 @@ IF(WITH_OPENCL)
 ELSE()
     MESSAGE(STATUS "Not using OpenCL.")
 ENDIF()
+
+IF(WITH_MTSWRENDERER)
+    ADD_DEFINITIONS(-DWITH_MTSWRENDERER)
+ENDIF()
+
+# copy resource dir into build folder
+FILE(COPY "res" DESTINATION "${CMAKE_BINARY_DIR}")
 
 ADD_EXECUTABLE(${PROJECT_NAME} ${PRJ_HDR} ${PRJ_SRC} ${PRJ_OCL})
 

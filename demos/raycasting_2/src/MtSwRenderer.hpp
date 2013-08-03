@@ -1,6 +1,10 @@
 #ifndef SW_RENDERER_HPP
 #define SW_RENDERER_HPP
 
+#ifdef WITH_MTSWRENDERER
+
+TODO
+
 #include "Renderer.hpp"
 
 #include <memory>
@@ -14,7 +18,7 @@ class ResourceCache;
 class SwRenderer : public Renderer
 {
 public:
-   SwRenderer(int res_x, int res_y);
+   SwRenderer(int res_x, int res_y, int threads);
    virtual ~SwRenderer();
 
    void PreRender() override;
@@ -30,10 +34,13 @@ private:
 
    const int mResX;
    const int mResY;
+   const int mThreadCnt;
    SDL_Surface* mScreen = nullptr;
 
    // Must be initialized after the video system has been set up.
    std::unique_ptr<const ResourceCache> mResCache;
 };
+
+#endif // WITH_MTSWRENDERER
 
 #endif // SW_RENDERER_HPP

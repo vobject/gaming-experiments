@@ -1,3 +1,7 @@
+#ifdef WITH_MTSWRENDERER
+
+TODO
+
 #include "SwRenderer.hpp"
 #include "ResourceCache.hpp"
 #include "Level.hpp"
@@ -9,6 +13,7 @@
 #include <SDL.h>
 #include <SDL_image.h>
 
+#include <thread>
 #include <sstream>
 #include <cmath>
 
@@ -35,9 +40,10 @@ void render_thread(const Level& level, const Player& player, const ResourceCache
    }
 }
 
-SwRenderer::SwRenderer(const int res_x, const int res_y)
+SwRenderer::SwRenderer(const int res_x, const int res_y, const int threads)
    : mResX(res_x)
    , mResY(res_y)
+   , mThreadCnt(threads)
 {
    if (0 > SDL_Init(SDL_INIT_VIDEO)) {
       throw "Cannot init SDL video subsystem.";
@@ -80,7 +86,9 @@ void SwRenderer::PostRender()
 
 std::string SwRenderer::GetName() const
 {
-   return "Software";
+   std::stringstream os;
+   os << "MT Software(threads:" << mThreadCnt << ")";
+   return os.str();
 }
 
 void SwRenderer::DrawSky(const Player& player)
@@ -117,59 +125,35 @@ void SwRenderer::DrawSky(const Player& player)
 
 void SwRenderer::DrawPlayerView(const Level& level, const Player& player)
 {
-    const Vector player_pos = player.GetPosition();
-    const Vector player_dir = player.GetDirection();
-    const Vector player_plane = player.GetPlane();
+   const int thread_slice = mResX / mThreadCnt;
+   std::vector<std::thread> threads(mThreadCnt);
 
-    for (auto x = 0; x < mResX; x++)
-    {
-       // Current column position relative to the center of the screen.
-       // Left edge is -1, right edge is 1, and center is 0.
-       const double cam_x = 2. * x / mScreen->w - 1;
+   if (SDL_MUSTLOCK(mScreen)) {
+      // Scene rendering will only be done via pixel manipulation.
+      SDL_LockSurface(mScreen);
+   }
 
-       // Starting direction of the current ray to be cast.
-       const auto ray_dir = player_dir + (player_plane * cam_x);
+   for (int i = 0; i < mThreadCnt; i++)
+   {
+      const auto slice_start = i * thread_slice;
+      const auto slice_stop = slice_start + thread_slice;
 
-       const Ray ray(player_pos, ray_dir, level);
+      threads[i] = std::thread{render_thread,
+                               std::ref(level),
+                               std::ref(player),
+                               std::ref(*mResCache),
+                               slice_start, slice_stop,
+                               mScreen};
+   }
 
-       Slice slice (mScreen, x);
-       slice.Draw(ray, player_pos, ray_dir, level, *mResCache);
-    }
+   for (auto& t : threads)
+   {
+      t .join();
+   }
 
-
-
-
-
-
-//   const int thread_slice = mResX / mThreadCnt;
-//   std::vector<std::thread> threads(mThreadCnt);
-
-//   if (SDL_MUSTLOCK(mScreen)) {
-//      // Scene rendering will only be done via pixel manipulation.
-//      SDL_LockSurface(mScreen);
-//   }
-
-//   for (int i = 0; i < mThreadCnt; i++)
-//   {
-//      const auto slice_start = i * thread_slice;
-//      const auto slice_stop = slice_start + thread_slice;
-
-//      threads[i] = std::thread{render_thread,
-//                               std::ref(level),
-//                               std::ref(player),
-//                               std::ref(*mResCache),
-//                               slice_start, slice_stop,
-//                               mScreen};
-//   }
-
-//   for (auto& t : threads)
-//   {
-//      t .join();
-//   }
-
-//   if (SDL_MUSTLOCK(mScreen)) {
-//      SDL_UnlockSurface(mScreen);
-//   }
+   if (SDL_MUSTLOCK(mScreen)) {
+      SDL_UnlockSurface(mScreen);
+   }
 }
 
 void SwRenderer::DrawMinimap(const Level& level, const Player& player)
@@ -218,3 +202,5 @@ void SwRenderer::DrawMinimap(const Level& level, const Player& player)
       wall_rect.y += cell_size_y;
    }
 }
+
+#endif // WITH_MTSWRENDERER

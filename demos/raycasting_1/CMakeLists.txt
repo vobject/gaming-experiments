@@ -32,9 +32,6 @@ IF(MINGW)
 
     # let the exe not have dependencies on external compiler DLLs.
     SET(CMAKE_EXE_LINKER_FLAGS "-static")
-ELSE()
-    # disable glext prototypes under Linux.
-    ADD_DEFINITIONS(-DGL_GLEXT_PROTOTYPES)
 ENDIF()
 
 FIND_PACKAGE(SDL REQUIRED)

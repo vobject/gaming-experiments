@@ -4,6 +4,7 @@
 #include "Input.hpp"
 #include "Player.hpp"
 #include "SwRenderer.hpp"
+#include "MtSwRenderer.hpp"
 #include "ClRenderer.hpp"
 
 #include <SDL.h>
@@ -62,7 +63,7 @@ void RcDemo::Mainloop()
 
 void RcDemo::Initialize()
 {
-   mRenderer = std::make_shared<SwRenderer>(mResX, mResY, 1);
+   mRenderer = std::make_shared<SwRenderer>(mResX, mResY);
    mMainFrame = std::make_shared<MainFrame>("RayCasting_2");
    mMainFrame->SetRendererName(mRenderer->GetName());
 
@@ -92,19 +93,24 @@ void RcDemo::ProcessInput()
    if ((SDL_KEYDOWN == event.type) && (event.key.keysym.mod & KMOD_LCTRL))
    {
       if (SDLK_1 == event.key.keysym.sym) {
-         mRenderer = std::make_shared<SwRenderer>(mResX, mResY, 1);
+         mRenderer = std::make_shared<SwRenderer>(mResX, mResY);
          mMainFrame->SetRendererName(mRenderer->GetName());
       }
+
+#ifdef WITH_MTSWRENDERER
       else if (SDLK_2 == event.key.keysym.sym) {
-         mRenderer = std::make_shared<SwRenderer>(mResX, mResY, sysconf(_SC_NPROCESSORS_ONLN));
+         mRenderer = std::make_shared<MtSwRenderer>(mResX, mResY, sysconf(_SC_NPROCESSORS_ONLN));
          mMainFrame->SetRendererName(mRenderer->GetName());
       }
+#endif // WITH_MTSWRENDERER
+
 #ifdef WITH_OPENCL
       else if (SDLK_3 == event.key.keysym.sym) {
          mRenderer = std::make_shared<ClRenderer>(mResX, mResY);
          mMainFrame->SetRendererName(mRenderer->GetName());
       }
 #endif // WITH_OPENCL
+
       return;
    }
 

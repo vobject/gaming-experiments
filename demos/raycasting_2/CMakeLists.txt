@@ -10,7 +10,7 @@ IF(NOT CMAKE_BUILD_TYPE)
 ENDIF()
 
 OPTION(WITH_MTSWRENDERER "Enable multi-threaded software renderer." ON)
-OPTION(WITH_OPENCL "Enable OpenCL option for rendering." OFF)
+OPTION(WITH_OPENCL "Enable OpenCL option for rendering." ON)
 
 ADD_DEFINITIONS(-Wall)
 SET(CMAKE_CXX_FLAGS "-std=c++11")
@@ -43,6 +43,9 @@ IF(MINGW)
 
     # stupid MinGW does not support C++11 std::thread atm.
     SET(WITH_MTSWRENDERER OFF)
+
+    # currently no OpenCL bindings for MinGW
+    SET(WITH_OPENCL OFF)
 ENDIF()
 
 FIND_PACKAGE(SDL REQUIRED)
@@ -62,7 +65,7 @@ FILE(GLOB PRJ_OCL cl/kernel.cl)
 IF(WITH_OPENCL)
     MESSAGE(STATUS "Using OpenCL.")
 
-    FILE(COPY "$PRJ_OCL}" DESTINATION "${CMAKE_BINARY_DIR}")
+    FILE(COPY "${PRJ_OCL}" DESTINATION "${CMAKE_BINARY_DIR}")
 
     ADD_DEFINITIONS(-DWITH_OPENCL)
     SET(EXTRA_LIBS ${EXTRA_LIBS} OpenCL)

@@ -86,7 +86,7 @@ void ClRenderer::DoRender(const Level& level, const Player& player)
       SDL_UnlockSurface(mScreen);
    }
 
-   //DrawMinimap(level, player);
+   DrawMinimap(level, player);
 }
 
 void ClRenderer::PostRender()

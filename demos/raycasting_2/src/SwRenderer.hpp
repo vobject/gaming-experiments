@@ -23,10 +23,10 @@ public:
 
    std::string GetName() const override;
 
-private:
-   void DrawSky(const Player& player);
-   void DrawPlayerView(const Level& level, const Player& player);
-   void DrawMinimap(const Level& level, const Player& player);
+protected:
+   virtual void DrawSky(const Player& player);
+   virtual void DrawPlayerView(const Level& level, const Player& player);
+   virtual void DrawMinimap(const Level& level, const Player& player);
 
    const int mResX;
    const int mResY;

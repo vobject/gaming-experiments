@@ -141,7 +141,7 @@ void ClRenderer::InitOpenCl()
       throw "clCreateCommandQueue() failed.";
    }
 
-   const auto cl_path = "ocl/kernel.cl";
+   const auto cl_path = "kernel.cl";
    std::ifstream cl_file(cl_path, std::ios::binary);
    std::vector<char> cl_data((std::istreambuf_iterator<char>(cl_file)), std::istreambuf_iterator<char>());
    cl_data.push_back('\0');

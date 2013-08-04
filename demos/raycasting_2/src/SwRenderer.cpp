@@ -12,29 +12,6 @@
 #include <sstream>
 #include <cmath>
 
-void render_thread(const Level& level, const Player& player, const ResourceCache& res,
-                   int resx_start, int resx_stop, SDL_Surface* screen)
-{
-   const Vector player_pos = player.GetPosition();
-   const Vector player_dir = player.GetDirection();
-   const Vector player_plane = player.GetPlane();
-
-   for (auto x = resx_start; x < resx_stop; x++)
-   {
-      // Current column position relative to the center of the screen.
-      // Left edge is -1, right edge is 1, and center is 0.
-      const double cam_x = 2. * x / screen->w - 1;
-
-      // Starting direction of the current ray to be cast.
-      const auto ray_dir = player_dir + (player_plane * cam_x);
-
-      const Ray ray(player_pos, ray_dir, level);
-
-      Slice slice (screen, x);
-      slice.Draw(ray, player_pos, ray_dir, level, res);
-   }
-}
-
 SwRenderer::SwRenderer(const int res_x, const int res_y)
    : mResX(res_x)
    , mResY(res_y)
@@ -135,41 +112,6 @@ void SwRenderer::DrawPlayerView(const Level& level, const Player& player)
        Slice slice (mScreen, x);
        slice.Draw(ray, player_pos, ray_dir, level, *mResCache);
     }
-
-
-
-
-
-
-//   const int thread_slice = mResX / mThreadCnt;
-//   std::vector<std::thread> threads(mThreadCnt);
-
-//   if (SDL_MUSTLOCK(mScreen)) {
-//      // Scene rendering will only be done via pixel manipulation.
-//      SDL_LockSurface(mScreen);
-//   }
-
-//   for (int i = 0; i < mThreadCnt; i++)
-//   {
-//      const auto slice_start = i * thread_slice;
-//      const auto slice_stop = slice_start + thread_slice;
-
-//      threads[i] = std::thread{render_thread,
-//                               std::ref(level),
-//                               std::ref(player),
-//                               std::ref(*mResCache),
-//                               slice_start, slice_stop,
-//                               mScreen};
-//   }
-
-//   for (auto& t : threads)
-//   {
-//      t .join();
-//   }
-
-//   if (SDL_MUSTLOCK(mScreen)) {
-//      SDL_UnlockSurface(mScreen);
-//   }
 }
 
 void SwRenderer::DrawMinimap(const Level& level, const Player& player)

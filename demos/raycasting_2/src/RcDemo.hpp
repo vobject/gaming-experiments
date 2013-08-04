@@ -10,13 +10,6 @@ class Input;
 class Player;
 class Renderer;
 
-enum class VideoMode
-{
-   Software,
-   SoftwareMT,
-   OpenCL
-};
-
 class RcDemo
 {
 public:

@@ -12,19 +12,36 @@
 #include <iostream>
 #include <cstdint>
 
-ClRenderer::ClRenderer(const int res_x, const int res_y)
-   : mResX(res_x)
-   , mResY(res_y)
+ClRenderer::ClRenderer(const std::string& app_name, const int res_x, const int res_y)
+    : Renderer(app_name)
+    , mResX(res_x)
+    , mResY(res_y)
 {
-   if (0 > SDL_Init(SDL_INIT_VIDEO)) {
-      throw "Cannot init SDL video subsystem.";
-   }
-   atexit(SDL_Quit);
+    mScreen = SDL_CreateWindow(app_name.c_str(),
+                               SDL_WINDOWPOS_UNDEFINED,
+                               SDL_WINDOWPOS_UNDEFINED,
+                               mResX, mResY, SDL_WINDOW_RESIZABLE);
+    if (!mScreen) {
+        throw "SDL_CreateWindow() failed.";
+    }
 
-   mScreen = SDL_SetVideoMode(mResX, mResY, 32, SDL_SWSURFACE | SDL_DOUBLEBUF);
-   if (!mScreen) {
-      throw "SDL_SetVideoMode() failed.";
-   }
+    mRenderer = SDL_CreateRenderer(mScreen, -1, 0);
+    if (!mRenderer) {
+        throw "SDL_CreateRenderer() failed.";
+    }
+
+    mTexture = SDL_CreateTexture(mRenderer,
+                                 SDL_PIXELFORMAT_ARGB8888,
+                                 SDL_TEXTUREACCESS_STREAMING,
+                                 mResX, mResY);
+    if (!mTexture) {
+        throw "SDL_CreateTexture() failed.";
+    }
+
+    mSurface = SDL_CreateRGBSurface(0, mResX, mResY, 32, 0, 0, 0, 0);
+    if (!mSurface) {
+        throw "SDL_CreateRGBSurface() failed.";
+    }
 
    // The SDL screen must be successfully initialized before we call this.
    InitOpenCl();
@@ -32,13 +49,17 @@ ClRenderer::ClRenderer(const int res_x, const int res_y)
 
 ClRenderer::~ClRenderer()
 {
-   ShutdownOpenCl();
+    ShutdownOpenCl();
+
+    SDL_FreeSurface(mSurface);
+    SDL_DestroyTexture(mTexture);
+    SDL_DestroyRenderer(mRenderer);
+    SDL_DestroyWindow(mScreen);
 }
 
 void ClRenderer::PreRender()
 {
-   // Screen size might have changed.
-   mScreen = SDL_GetVideoSurface();
+
 }
 
 void ClRenderer::DoRender(const Level& level, const Player& player)
@@ -72,18 +93,18 @@ void ClRenderer::DoRender(const Level& level, const Player& player)
       throw "clEnqueueNDRangeKernel() failed.";
    }
 
-   if(SDL_MUSTLOCK(mScreen)) {
-      SDL_LockSurface(mScreen);
+   if(SDL_MUSTLOCK(mSurface)) {
+      SDL_LockSurface(mSurface);
    }
 
    rc = clEnqueueReadBuffer(mQueue, mPixelBuf, CL_TRUE, 0, mPixelBufSize,
-                            mScreen->pixels, 0, nullptr, nullptr);
+                            mSurface->pixels, 0, nullptr, nullptr);
    if (CL_SUCCESS != rc) {
       throw "clEnqueueReadBuffer() failed.";
    }
 
-   if(SDL_MUSTLOCK(mScreen)) {
-      SDL_UnlockSurface(mScreen);
+   if(SDL_MUSTLOCK(mSurface)) {
+      SDL_UnlockSurface(mSurface);
    }
 
    DrawMinimap(level, player);
@@ -91,12 +112,15 @@ void ClRenderer::DoRender(const Level& level, const Player& player)
 
 void ClRenderer::PostRender()
 {
-   SDL_Flip(mScreen);
-}
+    SDL_UpdateTexture(mTexture, nullptr, mSurface->pixels, mResX * sizeof(Uint32));
+    SDL_RenderCopy(mRenderer, mTexture, nullptr, nullptr);
+    SDL_RenderPresent(mRenderer);
 
-std::string ClRenderer::GetName() const
-{
-   return "OpenCL";
+    mFrameCount++;
+    if (mRefreshCaption) {
+        SDL_SetWindowTitle(mScreen, mCaption.c_str());
+        mRefreshCaption = false;
+    }
 }
 
 void ClRenderer::InitOpenCl()
@@ -160,7 +184,7 @@ void ClRenderer::InitOpenCl()
       throw "clCreateKernel(\"rc_1\") failed.";
    }
 
-   mPixelBufSize = mResX * mResY * mScreen->format->BytesPerPixel;
+   mPixelBufSize = mResX * mResY * mSurface->format->BytesPerPixel;
    mPixelBuf = clCreateBuffer(mContext, CL_MEM_WRITE_ONLY, mPixelBufSize, nullptr, &rc);
    if (CL_SUCCESS != rc) {
       throw "clCreateBuffer() failed.";
@@ -169,12 +193,12 @@ void ClRenderer::InitOpenCl()
 
 void ClRenderer::ShutdownOpenCl()
 {
-   clReleaseMemObject(mLevelBuf);
-   clReleaseMemObject(mPixelBuf);
-   clReleaseKernel(mKernel);
-   clReleaseProgram(mProgram);
-   clReleaseCommandQueue(mQueue);
-   clReleaseContext(mContext);
+    clReleaseMemObject(mLevelBuf);
+    clReleaseMemObject(mPixelBuf);
+    clReleaseKernel(mKernel);
+    clReleaseProgram(mProgram);
+    clReleaseCommandQueue(mQueue);
+    clReleaseContext(mContext);
 }
 
 void ClRenderer::InitLevelBuffer(const Level& level)
@@ -233,13 +257,13 @@ void ClRenderer::DrawMinimap(const Level& level, const Player& player)
    const Sint16 pos_x = mResX - map_size_x;
    const Sint16 pos_y = mResY - map_size_y;
 
-   const auto color_floor = SDL_MapRGB(mScreen->format, 0xff, 0xff, 0xff);
-   const auto color_wall = SDL_MapRGB(mScreen->format, 0x5f, 0x5f, 0x5f);
-   const auto color_player = SDL_MapRGB(mScreen->format, 0xff, 0x1f, 0x1f);
+   const auto color_floor = SDL_MapRGB(mSurface->format, 0xff, 0xff, 0xff);
+   const auto color_wall = SDL_MapRGB(mSurface->format, 0x5f, 0x5f, 0x5f);
+   const auto color_player = SDL_MapRGB(mSurface->format, 0xff, 0x1f, 0x1f);
 
    // Draw the minimap area.
    SDL_Rect map_rect = { pos_x, pos_y, map_size_x, map_size_y };
-   SDL_FillRect(mScreen, &map_rect, color_floor);
+   SDL_FillRect(mSurface, &map_rect, color_floor);
 
    // Draw the individual walls to the minimap.
    SDL_Rect wall_rect = { map_rect.x, map_rect.y, cell_size_x, cell_size_y };
@@ -253,13 +277,13 @@ void ClRenderer::DrawMinimap(const Level& level, const Player& player)
          if (level.mGrid[cell_y][cell_x] != 0)
          {
             //Draw only cells of wall type.
-            SDL_FillRect(mScreen, &wall_rect, color_wall);
+            SDL_FillRect(mSurface, &wall_rect, color_wall);
          }
 
          if ((cell_y == player_cell_y) && (cell_x == player_cell_x))
          {
             //Draw player to minimap.
-            SDL_FillRect(mScreen, &wall_rect, color_player);
+            SDL_FillRect(mSurface, &wall_rect, color_player);
          }
 
          wall_rect.x += cell_size_x;

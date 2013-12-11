@@ -1,43 +1,43 @@
 #ifndef INPUT_HPP
 #define INPUT_HPP
 
-#include <SDL_keysym.h>
+#include <SDL_keycode.h>
 
 class Input
 {
 public:
-   Input(SDLKey up_keycode,
-         SDLKey down_keycode,
-         SDLKey left_keycode,
-         SDLKey right_keycode,
-         SDLKey action1_keycode,
-         SDLKey action2_keycode);
-   ~Input();
+    Input(SDL_Keycode up_keycode,
+          SDL_Keycode down_keycode,
+          SDL_Keycode left_keycode,
+          SDL_Keycode right_keycode,
+          SDL_Keycode action1_keycode,
+          SDL_Keycode action2_keycode);
+    ~Input();
 
-   void Press(SDLKey key);
-   void Release(SDLKey key);
+    void Press(SDL_Keycode key);
+    void Release(SDL_Keycode key);
 
-   bool TestUp() const;
-   bool TestDown() const;
-   bool TestLeft() const;
-   bool TestRight() const;
-   bool TestAction1() const;
-   bool TestAction2() const;
+    bool TestUp() const;
+    bool TestDown() const;
+    bool TestLeft() const;
+    bool TestRight() const;
+    bool TestAction1() const;
+    bool TestAction2() const;
 
 private:
-   const int mUpKey;
-   const int mDownKey;
-   const int mLeftKey;
-   const int mRightKey;
-   const int mAction1Key;
-   const int mAction2Key;
+    const int mUpKey;
+    const int mDownKey;
+    const int mLeftKey;
+    const int mRightKey;
+    const int mAction1Key;
+    const int mAction2Key;
 
-   bool mUpKeyPressed = false;
-   bool mDownKeyPressed = false;
-   bool mLeftKeyPressed = false;
-   bool mRightKeyPressed = false;
-   bool mAction1KeyPressed = false;
-   bool mAction2KeyPressed = false;
+    bool mUpKeyPressed = false;
+    bool mDownKeyPressed = false;
+    bool mLeftKeyPressed = false;
+    bool mRightKeyPressed = false;
+    bool mAction1KeyPressed = false;
+    bool mAction2KeyPressed = false;
 };
 
 #endif // INPUT_HPP

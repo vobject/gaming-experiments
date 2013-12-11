@@ -6,25 +6,24 @@
 #include "Renderer.hpp"
 #include "kernel_params.hpp"
 
+#include <SDL.h>
+
 #include <CL/cl.h>
 
 #include <memory>
 
-struct SDL_Surface;
 class Level;
 class Player;
 
 class ClRenderer : public Renderer
 {
 public:
-   ClRenderer(int res_x, int res_y);
+   ClRenderer(const std::string& app_name, int res_x, int res_y);
    virtual ~ClRenderer();
 
    void PreRender() override;
    void DoRender(const Level& level, const Player& player) override;
    void PostRender() override;
-
-   std::string GetName() const override;
 
 private:
    void InitOpenCl();
@@ -40,7 +39,10 @@ private:
    // Screen variables
    const int mResX;
    const int mResY;
-   SDL_Surface* mScreen = nullptr;
+   SDL_Window* mScreen = nullptr;
+   SDL_Renderer* mRenderer = nullptr;
+   SDL_Texture* mTexture = nullptr;
+   SDL_Surface* mSurface = nullptr;
 
    // OpenCL variables
    cl_context mContext = nullptr;

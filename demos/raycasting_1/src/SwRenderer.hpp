@@ -3,22 +3,22 @@
 
 #include "Renderer.hpp"
 
-struct SDL_Color;
-struct SDL_Surface;
+#include <SDL.h>
+
+#include <vector>
+
 class Level;
 class Player;
 
 class SwRenderer : public Renderer
 {
 public:
-   SwRenderer(int res_x, int res_y);
+   SwRenderer(const std::string& app_name, int res_x, int res_y);
    virtual ~SwRenderer();
 
    void PreRender() override;
    void DoRender(const Level& level, const Player& player) override;
    void PostRender() override;
-
-   std::string GetName() const override;
 
 private:
    void DrawCeiling(SDL_Color color);
@@ -31,7 +31,10 @@ private:
 
    const int mResX;
    const int mResY;
-   SDL_Surface* mScreen = nullptr;
+   SDL_Window* mScreen = nullptr;
+   SDL_Renderer* mRenderer = nullptr;
+   SDL_Texture* mTexture = nullptr;
+   SDL_Surface* mSurface = nullptr;
 };
 
 #endif // SW_RENDERER_HPP

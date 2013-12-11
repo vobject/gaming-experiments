@@ -7,38 +7,22 @@ IF(NOT CMAKE_BUILD_TYPE)
     SET(CMAKE_BUILD_TYPE "Debug")
 ENDIF()
 
-OPTION(WITH_OPENCL "Enable OpenCL option for rendering." ON)
+OPTION(WITH_OPENCL "Enable OpenCL option for rendering." OFF)
 
 ADD_DEFINITIONS(-Wall)
 SET(CMAKE_CXX_FLAGS "-std=c++11")
 SET(CMAKE_CXX_FLAGS_DEBUG "-O0 -g3")
 
-IF(MINGW)
-#    # We need to know where MinGW is installed to find the headers and
-#    # libraries that are not out intside the repository.
-#    # Try to reading MINGW_HOME environment variable. Set it to C:/MinGW if that fails.
-#    IF(DEFINED ENV{MINGW_HOME})
-#        MESSAGE("Found MinGW installation folder under: " "$ENV{MINGW_HOME}")
-#    ELSE()
-#       SET(ENV{MINGW_HOME} "C:/MinGW")
-#       MESSAGE("Unable to find MinGW installation folder. Set default to: " "$ENV{MINGW_HOME}")
-#    ENDIF()
-
-#    # SDLDIR is used by the FIND_PACKAGE script.
-#    SET(ENV{SDLDIR} "$ENV{MINGW_HOME}") # must be an environment variable
-#    MESSAGE("Set SDLDIR to: " "$ENV{MINGW_HOME}")
-
-#    FILE(COPY "$ENV{MINGW_HOME}/bin/SDL.dll" DESTINATION "${CMAKE_BINARY_DIR}")
-
-#    # let the exe not have dependencies on external compiler DLLs.
-#    SET(CMAKE_EXE_LINKER_FLAGS "-static")
-
-#    # currently no OpenCL bindings for MinGW
-#    SET(WITH_OPENCL OFF)
+IF (WIN32)
+    SET(SDL2_INCLUDE_DIRS ${SDL2_INCLUDE_DIRS} ../../lib/SDL2-2.0.1/include)
+    
+    LINK_DIRECTORIES(../../lib/SDL2-2.0.1/lib/x86)
+    SET(SDL2_LIBRARIES ${SDL2_LIBRARIES} SDL2.lib)
+    FILE(COPY ../../lib/SDL2-2.0.1/lib/x86/SDL2.dll DESTINATION "${CMAKE_BINARY_DIR}")
+ELSE()
+    INCLUDE(FindPkgConfig)
+    PKG_SEARCH_MODULE(SDL2 REQUIRED sdl2)
 ENDIF()
-
-INCLUDE(FindPkgConfig)
-PKG_SEARCH_MODULE(SDL2 REQUIRED sdl2)
 
 INCLUDE_DIRECTORIES(
     ${SDL2_INCLUDE_DIRS}

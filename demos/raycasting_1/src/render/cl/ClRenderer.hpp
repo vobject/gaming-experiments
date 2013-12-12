@@ -3,7 +3,7 @@
 
 #ifdef WITH_OPENCL
 
-#include "Renderer.hpp"
+#include "../../Renderer.hpp"
 #include "kernel_params.hpp"
 
 #include <SDL.h>

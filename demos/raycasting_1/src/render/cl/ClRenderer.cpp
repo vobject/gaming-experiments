@@ -1,8 +1,8 @@
 #ifdef WITH_OPENCL
 
 #include "ClRenderer.hpp"
-#include "Level.hpp"
-#include "Player.hpp"
+#include "../../Level.hpp"
+#include "../../Player.hpp"
 
 #include <SDL.h>
 
@@ -46,8 +46,8 @@ void ClRenderer::Startup()
         throw "SDL_CreateRGBSurface() failed.";
     }
 
-   // The SDL screen must be successfully initialized before we call this.
-   InitOpenCl();
+    // The SDL screen must be successfully initialized before we call this.
+    InitOpenCl();
 }
 
 void ClRenderer::Shutdown()
@@ -192,7 +192,7 @@ void ClRenderer::InitOpenCl()
         throw "clCreateCommandQueue() failed.";
     }
 
-    const auto cl_path = "kernel.cl";
+    const auto cl_path = "cl_renderer.cl";
     std::ifstream cl_file(cl_path, std::ios::binary);
     std::vector<char> cl_data((std::istreambuf_iterator<char>(cl_file)), std::istreambuf_iterator<char>());
     cl_data.push_back('\0');

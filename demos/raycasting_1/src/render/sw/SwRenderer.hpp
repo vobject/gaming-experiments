@@ -1,7 +1,7 @@
 #ifndef SW_RENDERER_HPP
 #define SW_RENDERER_HPP
 
-#include "Renderer.hpp"
+#include "../../Renderer.hpp"
 
 #include <SDL.h>
 

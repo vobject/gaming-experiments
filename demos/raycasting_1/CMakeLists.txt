@@ -29,9 +29,15 @@ INCLUDE_DIRECTORIES(
     ${SDL2_INCLUDE_DIRS}
 )
 
-FILE(GLOB PRJ_HDR src/*.hpp)
-FILE(GLOB PRJ_SRC src/*.cpp)
-FILE(GLOB PRJ_OCL cl/kernel.cl)
+FILE(GLOB PRJ_HDR src/*.hpp
+                  src/render/cl/*.hpp
+                  src/render/sw/*.hpp)
+
+FILE(GLOB PRJ_SRC src/*.cpp
+                  src/render/cl/*.cpp
+                  src/render/sw/*.cpp)
+
+FILE(GLOB PRJ_OCL src/render/cl/cl_renderer.cl)
 
 IF(WITH_OPENCL)
     MESSAGE(STATUS "Using OpenCL.")

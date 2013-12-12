@@ -2,8 +2,8 @@
 #include "Level.hpp"
 #include "Input.hpp"
 #include "Player.hpp"
-#include "SwRenderer.hpp"
-#include "ClRenderer.hpp"
+#include "render/sw/SwRenderer.hpp"
+#include "render/cl/ClRenderer.hpp"
 
 #include <SDL.h>
 

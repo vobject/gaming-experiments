@@ -1,6 +1,6 @@
 #include "SwRenderer.hpp"
-#include "Level.hpp"
-#include "Player.hpp"
+#include "../../Level.hpp"
+#include "../../Player.hpp"
 
 #include <cmath>
 

@@ -5,36 +5,40 @@
 
 #include <SDL.h>
 
-#include <vector>
-
 class Level;
 class Player;
 
 class SwRenderer : public Renderer
 {
 public:
-   SwRenderer(const std::string& app_name, int res_x, int res_y);
-   virtual ~SwRenderer();
+    SwRenderer(int res_x, int res_y, const std::string& app_name);
+    virtual ~SwRenderer();
 
-   void PreRender() override;
-   void DoRender(const Level& level, const Player& player) override;
-   void PostRender() override;
+    void Startup() override;
+    void Shutdown() override;
+
+    void PreRender() override;
+    void PostRender() override;
+    void DoRender(const Level& level, const Player& player) override;
+
+    const std::string& GetName() const override;
 
 private:
-   void DrawCeiling(SDL_Color color);
-   void DrawFloor(SDL_Color color);
+    void InitMinimap(const Level& level);
 
-   void DrawPlayerView(const Level& level, const Player& player);
-   void DrawMinimap(const Level& level, const Player& player);
+    void DrawCeiling(SDL_Color color);
+    void DrawFloor(SDL_Color color);
+    void DrawPlayerView(const Level& level, const Player& player);
+    void DrawMinimap(const Level& level, const Player& player);
 
-   void DrawVerticalLine(int x, int y1, int y2, SDL_Color color);
+    void DrawVerticalLine(int x, int y1, int y2, SDL_Color color);
 
-   const int mResX;
-   const int mResY;
-   SDL_Window* mScreen = nullptr;
-   SDL_Renderer* mRenderer = nullptr;
-   SDL_Texture* mTexture = nullptr;
-   SDL_Surface* mSurface = nullptr;
+    SDL_Renderer* mRenderer = nullptr;
+    SDL_Texture* mTexture = nullptr;
+    SDL_Surface* mSurface = nullptr;
+
+    SDL_Texture* mMinimapTexture = nullptr;
+    SDL_Surface* mMinimapSurface = nullptr;
 };
 
 #endif // SW_RENDERER_HPP

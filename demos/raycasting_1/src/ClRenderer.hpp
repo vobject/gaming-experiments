@@ -10,51 +10,55 @@
 
 #include <CL/cl.h>
 
-#include <memory>
-
 class Level;
 class Player;
 
 class ClRenderer : public Renderer
 {
 public:
-   ClRenderer(const std::string& app_name, int res_x, int res_y);
-   virtual ~ClRenderer();
+    ClRenderer(int res_x, int res_y, const std::string& app_name);
+    virtual ~ClRenderer();
 
-   void PreRender() override;
-   void DoRender(const Level& level, const Player& player) override;
-   void PostRender() override;
+    void Startup() override;
+    void Shutdown() override;
+
+    void PreRender() override;
+    void PostRender() override;
+    void DoRender(const Level& level, const Player& player) override;
+
+    const std::string& GetName() const override;
 
 private:
-   void InitOpenCl();
-   void ShutdownOpenCl();
-   void InitLevelBuffer(const Level& level);
+    void InitOpenCl();
+    void ShutdownOpenCl();
+    void InitLevelBuffer(const Level& level);
 
-   cl::screen_params GetScreenKernelArg() const;
-   cl::player_params GetPlayerKernelArg(const Player& player) const;
-   cl::level_params GetLevelKernelArg(const Level& level) const;
+    cl::screen_params GetScreenKernelArg() const;
+    cl::player_params GetPlayerKernelArg(const Player& player) const;
+    cl::level_params GetLevelKernelArg(const Level& level) const;
 
-   void DrawMinimap(const Level& level, const Player& player);
+    void InitMinimap(const Level& level);
+    void DrawMinimap(const Level& level, const Player& player);
 
-   // Screen variables
-   const int mResX;
-   const int mResY;
-   SDL_Window* mScreen = nullptr;
-   SDL_Renderer* mRenderer = nullptr;
-   SDL_Texture* mTexture = nullptr;
-   SDL_Surface* mSurface = nullptr;
+    // Screen variables
+    SDL_Renderer* mRenderer = nullptr;
+    SDL_Texture* mTexture = nullptr;
+    SDL_Surface* mSurface = nullptr;
 
-   // OpenCL variables
-   cl_context mContext = nullptr;
-   cl_command_queue mQueue = nullptr;
-   cl_program mProgram = nullptr;
-   cl_kernel mKernel = nullptr;
+    SDL_Texture* mMinimapTexture = nullptr;
+    SDL_Surface* mMinimapSurface = nullptr;
 
-   cl_mem mPixelBuf = nullptr;
-   size_t mPixelBufSize = 0;
+    // OpenCL variables
+    cl_context mContext = nullptr;
+    cl_command_queue mQueue = nullptr;
+    cl_program mProgram = nullptr;
+    cl_kernel mKernel = nullptr;
 
-   cl_mem mLevelBuf = nullptr;
-   size_t mLevelBufSize = 0;
+    cl_mem mPixelBuf = nullptr;
+    size_t mPixelBufSize = 0;
+
+    cl_mem mLevelBuf = nullptr;
+    size_t mLevelBufSize = 0;
 };
 
 #endif // WITH_OPENCL

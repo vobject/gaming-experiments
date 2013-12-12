@@ -21,6 +21,8 @@ RcDemo::~RcDemo()
 
 void RcDemo::Start()
 {
+    atexit(SDL_Quit);
+
     Initialize();
     Mainloop();
 }
@@ -62,14 +64,9 @@ void RcDemo::Initialize()
 {
     const auto res_x = 640;
     const auto res_y = 480;
+    const auto app_name = "RayCasting_1";
 
-    mRenderers = {
-        std::make_shared<SwRenderer>("RayCasting_1", res_x, res_y)
-#ifdef WITH_OPENCL
-      , std::make_shared<ClRenderer>("RayCasting_1", res_x, res_y)
-#endif // WITH_OPENCL
-    };
-    mActiveRenderer = 0;
+    mRenderer = std::make_shared<SwRenderer>(res_x, res_y, app_name);
 
     mLevel = std::make_shared<Level>();
     mInput = std::make_shared<Input>(SDLK_UP, SDLK_DOWN,
@@ -96,9 +93,22 @@ void RcDemo::ProcessInput()
     // Handle application-level requests, e.g. switching of renderer.
     if ((SDL_KEYDOWN == event.type) && (event.key.keysym.mod & KMOD_LCTRL))
     {
-        if (SDLK_r == event.key.keysym.sym)
+        const auto res_x = mRenderer->GetResX();
+        const auto res_y = mRenderer->GetResY();
+        const auto app_name = mRenderer->GetAppName();
+
+        switch (event.key.keysym.sym)
         {
-            NextRenderer();
+            case SDLK_1:
+                mRenderer = std::make_shared<SwRenderer>(res_x, res_y, app_name);
+                break;
+#ifdef WITH_OPENCL
+            case SDLK_2:
+                mRenderer = std::make_shared<ClRenderer>(res_x, res_y, app_name);
+                break;
+#endif // WITH_OPENCL
+            default:
+                break;
         }
         return;
     }
@@ -125,15 +135,7 @@ void RcDemo::UpdateScene(const int app_time, const int elapsed_time)
 
 void RcDemo::RenderScene()
 {
-    mRenderers[mActiveRenderer]->PreRender();
-    mRenderers[mActiveRenderer]->DoRender(*mLevel, *mPlayer);
-    mRenderers[mActiveRenderer]->PostRender();
-}
-
-void RcDemo::NextRenderer()
-{
-    if (++mActiveRenderer >= mRenderers.size())
-    {
-        mActiveRenderer = 0;
-    }
+    mRenderer->PreRender();
+    mRenderer->DoRender(*mLevel, *mPlayer);
+    mRenderer->PostRender();
 }

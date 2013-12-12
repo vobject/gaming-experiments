@@ -12,60 +12,40 @@ class Player;
 class Renderer
 {
 public:
-    Renderer(const std::string& app_name) : mAppName(app_name), mCaption(app_name)
-    {
-        if (0 > SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER)) {
-            throw "Cannot init SDL video and timer subsystem.";
-        }
-        atexit(SDL_Quit);
+    Renderer(int res_x, int res_y, const std::string& app_name);
+    virtual ~Renderer();
 
-        mFrameTimer = SDL_AddTimer(1000, FrameTimerCB, this);
-        if (!mFrameTimer) {
-            throw "SDL_AddTimer() failed.";
-        }
-    }
+    int GetResX() const;
+    int GetResY() const;
+    std::string GetAppName() const;
 
-    virtual ~Renderer()
-    {
-        SDL_RemoveTimer(mFrameTimer);
-    }
+    virtual void Startup() = 0;
+    virtual void Shutdown() = 0;
 
     virtual void PreRender() = 0;
     virtual void PostRender() = 0;
     virtual void DoRender(const Level& level, const Player& player) = 0;
 
+    virtual const std::string& GetName() const = 0;
+    virtual const int& getFPS() const;
+
 protected:
+    const int mResX;
+    const int mResY;
     const std::string mAppName;
-    std::string mCaption;
-    int mFrameCount = 0;
-    bool mRefreshCaption = false;
+    SDL_Window* mScreen = nullptr;
 
 private:
-    static Uint32 FrameTimerCB(Uint32 interval, void* param)
-    {
-        Renderer* obj = static_cast<Renderer*>(param);
+    static Uint32 FrameTimerCB(Uint32 interval, void* param);
 
-        obj->mFPS = obj->mFrameCount;
-        obj->mFrameCount = 0;
-
-        std::ostringstream caption;
-        caption << obj->mAppName;
-#ifdef NDEBUG
-        caption << " (Release) - ";
-#else
-        caption << " (Debug) - ";
-#endif
-        caption << "render:Software - ";
-        caption << obj->mFPS << " FPS";
-
-        std::string captionStr(caption.str());
-        obj->mCaption.swap(captionStr);
-        obj->mRefreshCaption = true;
-        return interval;
-    }
-
+    std::string mCaption;
     SDL_TimerID mFrameTimer = 0;
+    int mFrameCount = 0;
+    bool mRefreshCaption = false;
     int mFPS = 0;
+
 };
 
 #endif // RENDERER_HPP
+
+

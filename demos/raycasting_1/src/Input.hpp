@@ -1,21 +1,21 @@
 #ifndef INPUT_HPP
 #define INPUT_HPP
 
-#include <SDL_keycode.h>
+#include <SDL_scancode.h>
 
 class Input
 {
 public:
-    Input(SDL_Keycode up_keycode,
-          SDL_Keycode down_keycode,
-          SDL_Keycode left_keycode,
-          SDL_Keycode right_keycode,
-          SDL_Keycode action1_keycode,
-          SDL_Keycode action2_keycode);
+    Input(SDL_Scancode up_keycode,
+          SDL_Scancode down_keycode,
+          SDL_Scancode left_keycode,
+          SDL_Scancode right_keycode,
+          SDL_Scancode action1_keycode,
+          SDL_Scancode action2_keycode);
     ~Input();
 
-    void Press(SDL_Keycode key);
-    void Release(SDL_Keycode key);
+    void Press(SDL_Scancode key);
+    void Release(SDL_Scancode key);
 
     bool TestUp() const;
     bool TestDown() const;

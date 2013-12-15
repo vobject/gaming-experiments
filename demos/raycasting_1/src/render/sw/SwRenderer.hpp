@@ -1,7 +1,7 @@
 #ifndef SW_RENDERER_HPP
 #define SW_RENDERER_HPP
 
-#include "../../Renderer.hpp"
+#include "../Renderer.hpp"
 
 #include <SDL.h>
 
@@ -26,12 +26,10 @@ public:
 private:
     void InitMinimap(const Level& level);
 
-    void DrawCeiling(SDL_Color color);
-    void DrawFloor(SDL_Color color);
     void DrawPlayerView(const Level& level, const Player& player);
     void DrawMinimap(const Level& level, const Player& player);
 
-    void DrawVerticalLine(int x, int y1, int y2, SDL_Color color);
+    void DrawVerticalLine(int x, int y1, int y2, Uint32 wall_color);
 
     SDL_Renderer* mRenderer = nullptr;
     SDL_Texture* mTexture = nullptr;

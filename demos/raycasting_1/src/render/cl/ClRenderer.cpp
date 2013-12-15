@@ -25,7 +25,6 @@ ClRenderer::~ClRenderer()
 
 void ClRenderer::Startup()
 {
-    Shutdown();
     Renderer::Startup();
 
     mRenderer = SDL_CreateRenderer(mScreen, -1, 0);

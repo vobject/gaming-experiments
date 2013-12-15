@@ -30,10 +30,12 @@ INCLUDE_DIRECTORIES(
 )
 
 FILE(GLOB PRJ_HDR src/*.hpp
+                  src/render/*.hpp
                   src/render/cl/*.hpp
                   src/render/sw/*.hpp)
 
 FILE(GLOB PRJ_SRC src/*.cpp
+                  src/render/*.cpp
                   src/render/cl/*.cpp
                   src/render/sw/*.cpp)
 

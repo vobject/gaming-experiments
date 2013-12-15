@@ -1,12 +1,12 @@
 #include "Input.hpp"
 
 Input::Input(
-    const SDL_Keycode up_keycode,
-    const SDL_Keycode down_keycode,
-    const SDL_Keycode left_keycode,
-    const SDL_Keycode right_keycode,
-    const SDL_Keycode action1_keycode,
-    const SDL_Keycode action2_keycode
+    const SDL_Scancode up_keycode,
+    const SDL_Scancode down_keycode,
+    const SDL_Scancode left_keycode,
+    const SDL_Scancode right_keycode,
+    const SDL_Scancode action1_keycode,
+    const SDL_Scancode action2_keycode
 )
     : mUpKey(up_keycode)
     , mDownKey(down_keycode)
@@ -23,7 +23,7 @@ Input::~Input()
 
 }
 
-void Input::Press(const SDL_Keycode key)
+void Input::Press(const SDL_Scancode key)
 {
     if (key == mUpKey)
     {
@@ -51,7 +51,7 @@ void Input::Press(const SDL_Keycode key)
     }
 }
 
-void Input::Release(const SDL_Keycode key)
+void Input::Release(const SDL_Scancode key)
 {
     if (key == mUpKey)
     {

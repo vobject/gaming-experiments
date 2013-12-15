@@ -69,9 +69,9 @@ void RcDemo::Initialize()
     mRenderer = std::make_shared<SwRenderer>(res_x, res_y, app_name);
 
     mLevel = std::make_shared<Level>();
-    mInput = std::make_shared<Input>(SDLK_UP, SDLK_DOWN,
-                                     SDLK_LEFT, SDLK_RIGHT,
-                                     SDLK_LCTRL, SDLK_SPACE);
+    mInput = std::make_shared<Input>(SDL_SCANCODE_W, SDL_SCANCODE_S,
+                                     SDL_SCANCODE_A, SDL_SCANCODE_D,
+                                     SDL_SCANCODE_E, SDL_SCANCODE_F);
 
     mPlayer = std::make_shared<Player>(*mLevel, *mInput);
 }
@@ -84,14 +84,14 @@ void RcDemo::ProcessInput()
         return;
     }
 
-    if(SDL_QUIT == event.type) {
+    if((event.type == SDL_QUIT) || ((event.type == SDL_KEYDOWN) && (event.key.keysym.scancode == SDL_SCANCODE_ESCAPE))) {
         // The user closed the window.
         mQuitRequested = true;
         return;
     }
 
     // Handle application-level requests, e.g. switching of renderer.
-    if ((SDL_KEYDOWN == event.type) && (event.key.keysym.mod & KMOD_LCTRL))
+    if ((event.type == SDL_KEYDOWN) && (event.key.keysym.mod & KMOD_LCTRL))
     {
         const auto res_x = mRenderer->GetResX();
         const auto res_y = mRenderer->GetResY();
@@ -116,10 +116,10 @@ void RcDemo::ProcessInput()
     switch (event.type)
     {
         case SDL_KEYDOWN:
-            mInput->Press(event.key.keysym.sym);
+            mInput->Press(event.key.keysym.scancode);
             break;
         case SDL_KEYUP:
-            mInput->Release(event.key.keysym.sym);
+            mInput->Release(event.key.keysym.scancode);
             break;
         default:
             break;

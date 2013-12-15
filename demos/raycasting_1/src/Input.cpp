@@ -79,6 +79,18 @@ void Input::Release(const SDL_Scancode key)
     }
 }
 
+void Input::MouseMotion(const int xrel, const int yrel)
+{
+    if (mOldMotionXRel == xrel) {
+        mMotionLeft = 0;
+        mMotionRight = 0;
+    } else {
+        mMotionLeft = xrel < 0;
+        mMotionRight = xrel > 0;
+        mOldMotionXRel = xrel;
+    }
+}
+
 bool Input::TestUp() const
 {
     return mUpKeyPressed;
@@ -107,4 +119,14 @@ bool Input::TestAction1() const
 bool Input::TestAction2() const
 {
     return mAction2KeyPressed;
+}
+
+bool Input::TestMotionLeft() const
+{
+    return mMotionLeft;
+}
+
+bool Input::TestMotionRight() const
+{
+    return mMotionRight;
 }

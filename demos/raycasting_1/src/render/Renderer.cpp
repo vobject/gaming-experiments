@@ -43,6 +43,8 @@ void Renderer::Startup()
         throw "SDL_CreateWindow() failed.";
     }
 
+    SDL_SetRelativeMouseMode(SDL_TRUE);
+
     mFrameTimer = SDL_AddTimer(1000, FrameTimerCB, this);
     if (!mFrameTimer) {
         throw "SDL_AddTimer() failed.";
@@ -76,6 +78,8 @@ void Renderer::PostRender()
         SDL_SetWindowTitle(mScreen, mCaption.c_str());
         mRefreshCaption = false;
     }
+
+    SDL_WarpMouseInWindow(mScreen, mResX / 2, mResY / 2);
 }
 
 const int& Renderer::getFPS() const

@@ -78,6 +78,8 @@ void RcDemo::Initialize()
 
 void RcDemo::ProcessInput()
 {
+    mInput->MouseMotion(0, 0);
+
     SDL_Event event;
 
     if (!SDL_PollEvent(&event)) {
@@ -120,6 +122,9 @@ void RcDemo::ProcessInput()
             break;
         case SDL_KEYUP:
             mInput->Release(event.key.keysym.scancode);
+            break;
+        case SDL_MOUSEMOTION:
+            mInput->MouseMotion(event.motion.xrel, event.motion.yrel);
             break;
         default:
             break;

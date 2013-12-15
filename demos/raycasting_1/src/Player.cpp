@@ -26,7 +26,7 @@ void Player::UpdateRotation(const int elapsed_time)
 {
     const double rot_speed = elapsed_time / 1000. * 3.;
 
-    if (mInput.TestLeft()) // Rotate to the left.
+    if (mInput.TestLeft() || mInput.TestMotionLeft()) // Rotate to the left.
     {
         // Rotate direction plane.
         auto old_mDirX = mDirX;
@@ -39,7 +39,7 @@ void Player::UpdateRotation(const int elapsed_time)
         mPlaneY = old_plane_x * std::sin(rot_speed) + mPlaneY * std::cos(rot_speed);
     }
 
-    if (mInput.TestRight()) // Rotate to the right.
+    if (mInput.TestRight() || mInput.TestMotionRight()) // Rotate to the right.
     {
         // Rotate direction plane.
         auto old_mDirX = mDirX;
@@ -78,4 +78,6 @@ void Player::UpdateMovement(const int elapsed_time)
             mPosY -= mDirY * move_speed;
         }
     }
+
+    // TODO: Strafing
 }

@@ -1,7 +1,7 @@
 #ifndef INPUT_HPP
 #define INPUT_HPP
 
-#include <SDL_scancode.h>
+#include <SDL.h>
 
 class Input
 {
@@ -16,6 +16,7 @@ public:
 
     void Press(SDL_Scancode key);
     void Release(SDL_Scancode key);
+    void MouseMotion(int xrel, int yrel);
 
     bool TestUp() const;
     bool TestDown() const;
@@ -23,6 +24,9 @@ public:
     bool TestRight() const;
     bool TestAction1() const;
     bool TestAction2() const;
+
+    bool TestMotionLeft() const;
+    bool TestMotionRight() const;
 
 private:
     const int mUpKey;
@@ -38,6 +42,10 @@ private:
     bool mRightKeyPressed = false;
     bool mAction1KeyPressed = false;
     bool mAction2KeyPressed = false;
+
+    bool mMotionLeft = false;
+    bool mMotionRight = false;
+    int mOldMotionXRel = 0;
 };
 
 #endif // INPUT_HPP

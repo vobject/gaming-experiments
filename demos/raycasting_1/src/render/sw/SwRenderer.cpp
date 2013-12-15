@@ -42,16 +42,16 @@ void SwRenderer::Startup()
     }
 
     // initialize colors for ceiling and floor
-    CEILING_COLOR = SDL_MapRGB(mSurface->format, 128, 128, 128); // ceiling
-    FLOOR_COLOR = SDL_MapRGB(mSurface->format, 96, 96, 96); // floor
+    CEILING_COLOR = SDL_MapRGBA(mSurface->format, 128, 128, 128, 0); // ceiling
+    FLOOR_COLOR = SDL_MapRGBA(mSurface->format, 96, 96, 96, 0); // floor
 
     // initialize wall colors
-    WALL_COLORS[0] = SDL_MapRGB(mSurface->format, 0x00, 0x00, 0x00); // black (fallback)
-    WALL_COLORS[1] = SDL_MapRGB(mSurface->format, 0xff, 0x00, 0x00); // red
-    WALL_COLORS[2] = SDL_MapRGB(mSurface->format, 0x00, 0xff, 0x00); // green
-    WALL_COLORS[3] = SDL_MapRGB(mSurface->format, 0x00, 0x00, 0xff); // blue
-    WALL_COLORS[4] = SDL_MapRGB(mSurface->format, 0xff, 0xff, 0xff); // white
-    WALL_COLORS[5] = SDL_MapRGB(mSurface->format, 0xff, 0xff, 0x00); // yellow
+    WALL_COLORS[0] = SDL_MapRGBA(mSurface->format, 0, 0, 0, 0); // black (fallback)
+    WALL_COLORS[1] = SDL_MapRGBA(mSurface->format, 255, 0, 0, 0); // red
+    WALL_COLORS[2] = SDL_MapRGBA(mSurface->format, 0, 255, 0, 0); // green
+    WALL_COLORS[3] = SDL_MapRGBA(mSurface->format, 0, 0, 255, 0); // blue
+    WALL_COLORS[4] = SDL_MapRGBA(mSurface->format, 255, 255, 255, 0); // white
+    WALL_COLORS[5] = SDL_MapRGBA(mSurface->format, 255, 255, 0, 0); // yellow
 }
 
 void SwRenderer::Shutdown()
@@ -94,7 +94,7 @@ void SwRenderer::PostRender()
     auto res_diff = (std::max(mResX, mResY) - std::min(mResX, mResY)) / 2;
     SDL_Rect dest = { res_diff, -res_diff, mResY, mResX };
 
-    SDL_UpdateTexture(mTexture, nullptr, mSurface->pixels, mSurface->w * sizeof(Uint32));
+    SDL_UpdateTexture(mTexture, nullptr, mSurface->pixels, mSurface->pitch);
     SDL_RenderCopyEx(mRenderer, mTexture, nullptr, &dest, -90.0, nullptr, SDL_FLIP_NONE);
 
     if (mMinimapTexture)
@@ -196,7 +196,7 @@ void SwRenderer::DrawPlayerView(const Level& level, const Player& player)
             }
 
             // Check if the ray has hit a wall.
-            wall_hit = level.mGrid[map_x][map_y] > 0;
+            wall_hit = level.GetBlockType(map_x, map_y) > 0;
         }
 
         // Calculate the perpendicular distance projected on camera direction.
@@ -225,7 +225,7 @@ void SwRenderer::DrawPlayerView(const Level& level, const Player& player)
         }
 
         // Choose wall color (same as wall tye atm).
-        Uint32 wall_color = WALL_COLORS[level.mGrid[map_x][map_y]];
+        Uint32 wall_color = WALL_COLORS[level.GetBlockType(map_x, map_y)];
 
         if (y_side_hit)
         {
@@ -247,14 +247,14 @@ void SwRenderer::DrawMinimap(const Level& level, const Player& player)
         InitMinimap(level);
     }
 
-    const auto cells_x = level.mGrid.at(0).size();
-    const auto cells_y = level.mGrid.size();
+    const auto cells_x = level.GetWidth();
+    const auto cells_y = level.GetHeight();
     const unsigned int player_cell_x = player.mPosY;
     const unsigned int player_cell_y = player.mPosX;
 
-    const auto color_floor = SDL_MapRGB(mMinimapSurface->format, 0xff, 0xff, 0xff);
-    const auto color_wall = SDL_MapRGB(mMinimapSurface->format, 0x00, 0x00, 0x00);
-    const auto color_player = SDL_MapRGB(mMinimapSurface->format, 0xff, 0x1f, 0x1f);
+    const auto color_floor = SDL_MapRGBA(mMinimapSurface->format, 255, 255, 255, 0);
+    const auto color_wall = SDL_MapRGBA(mMinimapSurface->format, 0, 0, 0, 0);
+    const auto color_player = SDL_MapRGBA(mMinimapSurface->format, 255, 128, 128, 0);
 
     auto const pixels = static_cast<Uint32*>(mMinimapSurface->pixels);
 
@@ -266,7 +266,7 @@ void SwRenderer::DrawMinimap(const Level& level, const Player& player)
         {
             auto bufp = pixels + offset_y + cell_x;
 
-            if (level.mGrid[cell_y][cell_x] != 0)
+            if (level.GetBlockType(cell_y, cell_x) != 0)
             {
                 // This cell is a wall. Mark it on the minimap.
                 *bufp = color_wall;
@@ -286,8 +286,8 @@ void SwRenderer::DrawMinimap(const Level& level, const Player& player)
 
 void SwRenderer::DrawVerticalLine(
     const int x,
-    int y_start,
-    int y_end,
+    const int y_start,
+    const int y_end,
     const Uint32 wall_color
 )
 {

@@ -6,20 +6,16 @@
 
 class Level
 {
-    friend class SwRenderer;
-    friend class ClRenderer;
-
 public:
     Level();
     ~Level();
 
-    int GetWidth() const;
-    int GetHeight() const;
+    unsigned int GetWidth() const;
+    unsigned int GetHeight() const;
+    const uint32_t** GetGrid() const;
+    uint32_t GetBlockType(const int pos_x, const int pos_y) const;
 
     bool IsBlocking(int pos_x, int pos_y) const;
-
-private:
-    std::vector<std::vector<int32_t>> mGrid;
 };
 
 #endif // LEVEL_HPP

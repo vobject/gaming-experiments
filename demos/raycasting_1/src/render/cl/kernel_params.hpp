@@ -9,14 +9,14 @@ namespace cl {
 
 struct screen_params
 {
-    int32_t res_x;
-    int32_t res_y;
+    uint32_t res_x;
+    uint32_t res_y;
 };
 
 struct level_params
 {
-    int32_t level_x;
-    int32_t level_y;
+    uint32_t level_x;
+    uint32_t level_y;
 };
 
 struct player_params

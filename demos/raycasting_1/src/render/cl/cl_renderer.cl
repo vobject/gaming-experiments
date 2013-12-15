@@ -2,14 +2,14 @@
 
 struct screen_params
 {
-    int res_x;
-    int res_y;
+    uint res_x;
+    uint res_y;
 };
 
 struct level_params
 {
-    int level_x;
-    int level_y;
+    uint level_x;
+    uint level_y;
 };
 
 struct player_params
@@ -30,8 +30,8 @@ struct pixel
     uchar unused;
 };
 
-__constant struct pixel ceiling_color = { 0x60, 0x60, 0x60 };
-__constant struct pixel floor_color = { 0x80, 0x80, 0x80 };
+__constant struct pixel ceiling_color = { 96, 96, 96 };
+__constant struct pixel floor_color = { 128, 128, 128 };
 
 
 void swap(int* i, int* j)

@@ -6,16 +6,13 @@ class Input;
 
 class Player
 {
-    friend class SwRenderer;
-    friend class ClRenderer;
-
 public:
     Player(const Level& level, const Input& input);
     ~Player();
 
     void Update(int elapsed_time);
 
-private:
+public: // hack
     void UpdateRotation(int elapsed_time);
     void UpdateMovement(int elapsed_time);
 

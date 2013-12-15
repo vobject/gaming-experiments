@@ -97,13 +97,13 @@ void RcDemo::ProcessInput()
         const auto res_y = mRenderer->GetResY();
         const auto app_name = mRenderer->GetAppName();
 
-        switch (event.key.keysym.sym)
+        switch (event.key.keysym.scancode)
         {
-            case SDLK_1:
+            case SDL_SCANCODE_1:
                 mRenderer = std::make_shared<SwRenderer>(res_x, res_y, app_name);
                 break;
 #ifdef WITH_OPENCL
-            case SDLK_2:
+            case SDL_SCANCODE_2:
                 mRenderer = std::make_shared<ClRenderer>(res_x, res_y, app_name);
                 break;
 #endif // WITH_OPENCL

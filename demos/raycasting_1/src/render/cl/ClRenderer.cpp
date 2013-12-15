@@ -11,6 +11,7 @@
 #include <iterator>
 #include <iostream>
 #include <cstdint>
+#include <cstring>
 
 ClRenderer::ClRenderer(const int res_x, const int res_y, const std::string& app_name)
     : Renderer(res_x, res_y, app_name)
@@ -242,22 +243,16 @@ void ClRenderer::InitLevelBuffer(const Level& level)
 {
     cl_int rc;
 
-    mLevelBufSize = level.GetWidth() * level.GetHeight() * sizeof(int32_t);
+    const int level_size = level.GetWidth() * level.GetHeight();
+    mLevelBufSize = level_size * sizeof(uint32_t);
     mLevelBuf = clCreateBuffer(mContext, CL_MEM_READ_ONLY, mLevelBufSize, nullptr, &rc);
     if (CL_SUCCESS != rc) {
         throw "clCreateBuffer(level) failed.";
     }
 
-    // Copy the level data into one continuous array.
-    std::vector<int32_t> buf;
-    for (const auto& it : level.mGrid)
-    {
-        std::copy(std::begin(it), std::end(it), std::back_inserter(buf));
-    }
-
     // Write the level data into the OpenCL memory.
     rc = clEnqueueWriteBuffer(mQueue, mLevelBuf, CL_TRUE, 0, mLevelBufSize,
-                              &buf[0], 0, nullptr, nullptr);
+                              level.GetGrid(), 0, nullptr, nullptr);
     if (CL_SUCCESS != rc) {
         throw "clEnqueueWriteBuffer(level) failed.";
     }
@@ -265,7 +260,7 @@ void ClRenderer::InitLevelBuffer(const Level& level)
 
 cl::screen_params ClRenderer::GetScreenKernelArg() const
 {
-    return { mResX, mResY };
+    return { static_cast<uint32_t>(mResX), static_cast<uint32_t>(mResY) };
 }
 
 cl::player_params ClRenderer::GetPlayerKernelArg(const Player& player) const
@@ -279,7 +274,8 @@ cl::player_params ClRenderer::GetPlayerKernelArg(const Player& player) const
 
 cl::level_params ClRenderer::GetLevelKernelArg(const Level& level) const
 {
-    return { level.mGrid.size(), level.mGrid[0].size() };
+    return { static_cast<uint32_t>(level.GetWidth()),
+             static_cast<uint32_t>(level.GetHeight()) };
 }
 
 void ClRenderer::InitMinimap(const Level& level)
@@ -305,14 +301,14 @@ void ClRenderer::DrawMinimap(const Level& level, const Player& player)
         InitMinimap(level);
     }
 
-    const auto cells_x = level.mGrid.at(0).size();
-    const auto cells_y = level.mGrid.size();
+    const auto cells_x = level.GetWidth();
+    const auto cells_y = level.GetHeight();
     const unsigned int player_cell_x = player.mPosY;
     const unsigned int player_cell_y = player.mPosX;
 
-    const auto color_floor = SDL_MapRGB(mMinimapSurface->format, 0xff, 0xff, 0xff);
-    const auto color_wall = SDL_MapRGB(mMinimapSurface->format, 0x00, 0x00, 0x00);
-    const auto color_player = SDL_MapRGB(mMinimapSurface->format, 0xff, 0x1f, 0x1f);
+    const auto color_floor = SDL_MapRGBA(mMinimapSurface->format, 255, 255, 255, 0);
+    const auto color_wall = SDL_MapRGBA(mMinimapSurface->format, 0, 0, 0, 0);
+    const auto color_player = SDL_MapRGBA(mMinimapSurface->format, 255, 128, 128, 0);
 
     auto const pixels = static_cast<Uint32*>(mMinimapSurface->pixels);
 
@@ -324,7 +320,7 @@ void ClRenderer::DrawMinimap(const Level& level, const Player& player)
         {
             auto bufp = pixels + offset_y + cell_x;
 
-            if (level.mGrid[cell_y][cell_x] != 0)
+            if (level.GetBlockType(cell_y, cell_x) != 0)
             {
                 // This cell is a wall. Mark it on the minimap.
                 *bufp = color_wall;

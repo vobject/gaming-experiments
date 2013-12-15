@@ -38,7 +38,7 @@ void Renderer::Startup()
     mScreen = SDL_CreateWindow(mAppName.c_str(),
                                SDL_WINDOWPOS_UNDEFINED,
                                SDL_WINDOWPOS_UNDEFINED,
-                               mResX, mResY, SDL_WINDOW_RESIZABLE);
+                               mResX, mResY, 0);
     if (!mScreen) {
         throw "SDL_CreateWindow() failed.";
     }

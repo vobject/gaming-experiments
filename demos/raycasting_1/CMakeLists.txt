@@ -9,15 +9,17 @@ ENDIF()
 
 OPTION(WITH_OPENCL "Enable OpenCL option for rendering." OFF)
 
-ADD_DEFINITIONS(-Wall)
-
 IF (WIN32)
+    ADD_DEFINITIONS(-W4)
+
     SET(SDL2_INCLUDE_DIRS ${SDL2_INCLUDE_DIRS} ../../lib/SDL2-2.0.1/include)
     
     LINK_DIRECTORIES(../../lib/SDL2-2.0.1/lib/x86)
     SET(SDL2_LIBRARIES ${SDL2_LIBRARIES} SDL2.lib)
     FILE(COPY ../../lib/SDL2-2.0.1/lib/x86/SDL2.dll DESTINATION "${CMAKE_BINARY_DIR}")
 ELSE()
+    ADD_DEFINITIONS(-Wall)
+
     INCLUDE(FindPkgConfig)
     PKG_SEARCH_MODULE(SDL2 REQUIRED sdl2)
 

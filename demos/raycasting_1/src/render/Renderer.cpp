@@ -1,10 +1,12 @@
 #include "Renderer.hpp"
 
-Renderer::Renderer(const int res_x, const int res_y, const std::string& app_name)
+Renderer::Renderer(const int res_x, const int res_y,
+                   const std::string& app_name, const std::string& renderer_name)
     : mResX(res_x)
     , mResY(res_y)
     , mAppName(app_name)
-    , mCaption(app_name)
+    , mRendererName(renderer_name)
+    , mCaption(mAppName)
 {
 
 }
@@ -27,6 +29,16 @@ int Renderer::GetResY() const
 std::string Renderer::GetAppName() const
 {
     return mAppName;
+}
+
+const std::string& Renderer::GetName() const
+{
+    return mRendererName;
+}
+
+const int& Renderer::getFPS() const
+{
+    return mFPS;
 }
 
 void Renderer::Startup()
@@ -80,11 +92,6 @@ void Renderer::PostRender()
     }
 
     SDL_WarpMouseInWindow(mScreen, mResX / 2, mResY / 2);
-}
-
-const int& Renderer::getFPS() const
-{
-    return mFPS;
 }
 
 Uint32 Renderer::FrameTimerCB(Uint32 interval, void* param)

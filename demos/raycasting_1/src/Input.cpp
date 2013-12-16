@@ -81,6 +81,8 @@ void Input::Release(const SDL_Scancode key)
 
 void Input::MouseMotion(const int xrel, const int yrel)
 {
+    (void) yrel;
+
     if (mOldMotionXRel == xrel) {
         mMotionLeft = 0;
         mMotionRight = 0;

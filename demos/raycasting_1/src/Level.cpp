@@ -42,12 +42,12 @@ Level::~Level()
 
 }
 
-unsigned int Level::GetWidth() const
+int Level::GetWidth() const
 {
     return WORLD_MAP_SIZE_WIDTH;
 }
 
-unsigned int Level::GetHeight() const
+int Level::GetHeight() const
 {
     return WORLD_MAP_SIZE_HEIGHT;
 }

@@ -2,14 +2,19 @@
 #include "../../Level.hpp"
 #include "../../Player.hpp"
 
-#include <cmath>
+#include <algorithm>
 
 static Uint32 CEILING_COLOR;
 static Uint32 FLOOR_COLOR;
 static Uint32 WALL_COLORS[5 + 1]; // 5 colors + 1 fallback
 
+// minimap colors
+static Uint32 MM_FLOOR_COLOR;
+static Uint32 MM_WALL_COLOR;
+static Uint32 MM_PLAYER_COLOR;
+
 SwRenderer::SwRenderer(const int res_x, const int res_y, const std::string& app_name)
-    : Renderer(res_x, res_y, app_name)
+    : Renderer(res_x, res_y, app_name, "Software")
 {
     Startup();
 }
@@ -118,12 +123,6 @@ void SwRenderer::DoRender(const Level& level, const Player& player)
     DrawMinimap(level, player);
 }
 
-const std::string& SwRenderer::GetName() const
-{
-    static std::string name("Software");
-    return name;
-}
-
 void SwRenderer::InitMinimap(const Level& level)
 {
     mMinimapTexture = SDL_CreateTexture(mRenderer,
@@ -139,6 +138,11 @@ void SwRenderer::InitMinimap(const Level& level)
     if (!mMinimapSurface) {
         throw "SDL_CreateRGBSurface() failed.";
     }
+
+    // initialize minimap colors
+    MM_FLOOR_COLOR = SDL_MapRGBA(mMinimapSurface->format, 255, 255, 255, 0);
+    MM_WALL_COLOR = SDL_MapRGBA(mMinimapSurface->format, 0, 0, 0, 0);
+    MM_PLAYER_COLOR = SDL_MapRGBA(mMinimapSurface->format, 255, 128, 128, 0);
 }
 
 void SwRenderer::DrawPlayerView(const Level& level, const Player& player)
@@ -147,36 +151,36 @@ void SwRenderer::DrawPlayerView(const Level& level, const Player& player)
     {
         // Current column position relative to the center of the screen.
         // Left edge is -1, right edge is 1, and center is 0.
-        const float cam_x = 2.f * x / mResX - 1;
+        const double cam_x = double(2 * x) / mResX - 1;
 
         // Starting direction and  position of the current ray to be cast.
-        const float ray_dir_x = player.mDirX + player.mPlaneX * cam_x;
-        const float ray_dir_y = player.mDirY + player.mPlaneY * cam_x;
-        const float ray_pos_x = player.mPosX;
-        const float ray_pos_y = player.mPosY;
+        const double ray_dir_x = player.mDirX + player.mPlaneX * cam_x;
+        const double ray_dir_y = player.mDirY + player.mPlaneY * cam_x;
+        const double ray_pos_x = player.mPosX;
+        const double ray_pos_y = player.mPosY;
 
         // The direction to step in X or Y-direction (either +1 or -1).
         const int step_x = (ray_dir_x >= 0) ? 1 : -1;
         const int step_y = (ray_dir_y >= 0) ? 1 : -1;
 
         // Length of ray from one X and Y-side to next X and Y-side.
-        const float delta_dist_x = std::sqrt(1 + std::pow(ray_dir_y, 2) / std::pow(ray_dir_x, 2));
-        const float delta_dist_y = std::sqrt(1 + std::pow(ray_dir_x, 2) / std::pow(ray_dir_y, 2));
+        const double delta_dist_x = std::sqrt(1 + std::pow(ray_dir_y, 2) / std::pow(ray_dir_x, 2));
+        const double delta_dist_y = std::sqrt(1 + std::pow(ray_dir_x, 2) / std::pow(ray_dir_y, 2));
 
         // The player's current grid position inside the level.
-        int map_x = ray_pos_x;
-        int map_y = ray_pos_y;
+        int map_x = static_cast<int>(ray_pos_x);
+        int map_y = static_cast<int>(ray_pos_y);
 
         // Length of ray from its current position to next X- and Y-side.
-        float side_dist_x = (step_x == 1) ?
-                                ((map_x + 1.0f - ray_pos_x) * delta_dist_x) :
+        double side_dist_x = (step_x == 1) ?
+                                ((map_x + 1.0 - ray_pos_x) * delta_dist_x) :
                                 ((ray_pos_x - map_x) * delta_dist_x);
-        float side_dist_y = (step_y == 1) ?
-                                ((map_y + 1.0f - ray_pos_y) * delta_dist_y) :
+        double side_dist_y = (step_y == 1) ?
+                                ((map_y + 1.0 - ray_pos_y) * delta_dist_y) :
                                 ((ray_pos_y - map_y) * delta_dist_y);
 
         // Y walls (EW) will be drawn darker.
-        bool y_side_hit;
+        bool y_side_hit = false;
 
         for (bool wall_hit = false; !wall_hit;) // Run the DDA algorithm.
         {
@@ -201,13 +205,13 @@ void SwRenderer::DrawPlayerView(const Level& level, const Player& player)
 
         // Calculate the perpendicular distance projected on camera direction.
         // Oblique distance would give fisheye effect.
-        const float perp_wall_dist = y_side_hit ?
+        const double perp_wall_dist = y_side_hit ?
                std::abs((map_y - ray_pos_y + (1 - step_y) / 2) / ray_dir_y) :
                std::abs((map_x - ray_pos_x + (1 - step_x) / 2) / ray_dir_x);
 
         // Calculate the height of the vertical line to draw on screen.
-        const float line_height_d = std::abs(mResY / perp_wall_dist);
-        const int line_height = line_height_d;
+        const double line_height_d = std::abs(mResY / perp_wall_dist);
+        const int line_height = static_cast<int>(line_height_d);
 
         // FIXME: line_height might be negative when the player is near a wall
         //  because perp_wall_dist was so small. This will crash later.
@@ -249,36 +253,33 @@ void SwRenderer::DrawMinimap(const Level& level, const Player& player)
 
     const auto cells_x = level.GetWidth();
     const auto cells_y = level.GetHeight();
-    const unsigned int player_cell_x = player.mPosY;
-    const unsigned int player_cell_y = player.mPosX;
-
-    const auto color_floor = SDL_MapRGBA(mMinimapSurface->format, 255, 255, 255, 0);
-    const auto color_wall = SDL_MapRGBA(mMinimapSurface->format, 0, 0, 0, 0);
-    const auto color_player = SDL_MapRGBA(mMinimapSurface->format, 255, 128, 128, 0);
+    const int player_cell_x = static_cast<int>(player.mPosY);
+    const int player_cell_y = static_cast<int>(player.mPosX);
 
     auto const pixels = static_cast<Uint32*>(mMinimapSurface->pixels);
 
-    for (unsigned int cell_y = 0; cell_y < cells_y; cell_y++)
+    for (int cell_y = 0; cell_y < cells_y; cell_y++)
     {
         const auto offset_y = mMinimapSurface->w * cell_y;
+        const auto pixels_y = pixels + offset_y;
 
-        for (unsigned int cell_x = 0; cell_x < cells_x; cell_x++)
+        for (int cell_x = 0; cell_x < cells_x; cell_x++)
         {
-            auto bufp = pixels + offset_y + cell_x;
+            auto bufp = pixels_y + cell_x;
 
             if (level.GetBlockType(cell_y, cell_x) != 0)
             {
                 // This cell is a wall. Mark it on the minimap.
-                *bufp = color_wall;
+                *bufp = MM_WALL_COLOR;
             }
             else if ((cell_y == player_cell_y) && (cell_x == player_cell_x))
             {
                 // Draw player to minimap.
-                *bufp = color_player;
+                *bufp = MM_PLAYER_COLOR;
             }
             else
             {
-                *bufp = color_floor;
+                *bufp = MM_FLOOR_COLOR;
             }
         }
     }

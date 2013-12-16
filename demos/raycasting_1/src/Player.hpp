@@ -10,6 +10,9 @@ public:
     Player(const Level& level, const Input& input);
     ~Player();
 
+    Player(Player&) = delete;
+    Player& operator=(Player&) = delete;
+
     void Update(int elapsed_time);
 
 public: // hack

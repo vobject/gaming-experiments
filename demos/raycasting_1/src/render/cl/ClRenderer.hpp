@@ -26,8 +26,6 @@ public:
     void PostRender() override;
     void DoRender(const Level& level, const Player& player) override;
 
-    const std::string& GetName() const override;
-
 private:
     void InitOpenCl();
     void ShutdownOpenCl();

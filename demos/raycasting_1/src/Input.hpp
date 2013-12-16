@@ -14,6 +14,9 @@ public:
           SDL_Scancode action2_keycode);
     ~Input();
 
+    Input(Input&) = delete;
+    Input& operator=(Input&) = delete;
+
     void Press(SDL_Scancode key);
     void Release(SDL_Scancode key);
     void MouseMotion(int xrel, int yrel);

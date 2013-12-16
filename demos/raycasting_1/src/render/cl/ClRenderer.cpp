@@ -14,7 +14,7 @@
 #include <cstring>
 
 ClRenderer::ClRenderer(const int res_x, const int res_y, const std::string& app_name)
-    : Renderer(res_x, res_y, app_name)
+    : Renderer(res_x, res_y, app_name, "OpenCL")
 {
     Startup();
 }
@@ -153,12 +153,6 @@ void ClRenderer::DoRender(const Level& level, const Player& player)
     }
 
     DrawMinimap(level, player);
-}
-
-const std::string& ClRenderer::GetName() const
-{
-    static std::string name("OpenCL");
-    return name;
 }
 
 void ClRenderer::InitOpenCl()

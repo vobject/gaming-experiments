@@ -10,8 +10,8 @@ public:
     Level();
     ~Level();
 
-    unsigned int GetWidth() const;
-    unsigned int GetHeight() const;
+    int GetWidth() const;
+    int GetHeight() const;
     const uint32_t** GetGrid() const;
     uint32_t GetBlockType(const int pos_x, const int pos_y) const;
 

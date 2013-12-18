@@ -6,11 +6,10 @@
 
 namespace Utils
 {
-    template<int> bool Is64BitHelper();
-    template<> bool Is64BitHelper<4>() { return false; }
-    template<> bool Is64BitHelper<8>() { return true; }
-    bool Is64Bit() { return Is64BitHelper<sizeof(size_t)>(); }
-}
+    template<size_t> bool Is64BitHelper();
+    template<> inline bool Is64BitHelper<4>() { return false; }
+    template<> inline bool Is64BitHelper<8>() { return true; }
+    inline bool Is64Bit() { return Is64BitHelper<sizeof(size_t)>(); }
 
 // Source:
 //  http://herbsutter.com/gotw/_102/
@@ -37,5 +36,7 @@ auto cbegin(const T& t) -> decltype(t.cbegin()) { return t.cbegin(); }
 
 template<class T>
 auto cend(const T& t) -> decltype(t.cend()) { return t.cend(); }
+
+} // Utils namespace
 
 #endif // UTILS_HPP

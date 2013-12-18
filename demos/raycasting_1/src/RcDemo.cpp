@@ -2,6 +2,7 @@
 #include "Level.hpp"
 #include "Input.hpp"
 #include "Player.hpp"
+#include "Utils.hpp"
 #include "render/sw/SwRenderer.hpp"
 #include "render/cl/ClRenderer.hpp"
 
@@ -66,7 +67,7 @@ void RcDemo::Initialize()
     const auto res_y = 480;
     const auto app_name = "RayCasting_1";
 
-    mRenderer = std::make_shared<SwRenderer>(res_x, res_y, app_name);
+    mRenderer = Utils::make_unique<SwRenderer>(res_x, res_y, app_name);
 
     mLevel = std::make_shared<Level>();
     mInput = std::make_shared<Input>(SDL_SCANCODE_W, SDL_SCANCODE_S,
@@ -78,10 +79,9 @@ void RcDemo::Initialize()
 
 void RcDemo::ProcessInput()
 {
-    mInput->MouseMotion(0, 0);
+    mInput->Update();
 
     SDL_Event event;
-
     if (!SDL_PollEvent(&event)) {
         return;
     }
@@ -102,11 +102,11 @@ void RcDemo::ProcessInput()
         switch (event.key.keysym.scancode)
         {
             case SDL_SCANCODE_1:
-                mRenderer = std::make_shared<SwRenderer>(res_x, res_y, app_name);
+                mRenderer = Utils::make_unique<SwRenderer>(res_x, res_y, app_name);
                 break;
 #ifdef WITH_OPENCL
             case SDL_SCANCODE_2:
-                mRenderer = std::make_shared<ClRenderer>(res_x, res_y, app_name);
+                mRenderer = Utils::make_unique<ClRenderer>(res_x, res_y, app_name);
                 break;
 #endif // WITH_OPENCL
             default:
@@ -114,24 +114,9 @@ void RcDemo::ProcessInput()
         }
         return;
     }
-
-    switch (event.type)
-    {
-        case SDL_KEYDOWN:
-            mInput->Press(event.key.keysym.scancode);
-            break;
-        case SDL_KEYUP:
-            mInput->Release(event.key.keysym.scancode);
-            break;
-        case SDL_MOUSEMOTION:
-            mInput->MouseMotion(event.motion.xrel, event.motion.yrel);
-            break;
-        default:
-            break;
-    }
 }
 
-void RcDemo::UpdateScene(const int app_time, const int elapsed_time)
+void RcDemo::UpdateScene(const long app_time, const long elapsed_time)
 {
     (void) app_time;
 

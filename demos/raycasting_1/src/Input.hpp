@@ -17,9 +17,9 @@ public:
     Input(Input&) = delete;
     Input& operator=(Input&) = delete;
 
-    void Press(SDL_Scancode key);
-    void Release(SDL_Scancode key);
-    void MouseMotion(int xrel, int yrel);
+    void Update();
+
+//    void MouseMotion(int xrel, int yrel);
 
     bool TestUp() const;
     bool TestDown() const;
@@ -28,16 +28,18 @@ public:
     bool TestAction1() const;
     bool TestAction2() const;
 
-    bool TestMotionLeft() const;
-    bool TestMotionRight() const;
+    int TestMotionLeft() const;
+    int TestMotionRight() const;
+    int TestMotionUp() const;
+    int TestMotionDown() const;
 
 private:
-    const int mUpKey;
-    const int mDownKey;
-    const int mLeftKey;
-    const int mRightKey;
-    const int mAction1Key;
-    const int mAction2Key;
+    const SDL_Scancode mUpKey;
+    const SDL_Scancode mDownKey;
+    const SDL_Scancode mLeftKey;
+    const SDL_Scancode mRightKey;
+    const SDL_Scancode mAction1Key;
+    const SDL_Scancode mAction2Key;
 
     bool mUpKeyPressed = false;
     bool mDownKeyPressed = false;
@@ -46,9 +48,10 @@ private:
     bool mAction1KeyPressed = false;
     bool mAction2KeyPressed = false;
 
-    bool mMotionLeft = false;
-    bool mMotionRight = false;
-    int mOldMotionXRel = 0;
+    int mMotionLeft = 0;
+    int mMotionRight = 0;
+    int mMotionUp = 0;
+    int mMotionDown = 0;
 };
 
 #endif // INPUT_HPP

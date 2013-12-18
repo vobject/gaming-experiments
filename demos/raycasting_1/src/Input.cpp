@@ -1,5 +1,7 @@
 #include "Input.hpp"
 
+#include <algorithm>
+
 Input::Input(
     const SDL_Scancode up_keycode,
     const SDL_Scancode down_keycode,
@@ -23,74 +25,28 @@ Input::~Input()
 
 }
 
-void Input::Press(const SDL_Scancode key)
+void Input::Update()
 {
-    if (key == mUpKey)
-    {
-       mUpKeyPressed = true;
-    }
-    else if (key == mDownKey)
-    {
-       mDownKeyPressed = true;
-    }
-    else if (key == mLeftKey)
-    {
-       mLeftKeyPressed = true;
-    }
-    else if (key == mRightKey)
-    {
-       mRightKeyPressed = true;
-    }
-    else if (key == mAction1Key)
-    {
-       mAction1KeyPressed = true;
-    }
-    else if (key == mAction2Key)
-    {
-       mAction2KeyPressed = true;
-    }
-}
+    SDL_PumpEvents();
+    const Uint8* kbState = SDL_GetKeyboardState(nullptr);
 
-void Input::Release(const SDL_Scancode key)
-{
-    if (key == mUpKey)
-    {
-       mUpKeyPressed = false;
-    }
-    else if (key == mDownKey)
-    {
-       mDownKeyPressed = false;
-    }
-    else if (key == mLeftKey)
-    {
-       mLeftKeyPressed = false;
-    }
-    else if (key == mRightKey)
-    {
-       mRightKeyPressed = false;
-    }
-    else if (key == mAction1Key)
-    {
-       mAction1KeyPressed = false;
-    }
-    else if (key == mAction2Key)
-    {
-       mAction2KeyPressed = false;
-    }
-}
+    // update key press states
+    mUpKeyPressed = kbState[mUpKey] != 0;
+    mDownKeyPressed = kbState[mDownKey] != 0;
+    mLeftKeyPressed = kbState[mLeftKey] != 0;
+    mRightKeyPressed = kbState[mRightKey] != 0;
+    mAction1KeyPressed = kbState[mAction1Key] != 0;
+    mAction2KeyPressed = kbState[mAction2Key] != 0;
 
-void Input::MouseMotion(const int xrel, const int yrel)
-{
-    (void) yrel;
+    // reset mouse motion states
+    int mouse_rel_x;
+    int mouse_rel_y;
+    SDL_GetRelativeMouseState(&mouse_rel_x, &mouse_rel_y);
 
-    if (mOldMotionXRel == xrel) {
-        mMotionLeft = 0;
-        mMotionRight = 0;
-    } else {
-        mMotionLeft = xrel < 0;
-        mMotionRight = xrel > 0;
-        mOldMotionXRel = xrel;
-    }
+    mMotionLeft = (mouse_rel_x < 0) ? std::abs(mouse_rel_x) : 0;
+    mMotionRight = (mouse_rel_x > 0) ? std::abs(mouse_rel_x) : 0;
+    mMotionUp = (mouse_rel_y < 0) ? std::abs(mouse_rel_y) : 0;
+    mMotionDown = (mouse_rel_y > 0) ? std::abs(mouse_rel_y) : 0;
 }
 
 bool Input::TestUp() const
@@ -123,12 +79,22 @@ bool Input::TestAction2() const
     return mAction2KeyPressed;
 }
 
-bool Input::TestMotionLeft() const
+int Input::TestMotionUp() const
+{
+    return mMotionUp;
+}
+
+int Input::TestMotionDown() const
+{
+    return mMotionDown;
+}
+
+int Input::TestMotionLeft() const
 {
     return mMotionLeft;
 }
 
-bool Input::TestMotionRight() const
+int Input::TestMotionRight() const
 {
     return mMotionRight;
 }

@@ -24,32 +24,36 @@ void Player::Update(const int elapsed_time)
 
 void Player::UpdateRotation(const int elapsed_time)
 {
-    const double rot_speed = elapsed_time / 1000. * 3.;
+    const double rot_speed = elapsed_time / 1000. * 2.;
 
-    if (mInput.TestLeft() || mInput.TestMotionLeft()) // Rotate to the left.
+    if (auto distance = mInput.TestMotionLeft()) // Rotate to the left.
     {
+        const auto rot_dist = rot_speed * distance;
+
         // Rotate direction plane.
         auto old_mDirX = mDirX;
-        mDirX = old_mDirX * std::cos(rot_speed) - mDirY * std::sin(rot_speed);
-        mDirY = old_mDirX * std::sin(rot_speed) + mDirY * std::cos(rot_speed);
+        mDirX = old_mDirX * std::cos(rot_dist) - mDirY * std::sin(rot_dist);
+        mDirY = old_mDirX * std::sin(rot_dist) + mDirY * std::cos(rot_dist);
 
         // Rotate camera plane.
         auto old_plane_x = mPlaneX;
-        mPlaneX = old_plane_x * std::cos(rot_speed) - mPlaneY * std::sin(rot_speed);
-        mPlaneY = old_plane_x * std::sin(rot_speed) + mPlaneY * std::cos(rot_speed);
+        mPlaneX = old_plane_x * std::cos(rot_dist) - mPlaneY * std::sin(rot_dist);
+        mPlaneY = old_plane_x * std::sin(rot_dist) + mPlaneY * std::cos(rot_dist);
     }
 
-    if (mInput.TestRight() || mInput.TestMotionRight()) // Rotate to the right.
+    if (auto distance = mInput.TestMotionRight()) // Rotate to the right.
     {
+        const auto rot_dist = rot_speed * distance;
+
         // Rotate direction plane.
         auto old_mDirX = mDirX;
-        mDirX = old_mDirX * std::cos(-rot_speed) - mDirY * std::sin(-rot_speed);
-        mDirY = old_mDirX * std::sin(-rot_speed) + mDirY * std::cos(-rot_speed);
+        mDirX = old_mDirX * std::cos(-rot_dist) - mDirY * std::sin(-rot_dist);
+        mDirY = old_mDirX * std::sin(-rot_dist) + mDirY * std::cos(-rot_dist);
 
         // Rotate camera plane.
         auto old_plane_x = mPlaneX;
-        mPlaneX = old_plane_x * std::cos(-rot_speed) - mPlaneY * std::sin(-rot_speed);
-        mPlaneY = old_plane_x * std::sin(-rot_speed) + mPlaneY * std::cos(-rot_speed);
+        mPlaneX = old_plane_x * std::cos(-rot_dist) - mPlaneY * std::sin(-rot_dist);
+        mPlaneY = old_plane_x * std::sin(-rot_dist) + mPlaneY * std::cos(-rot_dist);
     }
 }
 

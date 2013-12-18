@@ -83,5 +83,6 @@ void Player::UpdateMovement(const int elapsed_time)
         }
     }
 
+    // TODO: Check if player is too close to a wall before moving
     // TODO: Strafing
 }

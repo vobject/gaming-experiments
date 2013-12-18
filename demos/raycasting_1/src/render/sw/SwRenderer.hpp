@@ -12,6 +12,7 @@ class SwRenderer : public Renderer
 {
 public:
     SwRenderer(int res_x, int res_y, const std::string& app_name);
+    SwRenderer(int res_x, int res_y, const std::string& app_name, const std::string& renderer_name);
     virtual ~SwRenderer();
 
     void Startup() override;
@@ -21,13 +22,11 @@ public:
     void PostRender() override;
     void DoRender(const Level& level, const Player& player) override;
 
-private:
+protected:
     void InitMinimap(const Level& level);
 
-    void DrawPlayerView(const Level& level, const Player& player);
-    void DrawMinimap(const Level& level, const Player& player);
-
-    void DrawVerticalLine(int x, int y1, int y2, Uint32 wall_color);
+    virtual void DrawPlayerView(const Level& level, const Player& player);
+    virtual void DrawMinimap(const Level& level, const Player& player);
 
     SDL_Renderer* mRenderer = nullptr;
     SDL_Texture* mTexture = nullptr;
@@ -35,6 +34,15 @@ private:
 
     SDL_Texture* mMinimapTexture = nullptr;
     SDL_Surface* mMinimapSurface = nullptr;
+
+    // things that should go into some sort of resource cache
+    Uint32 mCeilingColor = 0;
+    Uint32 mFloorColor = 0;
+    Uint32 mWallColors[5 + 1]; // 5 colors + 1 fallback
+
+    Uint32 mMinimapFloorColor = 0;
+    Uint32 mMinimapWallColor = 0;
+    Uint32 mMinimapPlayerColor = 0;
 };
 
 #endif // SW_RENDERER_HPP

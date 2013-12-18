@@ -64,6 +64,13 @@ uint32_t Level::GetBlockType(const int pos_x, const int pos_y) const
 
 bool Level::IsBlocking(const int pos_x, const int pos_y) const
 {
+    if ((pos_x < 0) || (pos_x > WORLD_MAP_SIZE_WIDTH) ||
+        (pos_y < 0) || (pos_y > WORLD_MAP_SIZE_HEIGHT))
+    {
+        // the level bocks for invalid coordinates
+        return true;
+    }
+
     // The '0' means floor. We can only walk on floor cells.
     return (WORLD_MAP_GRID[pos_x][pos_y] != 0);
 }

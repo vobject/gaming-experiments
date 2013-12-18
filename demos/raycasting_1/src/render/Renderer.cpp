@@ -92,7 +92,7 @@ void Renderer::PostRender()
         mRefreshCaption = false;
     }
 
-    SDL_WarpMouseInWindow(mScreen, mResX / 2, mResY / 2);
+//    SDL_WarpMouseInWindow(mScreen, mResX / 2, mResY / 2);
 }
 
 Uint32 Renderer::FrameTimerCB(Uint32 interval, void* param)

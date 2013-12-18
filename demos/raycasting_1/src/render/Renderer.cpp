@@ -1,4 +1,5 @@
 #include "Renderer.hpp"
+#include "../Utils.hpp"
 
 Renderer::Renderer(const int res_x, const int res_y,
                    const std::string& app_name, const std::string& renderer_name)
@@ -104,10 +105,11 @@ Uint32 Renderer::FrameTimerCB(Uint32 interval, void* param)
     std::ostringstream caption;
     caption << obj->mAppName;
 #ifdef NDEBUG
-    caption << " (Release) - ";
+    caption << " (Release-";
 #else
-    caption << " (Debug) - ";
+    caption << " (Debug-";
 #endif
+    caption << (Utils::Is64Bit() ? "x64" : "x32") << ") - ";
     caption << "render:" << obj->GetName() << " - ";
     caption << obj->mFPS << " FPS";
 

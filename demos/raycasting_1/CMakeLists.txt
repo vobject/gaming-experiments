@@ -11,12 +11,17 @@ OPTION(WITH_OPENCL "Enable OpenCL option for rendering." OFF)
 
 IF (WIN32)
     ADD_DEFINITIONS(-W4)
-
     SET(SDL2_INCLUDE_DIRS ${SDL2_INCLUDE_DIRS} ../../lib/SDL2-2.0.1/include)
+
+    IF (CMAKE_CL_64)
+        LINK_DIRECTORIES(../../lib/SDL2-2.0.1/lib/x64)
+        FILE(COPY ../../lib/SDL2-2.0.1/lib/x64/SDL2.dll DESTINATION "${CMAKE_BINARY_DIR}")
+    ELSE()
+        LINK_DIRECTORIES(../../lib/SDL2-2.0.1/lib/x86)
+        FILE(COPY ../../lib/SDL2-2.0.1/lib/x86/SDL2.dll DESTINATION "${CMAKE_BINARY_DIR}")
+    ENDIF()
     
-    LINK_DIRECTORIES(../../lib/SDL2-2.0.1/lib/x86)
-    SET(SDL2_LIBRARIES ${SDL2_LIBRARIES} SDL2.lib)
-    FILE(COPY ../../lib/SDL2-2.0.1/lib/x86/SDL2.dll DESTINATION "${CMAKE_BINARY_DIR}")
+    SET(SDL2_LIBRARIES ${SDL2_LIBRARIES} SDL2.lib SDL2main.lib)
 ELSE()
     ADD_DEFINITIONS(-Wall)
 

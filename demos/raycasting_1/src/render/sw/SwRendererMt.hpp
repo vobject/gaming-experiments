@@ -3,9 +3,6 @@
 
 #include "SwRenderer.hpp"
 
-class Level;
-class Player;
-
 class SwRendererMt : public SwRenderer
 {
 public:

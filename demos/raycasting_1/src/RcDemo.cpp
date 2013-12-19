@@ -5,6 +5,7 @@
 #include "Utils.hpp"
 #include "render/sw/SwRenderer.hpp"
 #include "render/sw/SwRendererMt.hpp"
+#include "render/sw/TexSwRenderer.hpp"
 #include "render/cl/ClRenderer.hpp"
 
 #include <SDL.h>
@@ -68,7 +69,7 @@ void RcDemo::Initialize()
     const auto res_y = 480;
     const auto app_name = "RayCasting";
 
-    mRenderer = Utils::make_unique<SwRenderer>(res_x, res_y, app_name);
+    mRenderer = Utils::make_unique<TexSwRenderer>(res_x, res_y, app_name);
 
     mLevel = std::make_shared<Level>();
     mInput = std::make_shared<Input>(SDL_SCANCODE_W, SDL_SCANCODE_S,
@@ -118,6 +119,9 @@ void RcDemo::ProcessInput()
                 mRenderer = Utils::make_unique<ClRenderer>(res_x, res_y, app_name);
                 break;
 #endif // WITH_OPENCL
+            case SDL_SCANCODE_6:
+                mRenderer = Utils::make_unique<TexSwRenderer>(res_x, res_y, app_name);
+                break;
             default:
                 break;
         }

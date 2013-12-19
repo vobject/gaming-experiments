@@ -15,12 +15,12 @@ struct RaycastResult {
     RaycastResult(const int map_pos_x, const int map_pos_y,
                   const double intersect_x, const double intersect_y,
                   const double distance, const bool vertical_hit)
-        : map_pos_x{ map_pos_x }
-        , map_pos_y{ map_pos_y }
-        , intersect_x{ intersect_x }
-        , intersect_y{ intersect_y }
-        , distance{ distance }
-        , vertical_hit{ vertical_hit }
+        : map_pos_x{map_pos_x}
+        , map_pos_y{map_pos_y}
+        , intersect_x{intersect_x}
+        , intersect_y{intersect_y}
+        , distance{distance}
+        , vertical_hit{vertical_hit}
     { }
 
     RaycastResult(RaycastResult&) = delete;

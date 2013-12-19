@@ -19,8 +19,6 @@ public:
 
     void Update();
 
-//    void MouseMotion(int xrel, int yrel);
-
     bool TestUp() const;
     bool TestDown() const;
     bool TestLeft() const;

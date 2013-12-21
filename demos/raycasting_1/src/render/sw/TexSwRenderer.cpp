@@ -1,6 +1,6 @@
 #include "TexSwRenderer.hpp"
-#include "ResourceCache.hpp"
 #include "Slice.hpp"
+#include "../ResourceCache.hpp"
 #include "../../Ray.hpp"
 #include "../../World.hpp"
 #include "../../Player.hpp"

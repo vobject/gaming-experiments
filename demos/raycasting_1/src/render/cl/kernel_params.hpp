@@ -37,6 +37,12 @@ struct pixel
     unsigned char unused;
 };
 
+struct wall_params
+{
+    int32_t res_x;
+    int32_t res_y;
+};
+
 } // namespace cl
 
 #endif // WITH_OPENCL

@@ -2,14 +2,14 @@
 
 struct screen_params
 {
-    int res_x;
-    int res_y;
+    uint res_x;
+    uint res_y;
 };
 
 struct level_params
 {
-    int level_x;
-    int level_y;
+    uint level_x;
+    uint level_y;
 };
 
 struct player_params
@@ -20,7 +20,6 @@ struct player_params
     float dir_y;
     float plane_x;
     float plane_y;
-    float rotation;
 };
 
 struct wall_params
@@ -320,7 +319,7 @@ void draw_slice(
 }
 
 
-__kernel void rc_demo_2(
+__kernel void rc_2(
     __global struct pixel* data,
     const struct screen_params scr,
     const struct player_params player,

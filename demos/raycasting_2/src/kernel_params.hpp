@@ -27,7 +27,6 @@ struct player_params
    float dir_y;
    float plane_x;
    float plane_y;
-   float rotation;
 };
 
 struct wall_params

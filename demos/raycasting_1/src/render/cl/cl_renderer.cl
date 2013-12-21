@@ -22,6 +22,12 @@ struct player_params
     float plane_y;
 };
 
+struct wall_params
+{
+   int res_x;
+   int res_y;
+};
+
 struct pixel
 {
     uchar r;

@@ -1,7 +1,7 @@
 #ifndef SIMPLE_SLICE_HPP
 #define SIMPLE_SLICE_HPP
 
-#include "ResourceCache.hpp"
+#include "../ResourceCache.hpp"
 #include "../../Ray.hpp"
 #include "../../World.hpp"
 

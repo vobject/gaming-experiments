@@ -1,13 +1,13 @@
 #ifndef PLAYER_HPP
 #define PLAYER_HPP
 
-class Level;
+class World;
 class Input;
 
 class Player
 {
 public:
-    Player(const Level& level, const Input& input);
+    Player(const World& world, const Input& input);
     ~Player();
 
     Player(Player&) = delete;
@@ -19,12 +19,12 @@ public: // hack
     void UpdateRotation(int elapsed_time);
     void UpdateMovement(int elapsed_time);
 
-    const Level& mLevel;
+    const World& mWorld;
     const Input& mInput;
 
     // Position vector of the player.
     double mPosX = 20.;
-    double mPosY = 10.;
+    double mPosY = 20.;
 
     // Direction vector of the player.
     double mDirX = -1.;

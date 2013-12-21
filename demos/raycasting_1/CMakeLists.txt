@@ -8,9 +8,10 @@ IF(NOT CMAKE_BUILD_TYPE)
 ENDIF()
 
 OPTION(WITH_OPENCL "Enable OpenCL option for rendering." OFF)
+OPTION(WITH_SVG "Enable SVG loading option for rendering." OFF)
 
 IF (WIN32)
-    ADD_DEFINITIONS(-W4)
+    ADD_DEFINITIONS(-W4 -DSDL_MAIN_HANDLED)
     SET(SDL2_INCLUDE_DIRS ${SDL2_INCLUDE_DIRS} ../../lib/SDL2-2.0.1/include)
     SET(SDL2_IMAGE_INCLUDE_DIRS ${SDL2_IMAGE_INCLUDE_DIRS} ../../lib/SDL2_image-2.0.0/include)
     SET(SDL2_GFX_INCLUDE_DIRS ${SDL2_GFX_INCLUDE_DIRS} ../../lib/SDL2_gfx-1.0.0/include)
@@ -73,7 +74,24 @@ ELSE()
     MESSAGE(STATUS "Not using OpenCL.")
 ENDIF()
 
-ADD_EXECUTABLE(${PROJECT_NAME} ${PRJ_HDR} ${PRJ_SRC} ${PRJ_OCL} ${EXTRA_SRC})
+IF(WITH_SVG)
+    MESSAGE(STATUS "Using SVG.")
+
+    FILE(GLOB EXTRA_HDR src/klib/*.h
+                        src/klib/*/*.h
+                        src/klib/*/*/*.h)
+    FILE(GLOB EXTRA_SRC src/klib/*.cpp
+                        src/klib/*/*.cpp
+                        src/klib/*/*/*.cpp)
+
+    ADD_DEFINITIONS(-DWITH_SVG)
+ELSE()
+    MESSAGE(STATUS "Not using SVG.")
+ENDIF()
+
+ADD_EXECUTABLE(${PROJECT_NAME}
+               ${PRJ_HDR} ${PRJ_SRC} ${PRJ_OCL}
+               ${EXTRA_HDR} ${EXTRA_SRC})
 
 TARGET_LINK_LIBRARIES(
     ${PROJECT_NAME}

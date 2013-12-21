@@ -1,11 +1,11 @@
 #include "Player.hpp"
-#include "Level.hpp"
+#include "World.hpp"
 #include "Input.hpp"
 
 #include <cmath>
 
-Player::Player(const Level& level, const Input& input)
-    : mLevel(level)
+Player::Player(const World& world, const Input& input)
+    : mWorld(world)
     , mInput(input)
 {
 
@@ -59,14 +59,14 @@ void Player::UpdateRotation(const int elapsed_time)
 
 void Player::UpdateMovement(const int elapsed_time)
 {
-    const double move_speed = elapsed_time / 1000. * 4.;
+    const double move_speed = elapsed_time / 1000. * 8.;
 
     if (mInput.TestUp()) // Move forward if no wall blocks our path.
     {
         const auto new_pos_x = mPosX + mDirX * move_speed;
         const auto new_pos_y = mPosY + mDirY * move_speed;
 
-        if (!mLevel.IsBlocking(new_pos_x, new_pos_y)) {
+        if (!mWorld.IsBlocking(new_pos_x, new_pos_y)) {
             mPosX += mDirX * move_speed;
             mPosY += mDirY * move_speed;
         }
@@ -77,7 +77,7 @@ void Player::UpdateMovement(const int elapsed_time)
         const auto new_pos_x = mPosX - mDirX * move_speed;
         const auto new_pos_y = mPosY - mDirY * move_speed;
 
-        if (!mLevel.IsBlocking(new_pos_x, new_pos_y)) {
+        if (!mWorld.IsBlocking(new_pos_x, new_pos_y)) {
             mPosX -= mDirX * move_speed;
             mPosY -= mDirY * move_speed;
         }

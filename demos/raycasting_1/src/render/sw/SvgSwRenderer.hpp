@@ -1,19 +1,20 @@
-#ifndef SW_RENDERER_HPP
-#define SW_RENDERER_HPP
+#ifndef SVG_SW_RENDERER_HPP
+#define SVG_SW_RENDERER_HPP
+
+#ifdef WITH_SVG
 
 #include "../Renderer.hpp"
 
 #include <SDL.h>
 
-class World;
 class Player;
 
-class SwRenderer : public Renderer
+class SvgSwRenderer : public Renderer
 {
 public:
-    SwRenderer(int res_x, int res_y, const std::string& app_name);
-    SwRenderer(int res_x, int res_y, const std::string& app_name, const std::string& renderer_name);
-    virtual ~SwRenderer();
+    SvgSwRenderer(int res_x, int res_y, const std::string& app_name);
+    SvgSwRenderer(int res_x, int res_y, const std::string& app_name, const std::string& renderer_name);
+    virtual ~SvgSwRenderer();
 
     void Startup() override;
     void Shutdown() override;
@@ -45,4 +46,6 @@ protected:
     Uint32 mMinimapPlayerColor = 0;
 };
 
-#endif // SW_RENDERER_HPP
+#endif // WITH_SVG
+
+#endif // SVG_SW_RENDERER_HPP

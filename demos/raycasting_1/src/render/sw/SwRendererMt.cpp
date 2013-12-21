@@ -1,7 +1,7 @@
 #include "SwRendererMt.hpp"
 #include "Slice.hpp"
 #include "../../Ray.hpp"
-#include "../../Level.hpp"
+#include "../../World.hpp"
 #include "../../Player.hpp"
 #include "../../Utils.hpp"
 
@@ -19,7 +19,7 @@ SwRendererMt::~SwRendererMt()
 
 }
 
-void SwRendererMt::DrawPlayerView(const Level& level, const Player& player)
+void SwRendererMt::DrawPlayerView(const World& level, const Player& player)
 {
     const int thread_slice = mResX / mThreadCnt;
     std::vector<std::thread> threads(mThreadCnt);
@@ -51,7 +51,7 @@ void SwRendererMt::DrawPlayerView(const Level& level, const Player& player)
            const RaycastResult r = cast_ray(player_pos_x, player_pos_y,
                                             slice_dir_x, slice_dir_y,
                                             is_level_blocking);
-           auto wall_color = mWallColors[level.GetBlockType(r.map_pos_x, r.map_pos_y)];
+           auto wall_color = mWallColors[level.GetCellType(r.map_pos_x, r.map_pos_y)];
            auto pixels = static_cast<uint32_t*>(mSurface->pixels) + (mSurface->w * x);
 
            draw_slice(r, mResY, pixels, wall_color, mCeilingColor, mFloorColor);

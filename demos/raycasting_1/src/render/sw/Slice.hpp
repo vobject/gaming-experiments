@@ -3,7 +3,7 @@
 
 #include "ResourceCache.hpp"
 #include "../../Ray.hpp"
-#include "../../Level.hpp"
+#include "../../World.hpp"
 
 #include <cstdint>
 
@@ -60,7 +60,7 @@ inline void draw_slice(
     const double player_dir_x, const double player_dir_y,
     //uint32_t* slice_buf,
     SDL_Surface* wall,
-    const Level& lvl,
+    const World& lvl,
     const ResourceCache& res
 )
 {
@@ -84,7 +84,7 @@ inline void draw_slice(
     }
 
     // Get the texture that matches the cell type.
-    const auto cell_id = lvl.GetBlockType(r.map_pos_x, r.map_pos_y);
+    const auto cell_id = lvl.GetCellType(r.map_pos_x, r.map_pos_y);
     const auto wall_tex = res.GetWall(cell_id - 1);
     const auto ceiling_tex = res.GetWall(1);
     const auto floor_tex = res.GetFloor(0);

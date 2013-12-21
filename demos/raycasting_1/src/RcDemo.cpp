@@ -1,10 +1,8 @@
 #include "RcDemo.hpp"
-#include "Level.hpp"
-#include "Input.hpp"
-#include "Player.hpp"
 #include "Utils.hpp"
 #include "render/sw/SwRenderer.hpp"
 #include "render/sw/SwRendererMt.hpp"
+#include "render/sw/SvgSwRenderer.hpp"
 #include "render/sw/TexSwRenderer.hpp"
 #include "render/cl/ClRenderer.hpp"
 
@@ -69,13 +67,13 @@ void RcDemo::Initialize()
     const auto res_y = 480;
     const auto app_name = "RayCasting";
 
-    mRenderer = Utils::make_unique<TexSwRenderer>(res_x, res_y, app_name);
+    mRenderer = Utils::make_unique<SwRenderer>(res_x, res_y, app_name);
 
-    mLevel = std::make_shared<Level>();
-    mInput = std::make_shared<Input>(SDL_SCANCODE_W, SDL_SCANCODE_S,
-                                     SDL_SCANCODE_A, SDL_SCANCODE_D,
-                                     SDL_SCANCODE_E, SDL_SCANCODE_F);
-    mPlayer = std::make_shared<Player>(*mLevel, *mInput);
+    mWorld = Utils::make_unique<World>();
+    mInput = Utils::make_unique<Input>(SDL_SCANCODE_W, SDL_SCANCODE_S,
+                                       SDL_SCANCODE_A, SDL_SCANCODE_D,
+                                       SDL_SCANCODE_E, SDL_SCANCODE_F);
+    mPlayer = Utils::make_unique<Player>(*mWorld, *mInput);
 }
 
 void RcDemo::ProcessInput()
@@ -114,14 +112,19 @@ void RcDemo::ProcessInput()
             case SDL_SCANCODE_4:
                 mRenderer = Utils::make_unique<SwRendererMt>(res_x, res_y, app_name, 4);
                 break;
-#ifdef WITH_OPENCL
             case SDL_SCANCODE_5:
+                mRenderer = Utils::make_unique<TexSwRenderer>(res_x, res_y, app_name);
+                break;
+#ifdef WITH_OPENCL
+            case SDL_SCANCODE_6:
                 mRenderer = Utils::make_unique<ClRenderer>(res_x, res_y, app_name);
                 break;
 #endif // WITH_OPENCL
-            case SDL_SCANCODE_6:
-                mRenderer = Utils::make_unique<TexSwRenderer>(res_x, res_y, app_name);
+#ifdef WITH_SVG
+            case SDL_SCANCODE_7:
+                mRenderer = Utils::make_unique<SvgSwRenderer>(res_x, res_y, app_name);
                 break;
+#endif // WITH_SVG
             default:
                 break;
         }
@@ -155,6 +158,6 @@ void RcDemo::UpdateScene(const long app_time, const long elapsed_time)
 void RcDemo::RenderScene()
 {
     mRenderer->PreRender();
-    mRenderer->DoRender(*mLevel, *mPlayer);
+    mRenderer->DoRender(*mWorld, *mPlayer);
     mRenderer->PostRender();
 }

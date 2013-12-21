@@ -2,7 +2,7 @@
 #include "ResourceCache.hpp"
 #include "Slice.hpp"
 #include "../../Ray.hpp"
-#include "../../Level.hpp"
+#include "../../World.hpp"
 #include "../../Player.hpp"
 #include "../../Utils.hpp"
 
@@ -23,9 +23,10 @@ TexSwRenderer::~TexSwRenderer()
 
 }
 
-void TexSwRenderer::DrawPlayerView(const Level& level, const Player& player)
+void TexSwRenderer::DrawPlayerView(const World& level, const Player& player)
 {
-    auto is_level_blocking = [&](const int map_x, const int map_y) {
+    auto is_level_blocking = [&](const int map_x, const int map_y)
+    {
         return level.IsBlocking(map_x, map_y);
     };
 

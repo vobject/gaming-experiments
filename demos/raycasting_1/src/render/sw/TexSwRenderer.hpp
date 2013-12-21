@@ -14,7 +14,7 @@ public:
     virtual ~TexSwRenderer();
 
 protected:
-    virtual void DrawPlayerView(const Level& level, const Player& player);
+    virtual void DrawPlayerView(const World& level, const Player& player);
 
     std::unique_ptr<const ResourceCache> mResCache;
 };

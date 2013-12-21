@@ -1,11 +1,12 @@
 #ifndef RCDEMO_HPP
 #define RCDEMO_HPP
 
+#include "World.hpp"
+#include "Input.hpp"
+#include "Player.hpp"
+
 #include <memory>
 
-class Level;
-class Input;
-class Player;
 class Renderer;
 
 class RcDemo
@@ -27,9 +28,9 @@ private:
     bool mQuitRequested = false;
 
     std::unique_ptr<Renderer> mRenderer;
-    std::shared_ptr<Level> mLevel;
-    std::shared_ptr<Input> mInput;
-    std::shared_ptr<Player> mPlayer;
+    std::unique_ptr<World> mWorld;
+    std::unique_ptr<Input> mInput;
+    std::unique_ptr<Player> mPlayer;
 };
 
 #endif // RCDEMO_HPP

@@ -6,7 +6,7 @@
 #include <string>
 #include <sstream>
 
-class Level;
+class World;
 class Player;
 
 class Renderer
@@ -31,7 +31,7 @@ public:
 
     virtual void PreRender() = 0;
     virtual void PostRender() = 0;
-    virtual void DoRender(const Level& level, const Player& player) = 0;
+    virtual void DoRender(const World& world, const Player& player) = 0;
 
 protected:
     const int mResX;

@@ -59,7 +59,7 @@ void Player::UpdateRotation(const int elapsed_time)
 
 void Player::UpdateMovement(const int elapsed_time)
 {
-    const double move_speed = elapsed_time / 1000. * 8.;
+    const double move_speed = elapsed_time / 1000. * 4.;
 
     if (mInput.TestUp()) // Move forward if no wall blocks our path.
     {

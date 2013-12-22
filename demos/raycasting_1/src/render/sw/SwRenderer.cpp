@@ -164,72 +164,72 @@ void SwRenderer::DrawPlayerView(const World& world, const Player& player)
     }
 
 
-    const auto& sprites = world.GetSprites();
-//     const auto& sprites_orig = world.GetSprites();
-//     auto sprites(sprites_orig);
-//     std::sort(sprites.begin(), sprites.end(), [](const Sprite& s1, const Sprite& s2){
-//         return s1.
-//     });
+//    const auto& sprites = world.GetSprites();
+////     const auto& sprites_orig = world.GetSprites();
+////     auto sprites(sprites_orig);
+////     std::sort(sprites.begin(), sprites.end(), [](const Sprite& s1, const Sprite& s2){
+////         return s1.
+////     });
 
-#define texWidth 16
-#define texHeight 16
+//#define texWidth 16
+//#define texHeight 16
 
-    for (const auto& sprite : sprites)
-    {
-        //translate sprite position to relative to camera
-        double sprite_relpos_x = sprite.x - player.mPosX;
-        double sprite_relpos_y = sprite.y - player.mPosY;
+//    for (const auto& sprite : sprites)
+//    {
+//        //translate sprite position to relative to camera
+//        double sprite_relpos_x = sprite.x - player.mPosX;
+//        double sprite_relpos_y = sprite.y - player.mPosY;
 
-        //transform sprite with the inverse camera matrix
-        // [ planeX   dirX ] -1                                       [ dirY      -dirX ]
-        // [               ]       =  1/(planeX*dirY-dirX*planeY) *   [                 ]
-        // [ planeY   dirY ]                                          [ -planeY  planeX ]
+//        //transform sprite with the inverse camera matrix
+//        // [ planeX   dirX ] -1                                       [ dirY      -dirX ]
+//        // [               ]       =  1/(planeX*dirY-dirX*planeY) *   [                 ]
+//        // [ planeY   dirY ]                                          [ -planeY  planeX ]
 
-        double inv_det = 1.0 / ((player.mPlaneX * player.mDirY) - (player.mDirX * player.mPlaneY)); //required for correct matrix multiplication
+//        double inv_det = 1.0 / ((player.mPlaneX * player.mDirY) - (player.mDirX * player.mPlaneY)); //required for correct matrix multiplication
 
-        double transform_x = inv_det * ((player.mDirY * sprite_relpos_x) - (player.mDirX * sprite_relpos_y));
-        double transform_y = inv_det * ((-player.mPlaneY * sprite_relpos_x) + (player.mPlaneX * sprite_relpos_y)); //this is actually the depth inside the screen, that what Z is in 3D       
+//        double transform_x = inv_det * ((player.mDirY * sprite_relpos_x) - (player.mDirX * sprite_relpos_y));
+//        double transform_y = inv_det * ((-player.mPlaneY * sprite_relpos_x) + (player.mPlaneX * sprite_relpos_y)); //this is actually the depth inside the screen, that what Z is in 3D
 
-        int sprite_screen_pos_x = int((mResX / 2) * (1 + transform_x / transform_y));
+//        int sprite_screen_pos_x = int((mResX / 2) * (1 + transform_x / transform_y));
 
-        //parameters for scaling and moving the sprites
-#define uDiv 1
-#define vDiv 1
-#define vMove 0.0
-        int vMoveScreen = int(vMove / transform_y);
+//        //parameters for scaling and moving the sprites
+//#define uDiv 1
+//#define vDiv 1
+//#define vMove 0.0
+//        int vMoveScreen = int(vMove / transform_y);
 
-        //calculate height of the sprite on screen
-        int spriteHeight = std::abs(int(mResY / (transform_y))) / vDiv; //using "transformY" instead of the real distance prevents fisheye
-        //calculate lowest and highest pixel to fill in current stripe
-        int drawStartY = -spriteHeight / 2 + mResY / 2 + vMoveScreen;
-        if (drawStartY < 0) drawStartY = 0;
-        int drawEndY = spriteHeight / 2 + mResY / 2 + vMoveScreen;
-        if (drawEndY >= mResY) drawEndY = mResY - 1;
+//        //calculate height of the sprite on screen
+//        int spriteHeight = std::abs(int(mResY / (transform_y))) / vDiv; //using "transformY" instead of the real distance prevents fisheye
+//        //calculate lowest and highest pixel to fill in current stripe
+//        int drawStartY = -spriteHeight / 2 + mResY / 2 + vMoveScreen;
+//        if (drawStartY < 0) drawStartY = 0;
+//        int drawEndY = spriteHeight / 2 + mResY / 2 + vMoveScreen;
+//        if (drawEndY >= mResY) drawEndY = mResY - 1;
 
-        //calculate width of the sprite
-        int spriteWidth = std::abs(int(mResY / (transform_y))) / uDiv;
-        int drawStartX = -spriteWidth / 2 + sprite_screen_pos_x;
-        if (drawStartX < 0) drawStartX = 0;
-        int drawEndX = spriteWidth / 2 + sprite_screen_pos_x;
-        if (drawEndX >= mResX) drawEndX = mResX - 1;
+//        //calculate width of the sprite
+//        int spriteWidth = std::abs(int(mResY / (transform_y))) / uDiv;
+//        int drawStartX = -spriteWidth / 2 + sprite_screen_pos_x;
+//        if (drawStartX < 0) drawStartX = 0;
+//        int drawEndX = spriteWidth / 2 + sprite_screen_pos_x;
+//        if (drawEndX >= mResX) drawEndX = mResX - 1;
 
-        //loop through every vertical stripe of the sprite on screen
-        for (int stripe = drawStartX; stripe < drawEndX; stripe++)
-        {
-            //int texX = int(256 * (stripe - (-spriteWidth / 2 + spriteScreenX)) * texWidth / spriteWidth) / 256;
-            //the conditions in the if are:
-            //1) it's in front of camera plane so you don't see things behind you
-            //2) it's on the screen (left)
-            //3) it's on the screen (right)
-            //4) ZBuffer, with perpendicular distance
-            if (transform_y > 0 && stripe > 0 && stripe < mResX && transform_y < rays[stripe].distance)
-            for (int y = drawStartY; y < drawEndY; y++) //for every pixel of the current stripe
-            {
-                auto slice = static_cast<uint32_t*>(mSurface->pixels) + (mSurface->w * stripe) + y;
-                *slice = sprite.color;
-            }
-        }
-    }
+//        //loop through every vertical stripe of the sprite on screen
+//        for (int stripe = drawStartX; stripe < drawEndX; stripe++)
+//        {
+//            //int texX = int(256 * (stripe - (-spriteWidth / 2 + spriteScreenX)) * texWidth / spriteWidth) / 256;
+//            //the conditions in the if are:
+//            //1) it's in front of camera plane so you don't see things behind you
+//            //2) it's on the screen (left)
+//            //3) it's on the screen (right)
+//            //4) ZBuffer, with perpendicular distance
+//            if (transform_y > 0 && stripe > 0 && stripe < mResX && transform_y < rays[stripe].distance)
+//            for (int y = drawStartY; y < drawEndY; y++) //for every pixel of the current stripe
+//            {
+//                auto slice = static_cast<uint32_t*>(mSurface->pixels) + (mSurface->w * stripe) + y;
+//                *slice = sprite.color;
+//            }
+//        }
+//    }
 }
 
 void SwRenderer::DrawMinimap(const World& world, const Player& player)

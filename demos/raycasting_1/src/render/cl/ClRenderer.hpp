@@ -10,7 +10,7 @@
 
 #include <CL/cl.h>
 
-class Level;
+class World;
 class Player;
 
 class ClRenderer : public Renderer
@@ -24,19 +24,19 @@ public:
 
     void PreRender() override;
     void PostRender() override;
-    void DoRender(const Level& level, const Player& player) override;
+    void DoRender(const World& world) override;
 
 private:
     void InitOpenCl();
     void ShutdownOpenCl();
-    void InitLevelBuffer(const Level& level);
+    void InitLevelBuffer(const World& world);
 
     cl::screen_params GetScreenKernelArg() const;
     cl::player_params GetPlayerKernelArg(const Player& player) const;
     cl::level_params GetLevelKernelArg(const Level& level) const;
 
-    void InitMinimap(const Level& level);
-    void DrawMinimap(const Level& level, const Player& player);
+    void InitMinimap(const World& world);
+    void DrawMinimap(const World& world, const Player& player);
 
     // Screen variables
     SDL_Renderer* mRenderer = nullptr;

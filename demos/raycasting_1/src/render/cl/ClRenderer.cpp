@@ -1,7 +1,7 @@
 #ifdef WITH_OPENCL
 
 #include "ClRenderer.hpp"
-#include "../../Level.hpp"
+#include "../../World.hpp"
 #include "../../Player.hpp"
 
 #include <SDL.h>

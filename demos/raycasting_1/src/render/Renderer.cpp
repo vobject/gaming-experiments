@@ -1,8 +1,11 @@
 #include "Renderer.hpp"
 #include "../Utils.hpp"
 
+#include <sstream>
+
 Renderer::Renderer(const int res_x, const int res_y,
-                   const std::string& app_name, const std::string& renderer_name)
+                   const std::string& app_name,
+                   const std::string& renderer_name)
     : mResX(res_x)
     , mResY(res_y)
     , mAppName(app_name)

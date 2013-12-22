@@ -7,6 +7,7 @@ IF(NOT CMAKE_BUILD_TYPE)
     SET(CMAKE_BUILD_TYPE "Debug")
 ENDIF()
 
+OPTION(WITH_TEXTURE "Enable textured rendering." OFF)
 OPTION(WITH_OPENCL "Enable OpenCL option for rendering." OFF)
 OPTION(WITH_SVG "Enable SVG loading option for rendering." OFF)
 
@@ -62,6 +63,14 @@ FILE(GLOB PRJ_SRC src/*.cpp
                   src/*/*/*.cpp)
 
 FILE(GLOB PRJ_OCL src/render/cl/cl_renderer.cl)
+
+IF(WITH_TEXTURE)
+    MESSAGE(STATUS "Enabling textured renders.")
+
+    ADD_DEFINITIONS(-DWITH_TEXTURE)
+ELSE()
+    MESSAGE(STATUS "Not using textured renders.")
+ENDIF()
 
 IF(WITH_OPENCL)
     MESSAGE(STATUS "Using OpenCL.")

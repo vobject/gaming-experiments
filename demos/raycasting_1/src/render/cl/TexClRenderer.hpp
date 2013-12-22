@@ -2,6 +2,7 @@
 #define TEX_CL_RENDERER_HPP
 
 #ifdef WITH_OPENCL
+#ifdef WITH_TEXTURE
 
 #include "../Renderer.hpp"
 #include "kernel_params.hpp"
@@ -71,6 +72,7 @@ private:
    cl_mem mWall4Buf = nullptr;
 };
 
+#endif // WITH_TEXTURE
 #endif // WITH_OPENCL
 
 #endif // TEX_CL_RENDERER_HPP

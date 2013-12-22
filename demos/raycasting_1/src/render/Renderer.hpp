@@ -4,10 +4,8 @@
 #include <SDL.h>
 
 #include <string>
-#include <sstream>
 
 class World;
-class Player;
 
 class Renderer
 {
@@ -31,7 +29,7 @@ public:
 
     virtual void PreRender() = 0;
     virtual void PostRender() = 0;
-    virtual void DoRender(const World& world, const Player& player) = 0;
+    virtual void DoRender(const World& world) = 0;
 
 protected:
     const int mResX;
@@ -48,7 +46,6 @@ private:
     int mFrameCount = 0;
     bool mRefreshCaption = false;
     int mFPS = 0;
-
 };
 
 #endif // RENDERER_HPP

@@ -1,40 +1,54 @@
 #ifndef PLAYER_HPP
 #define PLAYER_HPP
 
+#include "Ray.hpp"
+
+#include <memory>
+#include <vector>
+
 class World;
 class Input;
 
 class Player
 {
 public:
-    Player(const World& world, const Input& input);
+    Player(const World& world);
     ~Player();
 
     Player(Player&) = delete;
     Player& operator=(Player&) = delete;
 
-    void Update(int elapsed_time);
+    Input& GetInput() const;
+    void Update(long elapsed_time);
+
+    void SetHorizontalRayCount(int ray_cnt);
+    const std::vector<RaycastResult>& GetRaycastResults() const;
 
 public: // hack
-    void UpdateRotation(int elapsed_time);
-    void UpdateMovement(int elapsed_time);
+    void UpdateRays(long elapsed_time);
+    void UpdateRotation(long elapsed_time);
+    void UpdateMovement(long elapsed_time);
+
+    void MoveTo(double x, double y);
 
     const World& mWorld;
-    const Input& mInput;
+    std::unique_ptr<Input> mInput;
 
     // Position vector of the player.
-    double mPosX = 20.;
-    double mPosY = 20.;
+    double mPosX = 20.0;
+    double mPosY = 20.0;
 
     // Direction vector of the player.
-    double mDirX = -1.;
-    double mDirY = 0.;
+    double mDirX = -1.0;
+    double mDirY = 0.0;
 
     // Camera plane of the player.
     // Must be perpendicular to the direction (but can change its length).
     // The ratio between direction length and the camera plane determinates FOV.
-    double mPlaneX = 0.;
+    double mPlaneX = 0.0;
     double mPlaneY = 0.66;
+
+    std::vector<RaycastResult> mRays;
 };
 
 #endif // PLAYER_HPP

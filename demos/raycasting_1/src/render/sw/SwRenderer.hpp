@@ -20,13 +20,13 @@ public:
 
     void PreRender() override;
     void PostRender() override;
-    void DoRender(const World& level, const Player& player) override;
+    void DoRender(const World& world) override;
 
 protected:
-    void InitMinimap(const World& level);
+    void InitMinimap(const World& world);
 
-    virtual void DrawPlayerView(const World& level, const Player& player);
-    virtual void DrawMinimap(const World& level, const Player& player);
+    virtual void DrawPlayerView(const World& world, const Player& player);
+    virtual void DrawMinimap(const World& world, const Player& player);
 
     SDL_Renderer* mRenderer = nullptr;
     SDL_Texture* mTexture = nullptr;
@@ -43,6 +43,7 @@ protected:
     Uint32 mMinimapFloorColor = 0;
     Uint32 mMinimapWallColor = 0;
     Uint32 mMinimapPlayerColor = 0;
+    Uint32 mMinimapRayColor = 0;
 };
 
 #endif // SW_RENDERER_HPP

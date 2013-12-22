@@ -1,4 +1,6 @@
 #include "RcDemo.hpp"
+#include "World.hpp"
+#include "Player.hpp"
 #include "Utils.hpp"
 #include "render/sw/SwRenderer.hpp"
 #include "render/sw/SwRendererMt.hpp"
@@ -26,6 +28,16 @@ void RcDemo::Start()
 
     Initialize();
     Mainloop();
+}
+
+const Renderer& RcDemo::GetRenderer() const
+{
+    return *mRenderer;
+}
+
+const World& RcDemo::GetWorld() const
+{
+    return *mWorld;
 }
 
 void RcDemo::Mainloop()
@@ -69,16 +81,15 @@ void RcDemo::Initialize()
 
     mRenderer = Utils::make_unique<SwRenderer>(res_x, res_y, app_name);
 
-    mWorld = Utils::make_unique<World>();
-    mInput = Utils::make_unique<Input>(SDL_SCANCODE_W, SDL_SCANCODE_S,
-                                       SDL_SCANCODE_A, SDL_SCANCODE_D,
-                                       SDL_SCANCODE_E, SDL_SCANCODE_F);
-    mPlayer = Utils::make_unique<Player>(*mWorld, *mInput);
+    // load the default level
+    mWorld = Utils::make_unique<World>("");
+    mWorld->InternalGetPlayer().SetHorizontalRayCount(res_x);
 }
 
 void RcDemo::ProcessInput()
 {
-    mInput->Update();
+    // update all inputs regardless of there being an observable event or not
+    mWorld->ProcessInput();
 
     SDL_Event event;
     if (!SDL_PollEvent(&event)) {
@@ -112,9 +123,11 @@ void RcDemo::ProcessInput()
             case SDL_SCANCODE_4:
                 mRenderer = Utils::make_unique<SwRendererMt>(res_x, res_y, app_name, 4);
                 break;
+#ifdef WITH_TEXTURE
             case SDL_SCANCODE_5:
                 mRenderer = Utils::make_unique<TexSwRenderer>(res_x, res_y, app_name);
                 break;
+#endif // WITH_TEXTURE
 #ifdef WITH_OPENCL
             case SDL_SCANCODE_6:
                 mRenderer = Utils::make_unique<ClRenderer>(res_x, res_y, app_name);
@@ -136,10 +149,10 @@ void RcDemo::ProcessInput()
         switch (event.key.keysym.scancode)
         {
             case SDL_SCANCODE_COMMA:
-                mPlayer->mPlaneY -= 0.05;
+                mWorld->InternalGetPlayer().mPlaneY -= 0.05;
                 break;
             case SDL_SCANCODE_PERIOD:
-                mPlayer->mPlaneY += 0.05;
+                mWorld->InternalGetPlayer().mPlaneY += 0.05;
                 break;
             default:
                 break;
@@ -152,12 +165,12 @@ void RcDemo::UpdateScene(const long app_time, const long elapsed_time)
 {
     (void) app_time;
 
-    mPlayer->Update(elapsed_time);
+    mWorld->Update(elapsed_time);
 }
 
 void RcDemo::RenderScene()
 {
     mRenderer->PreRender();
-    mRenderer->DoRender(*mWorld, *mPlayer);
+    mRenderer->DoRender(*mWorld);
     mRenderer->PostRender();
 }

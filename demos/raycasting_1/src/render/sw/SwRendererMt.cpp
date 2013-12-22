@@ -19,42 +19,24 @@ SwRendererMt::~SwRendererMt()
 
 }
 
-void SwRendererMt::DrawPlayerView(const World& level, const Player& player)
+void SwRendererMt::DrawPlayerView(const World& world, const Player& player)
 {
     const int thread_slice = mResX / mThreadCnt;
     std::vector<std::thread> threads(mThreadCnt);
 
-    const double player_pos_x = player.mPosX;
-    const double player_pos_y = player.mPosY;
-    const double player_dir_x = player.mDirX;
-    const double player_dir_y = player.mDirY;
-    const double player_plane_x = player.mPlaneX;
-    const double player_plane_y = player.mPlaneY;
-
-    auto is_level_blocking = [&](const int map_x, const int map_y)
-    {
-        return level.IsBlocking(map_x, map_y);
-    };
+    const auto rays = player.GetRaycastResults();
 
     auto render = [&](int resx_start, int resx_stop)
     {
         for (auto x = resx_start; x < resx_stop; x++)
         {
-           // Current column position relative to the center of the screen.
-           // Left edge is -1, right edge is 1, and center is 0.
-           const double cam_x = 2.0 * x / mResX - 1;
+            const auto& ray = rays[x];
 
-           // Starting direction of the current ray to be cast.
-           const double slice_dir_x = player_dir_x + (player_plane_x * cam_x);
-           const double slice_dir_y = player_dir_y + (player_plane_y * cam_x);
+            const auto wall_type = world.GetCellType(ray.map_pos_x, ray.map_pos_y);
+            const auto wall_color = mWallColors[wall_type];
+            auto slice = static_cast<uint32_t*>(mSurface->pixels) + (mSurface->w * x);
 
-           const RaycastResult r = cast_ray(player_pos_x, player_pos_y,
-                                            slice_dir_x, slice_dir_y,
-                                            is_level_blocking);
-           auto wall_color = mWallColors[level.GetCellType(r.map_pos_x, r.map_pos_y)];
-           auto pixels = static_cast<uint32_t*>(mSurface->pixels) + (mSurface->w * x);
-
-           draw_slice(r, mResY, pixels, wall_color, mCeilingColor, mFloorColor);
+            draw_slice(ray, mResY, slice, wall_color, mCeilingColor, mFloorColor);
         }
     };
 

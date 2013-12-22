@@ -10,7 +10,7 @@ public:
     virtual ~SwRendererMt();
 
 protected:
-    void DrawPlayerView(const World& level, const Player& player) override;
+    void DrawPlayerView(const World& world, const Player& player) override;
 
     const int mThreadCnt;
 };

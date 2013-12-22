@@ -4,17 +4,21 @@
 #include <algorithm>
 #include <functional>
 
-struct RaycastResult {
-    const int map_pos_x;
-    const int map_pos_y;
-    const double intersect_x;
-    const double intersect_y;
-    const double distance;
-    const bool vertical_hit;
+struct RaycastResult
+{
+    int map_pos_x = 0;
+    int map_pos_y = 0;
+    double intersect_x = 0.0;
+    double intersect_y = 0.0;
+    double distance = 0.0;
+    bool vertical_hit = false;
 
-    RaycastResult(const int map_pos_x, const int map_pos_y,
-                  const double intersect_x, const double intersect_y,
-                  const double distance, const bool vertical_hit)
+    // default ctor needed for vector
+    RaycastResult() { }
+
+    RaycastResult(int map_pos_x, int map_pos_y,
+                  double intersect_x, double intersect_y,
+                  double distance, bool vertical_hit)
         : map_pos_x{map_pos_x}
         , map_pos_y{map_pos_y}
         , intersect_x{intersect_x}
@@ -23,13 +27,23 @@ struct RaycastResult {
         , vertical_hit{vertical_hit}
     { }
 
-    RaycastResult(RaycastResult&) = delete;
+    // copy ctor needed for vector
+    RaycastResult(const RaycastResult& r)
+        : map_pos_x{r.map_pos_x}
+        , map_pos_y{r.map_pos_y}
+        , intersect_x{r.intersect_x}
+        , intersect_y{r.intersect_y}
+        , distance{r.distance}
+        , vertical_hit{r.vertical_hit}
+    { }
+
     RaycastResult& operator=(RaycastResult&) = delete;
 };
 
-inline RaycastResult cast_ray(const double ray_pos_x, const double ray_pos_y,
-                              const double ray_dir_x, const double ray_dir_y,
-                              std::function<bool(int, int)> is_level_blocking)
+inline void cast_ray(const double ray_pos_x, const double ray_pos_y,
+                     const double ray_dir_x, const double ray_dir_y,
+                     std::function<bool(int, int)> is_level_blocking,
+                     RaycastResult& result)
 {
     // player's current grid position inside the level
     int map_x = static_cast<int>(ray_pos_x);
@@ -94,7 +108,7 @@ inline RaycastResult cast_ray(const double ray_pos_x, const double ray_pos_y,
         intersect_x = map_x + (1 - step_x) / 2;
         intersect_y = ray_pos_y + ((intersect_x - ray_pos_x) / ray_dir_x) * ray_dir_y;
 
-        // FIXME: May be to small.
+        // FIXME: might be too small
         distance = std::abs((intersect_x - ray_pos_x) / ray_dir_x);
     }
     else
@@ -102,11 +116,16 @@ inline RaycastResult cast_ray(const double ray_pos_x, const double ray_pos_y,
         intersect_x = map_y + (1 - step_y) / 2;
         intersect_y = ray_pos_x + ((intersect_x - ray_pos_y) / ray_dir_y) * ray_dir_x;
 
-        // FIXME: May be too small.
+        // FIXME: might be too small
         distance = std::abs((intersect_x - ray_pos_y) / ray_dir_y);
     }
 
-    return { map_x, map_y, intersect_x, intersect_y, distance, vertical_side_hit };
+    result.map_pos_x = map_x;
+    result.map_pos_y = map_y;
+    result.intersect_x = intersect_x;
+    result.intersect_y = intersect_y;
+    result.distance = distance;
+    result.vertical_hit = vertical_side_hit;
 }
 
 #endif // RAY_HPP

@@ -1,4 +1,5 @@
 #ifdef WITH_OPENCL
+#ifdef WITH_TEXTURE
 
 #include "TexClRenderer.hpp"
 #include "../ResourceCache.hpp"
@@ -393,4 +394,5 @@ void TexClRenderer::DrawMinimap(const Level& level, const Player& player)
     }
 }
 
+#endif // WITH_TEXTURE
 #endif // WITH_OPENCL

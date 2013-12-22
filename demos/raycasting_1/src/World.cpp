@@ -1,10 +1,13 @@
 #include "World.hpp"
+#include "Player.hpp"
+#include "Input.hpp"
+#include "Utils.hpp"
 
 namespace {
 
 const int WORLD_MAP_SIZE_WIDTH = 24;
 const int WORLD_MAP_SIZE_HEIGHT = 24;
-uint32_t WORLD_MAP_GRID[WORLD_MAP_SIZE_HEIGHT][WORLD_MAP_SIZE_WIDTH] =
+const uint32_t WORLD_MAP_GRID[WORLD_MAP_SIZE_HEIGHT][WORLD_MAP_SIZE_WIDTH] =
 {
     { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 },
     { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 },
@@ -34,14 +37,26 @@ uint32_t WORLD_MAP_GRID[WORLD_MAP_SIZE_HEIGHT][WORLD_MAP_SIZE_WIDTH] =
 
 } // unnamed namespace
 
-World::World()
+World::World(const std::string& level)
 {
+    (void) level;
 
+    CreatePlayer();
 }
 
 World::~World()
 {
 
+}
+
+void World::ProcessInput()
+{
+    mPlayer->GetInput().Update();
+}
+
+void World::Update(const long elapsed_time)
+{
+    mPlayer->Update(elapsed_time);
 }
 
 int World::GetWidth() const
@@ -52,6 +67,11 @@ int World::GetWidth() const
 int World::GetHeight() const
 {
     return WORLD_MAP_SIZE_HEIGHT;
+}
+
+const Player& World::GetPlayer() const
+{
+    return *mPlayer;
 }
 
 uint32_t World::GetCellType(const int x, const int y) const
@@ -70,4 +90,21 @@ bool World::IsBlocking(const int x, const int y) const
 
     // '0' means floor, we can only walk on floor cells
     return (WORLD_MAP_GRID[x][y] != 0);
+}
+
+Player& World::InternalGetPlayer() const
+{
+    return *mPlayer;
+}
+
+void World::CreatePlayer()
+{
+    // create the default player
+    mPlayer = Utils::make_unique<Player>(*this);
+
+    // default placement in this world
+    mPlayer->mPosX = 20.;
+    mPlayer->mPosY = 10.;
+    mPlayer->mDirX = -1.;
+    mPlayer->mDirY = 0.;
 }

@@ -1,3 +1,5 @@
+#ifdef WITH_TEXTURE
+
 #include "TexSwRenderer.hpp"
 #include "Slice.hpp"
 #include "../ResourceCache.hpp"
@@ -71,3 +73,5 @@ void TexSwRenderer::DrawPlayerView(const World& level, const Player& player)
     //   slice.Draw(ray, player_pos, ray_dir, level, *mResCache);
     //}
 }
+
+#endif // WITH_TEXTURE

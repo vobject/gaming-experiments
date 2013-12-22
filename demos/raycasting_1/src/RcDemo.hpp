@@ -1,13 +1,11 @@
 #ifndef RCDEMO_HPP
 #define RCDEMO_HPP
 
-#include "World.hpp"
-#include "Input.hpp"
-#include "Player.hpp"
 
 #include <memory>
 
 class Renderer;
+class World;
 
 class RcDemo
 {
@@ -16,6 +14,9 @@ public:
     ~RcDemo();
 
    void Start();
+
+   const Renderer& GetRenderer() const;
+   const World& GetWorld() const;
 
 private:
     void Mainloop();
@@ -29,8 +30,6 @@ private:
 
     std::unique_ptr<Renderer> mRenderer;
     std::unique_ptr<World> mWorld;
-    std::unique_ptr<Input> mInput;
-    std::unique_ptr<Player> mPlayer;
 };
 
 #endif // RCDEMO_HPP

@@ -52,6 +52,8 @@ inline void draw_slice(const RaycastResult& r, int res_y,
     }
 }
 
+#ifdef WITH_TEXTURE
+
 inline void draw_slice(
     const RaycastResult& r,
     int x,
@@ -183,5 +185,7 @@ inline void draw_slice(
         slice_buf++;
     }
 }
+
+#endif // WITH_TEXTURE
 
 #endif // SIMPLE_SLICE_HPP

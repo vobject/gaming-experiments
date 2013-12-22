@@ -1,11 +1,20 @@
 #ifndef WORLD_HPP
 #define WORLD_HPP
 
-#include <string>
 #include <memory>
+#include <string>
+#include <vector>
 #include <cstdint>
 
 class Player;
+
+class Sprite
+{
+public:
+    double x;
+    double y;
+    int color;
+};
 
 class World
 {
@@ -22,6 +31,7 @@ public:
     int GetWidth() const;
     int GetHeight() const;
     const Player& GetPlayer() const;
+    const std::vector<Sprite>& GetSprites() const;
 
     uint32_t GetCellType(int x, int y) const;
     bool IsBlocking(int x, int y) const;
@@ -33,6 +43,7 @@ private:
     void CreatePlayer();
 
     std::unique_ptr<Player> mPlayer;
+    std::vector<Sprite> mSprites;
 };
 
 #endif // WORLD_HPP

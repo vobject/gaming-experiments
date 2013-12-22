@@ -60,7 +60,6 @@ inline void draw_slice(
     int res_y,
     const double player_pos_x, const double player_pos_y,
     const double player_dir_x, const double player_dir_y,
-    //uint32_t* slice_buf,
     SDL_Surface* wall,
     const World& lvl,
     const ResourceCache& res

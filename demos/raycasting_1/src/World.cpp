@@ -42,6 +42,13 @@ World::World(const std::string& level)
     (void) level;
 
     CreatePlayer();
+
+    // dummy sprites
+    mSprites = {
+        { 12.0, 12.0, 0x00 },
+        { 12.0, 15.0, 0xff00ff },
+        { 6.0, 12.0, 0xbfbf00 }
+    };
 }
 
 World::~World()
@@ -72,6 +79,11 @@ int World::GetHeight() const
 const Player& World::GetPlayer() const
 {
     return *mPlayer;
+}
+
+const std::vector<Sprite>& World::GetSprites() const
+{
+    return mSprites;
 }
 
 uint32_t World::GetCellType(const int x, const int y) const

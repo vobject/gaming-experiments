@@ -48,6 +48,8 @@ public: // hack
     double mPlaneX = 0.0;
     double mPlaneY = 0.66;
 
+    int mVerticalLook = 0;
+
     std::vector<RaycastResult> mRays;
 };
 

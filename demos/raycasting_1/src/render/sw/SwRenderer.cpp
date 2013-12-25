@@ -160,7 +160,7 @@ void SwRenderer::DrawPlayerView(const World& world, const Player& player)
         const auto wall_color = mWallColors[wall_type];
         auto slice = static_cast<uint32_t*>(mSurface->pixels) + (mSurface->w * x);
 
-        draw_slice(ray, mResY, slice, wall_color, mCeilingColor, mFloorColor);
+        draw_slice(ray, mResY, slice, wall_color, mCeilingColor, mFloorColor, player.mVerticalLook);
     }
 
 

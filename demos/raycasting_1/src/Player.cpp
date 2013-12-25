@@ -69,7 +69,7 @@ void Player::UpdateRotation(const long elapsed_time)
 {
     const double rot_speed = elapsed_time / 1000. * 2.0;
 
-    if (auto distance = mInput->TestMotionLeft()) // Rotate to the left.
+    if (auto distance = mInput->TestMotionLeft()) // rotate to the left
     {
         const auto rot_dist = rot_speed * distance;
 
@@ -84,7 +84,7 @@ void Player::UpdateRotation(const long elapsed_time)
         mPlaneY = old_plane_x * std::sin(rot_dist) + mPlaneY * std::cos(rot_dist);
     }
 
-    if (auto distance = mInput->TestMotionRight()) // Rotate to the right.
+    if (auto distance = mInput->TestMotionRight()) // rotate to the right
     {
         const auto rot_dist = rot_speed * distance;
 
@@ -97,6 +97,16 @@ void Player::UpdateRotation(const long elapsed_time)
         const auto old_plane_x = mPlaneX;
         mPlaneX = old_plane_x * std::cos(-rot_dist) - mPlaneY * std::sin(-rot_dist);
         mPlaneY = old_plane_x * std::sin(-rot_dist) + mPlaneY * std::cos(-rot_dist);
+    }
+
+    if (auto distance = mInput->TestMotionUp()) // look up
+    {
+        mVerticalLook -= distance;
+    }
+
+    if (auto distance = mInput->TestMotionDown()) // look down
+    {
+        mVerticalLook += distance;
     }
 }
 

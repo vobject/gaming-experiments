@@ -38,7 +38,7 @@ void TexSwRenderer::DrawPlayerView(const World& world, const Player& player)
         const double ray_dir_y = player.mDirY + (player.mPlaneY * cam_x);
 
         draw_slice(ray, x, mResY, player.mPosX, player.mPosY, ray_dir_x, ray_dir_y,
-            mSurface, world, *mResCache);
+            player.mVerticalLook, mSurface, world, *mResCache);
     }
 }
 

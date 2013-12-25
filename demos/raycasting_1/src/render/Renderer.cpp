@@ -69,6 +69,8 @@ void Renderer::Startup()
 
 void Renderer::Shutdown()
 {
+    SDL_SetRelativeMouseMode(SDL_FALSE);
+
     if (mFrameTimer) {
         SDL_RemoveTimer(mFrameTimer);
         mFrameTimer = 0;

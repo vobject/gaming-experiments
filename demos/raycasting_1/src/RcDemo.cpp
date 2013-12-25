@@ -112,29 +112,36 @@ void RcDemo::ProcessInput()
         switch (event.key.keysym.scancode)
         {
             case SDL_SCANCODE_1:
+                mRenderer = nullptr;
                 mRenderer = Utils::make_unique<SwRenderer>(res_x, res_y, app_name);
                 break;
             case SDL_SCANCODE_2:
+                mRenderer = nullptr;
                 mRenderer = Utils::make_unique<SwRendererMt>(res_x, res_y, app_name, 1);
                 break;
             case SDL_SCANCODE_3:
+                mRenderer = nullptr;
                 mRenderer = Utils::make_unique<SwRendererMt>(res_x, res_y, app_name, 2);
                 break;
             case SDL_SCANCODE_4:
+                mRenderer = nullptr;
                 mRenderer = Utils::make_unique<SwRendererMt>(res_x, res_y, app_name, 4);
                 break;
 #ifdef WITH_TEXTURE
             case SDL_SCANCODE_5:
+                mRenderer = nullptr;
                 mRenderer = Utils::make_unique<TexSwRenderer>(res_x, res_y, app_name);
                 break;
 #endif // WITH_TEXTURE
 #ifdef WITH_OPENCL
             case SDL_SCANCODE_6:
+                mRenderer = nullptr;
                 mRenderer = Utils::make_unique<ClRenderer>(res_x, res_y, app_name);
                 break;
 #endif // WITH_OPENCL
 #ifdef WITH_SVG
             case SDL_SCANCODE_7:
+                mRenderer = nullptr;
                 mRenderer = Utils::make_unique<SvgSwRenderer>(res_x, res_y, app_name);
                 break;
 #endif // WITH_SVG

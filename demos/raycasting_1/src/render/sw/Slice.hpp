@@ -9,7 +9,7 @@
 
 inline void draw_slice(const RaycastResult& r, int res_y,
                        uint32_t* slice_buf, uint32_t wall_color,
-                       uint32_t ceiling_color, uint32_t floor_color)
+                       uint32_t ceiling_color, uint32_t floor_color, int verticalLook)
 {
     // calculate the height of the wall (vertical line) to draw on screen
     const double wall_height_d = std::abs(res_y / r.distance);
@@ -19,8 +19,8 @@ inline void draw_slice(const RaycastResult& r, int res_y,
     //  because distance was so small. This will crash later.
 
     // Set where the vertical line should be drawn.
-    int wall_start = (res_y / 2) - (wall_height / 2);
-    int wall_end = (res_y / 2) + (wall_height / 2);
+    int wall_start = ((res_y / 2) - (wall_height / 2)) + verticalLook;
+    int wall_end = ((res_y / 2) + (wall_height / 2)) + verticalLook;
 
     if (wall_start < 0) {
         wall_start = 0;
@@ -60,6 +60,7 @@ inline void draw_slice(
     int res_y,
     const double player_pos_x, const double player_pos_y,
     const double player_dir_x, const double player_dir_y,
+    int verticalLook,
     SDL_Surface* wall,
     const World& lvl,
     const ResourceCache& res
@@ -73,8 +74,8 @@ inline void draw_slice(
     //  because distance was so small. This will crash later.
 
     // Set where the vertical line should be drawn.
-    int wall_start = (res_y / 2) - (wall_height / 2);
-    int wall_end = (res_y / 2) + (wall_height / 2);
+    int wall_start = ((res_y / 2) - (wall_height / 2)) + verticalLook;
+    int wall_end = ((res_y / 2) + (wall_height / 2)) + verticalLook;
 
     if (wall_start < 0) {
         wall_start = 0;

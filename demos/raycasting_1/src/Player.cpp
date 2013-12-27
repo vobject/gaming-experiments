@@ -118,14 +118,14 @@ void Player::UpdateMovement(const long elapsed_time)
     {
         const auto new_pos_x = mPosX + (mDirX * move_speed);
         const auto new_pos_y = mPosY + (mDirY * move_speed);
-        MoveTo(new_pos_x, new_pos_y);
+        MoveTo(new_pos_x, new_pos_y, true);
     }
 
     if (mInput->TestDown()) // move backward
     {
         const auto new_pos_x = mPosX - (mDirX * move_speed);
         const auto new_pos_y = mPosY - (mDirY * move_speed);
-        MoveTo(new_pos_x, new_pos_y);
+        MoveTo(new_pos_x, new_pos_y, true);
     }
 
     if (mInput->TestLeft()) // strafe left
@@ -137,7 +137,7 @@ void Player::UpdateMovement(const long elapsed_time)
 
         const auto new_pos_x = mPosX + (dir_x * move_speed);
         const auto new_pos_y = mPosY + (dir_y * move_speed);
-        MoveTo(new_pos_x, new_pos_y);
+        MoveTo(new_pos_x, new_pos_y, true);
     }
 
     if (mInput->TestRight()) // strafe right
@@ -149,13 +149,13 @@ void Player::UpdateMovement(const long elapsed_time)
 
         const auto new_pos_x = mPosX + (dir_x * move_speed);
         const auto new_pos_y = mPosY + (dir_y * move_speed);
-        MoveTo(new_pos_x, new_pos_y);
+        MoveTo(new_pos_x, new_pos_y, true);
     }
 }
 
-void Player::MoveTo(const double x, const double y)
+void Player::MoveTo(const double x, const double y, const bool rumble_on_wall)
 {
-    const double radius = 0.3;
+    const double radius = 0.25;
 
     auto new_pos_x = x;
     auto new_pos_y = y;
@@ -173,24 +173,40 @@ void Player::MoveTo(const double x, const double y)
     if (blockTop && ((new_pos_y - new_cell_y) < radius)) {
         new_pos_y = new_cell_y + radius;
         mPosY = new_pos_y;
+
+        if (rumble_on_wall) {
+            mInput->Rumble();
+        }
     }
 
     const auto blockBottom = mWorld.IsBlocking(new_cell_x, new_cell_y + 1);
     if (blockBottom && (((new_cell_y + 1) - new_pos_y) < radius)) {
         new_pos_y = new_cell_y + 1 - radius;
         mPosY = new_pos_y;
+
+        if (rumble_on_wall) {
+            mInput->Rumble();
+        }
     }
 
     const auto blockLeft = mWorld.IsBlocking(new_cell_x - 1, new_cell_y);
     if (blockLeft && ((new_pos_x - new_cell_x) < radius)) {
         new_pos_x = new_cell_x + radius;
         mPosX = new_pos_x;
+
+        if (rumble_on_wall) {
+            mInput->Rumble();
+        }
     }
 
     const auto blockRight = mWorld.IsBlocking(new_cell_x + 1, new_cell_y);
     if (blockRight && (((new_cell_x + 1) - new_pos_x) < radius)) {
         new_pos_x = new_cell_x + 1 - radius;
         mPosX = new_pos_x;
+
+        if (rumble_on_wall) {
+            mInput->Rumble();
+        }
     }
 
     // check top left
@@ -207,8 +223,7 @@ void Player::MoveTo(const double x, const double y)
             if (dxdx > dydy) {
                 new_pos_x = new_cell_x + radius;
                 mPosX = new_pos_x;
-            }
-            else {
+            } else {
                 new_pos_y = new_cell_y + radius;
                 mPosY = new_pos_y;
             }
@@ -229,8 +244,7 @@ void Player::MoveTo(const double x, const double y)
             if (dxdx > dydy) {
                 new_pos_x = new_cell_x + 1 - radius;
                 mPosX = new_pos_x;
-            }
-            else {
+            } else {
                 new_pos_y = new_cell_y + radius;
                 mPosY = new_pos_y;
             }
@@ -251,8 +265,7 @@ void Player::MoveTo(const double x, const double y)
             if (dxdx > dydy) {
                 new_pos_x = new_cell_x + radius;
                 mPosX = new_pos_x;
-            }
-            else {
+            } else {
                 new_pos_y = new_cell_y + 1 - radius;
                 mPosY = new_pos_y;
             }
@@ -273,8 +286,7 @@ void Player::MoveTo(const double x, const double y)
             if (dxdx > dydy) {
                 new_pos_x = new_cell_x + 1 - radius;
                 mPosX = new_pos_x;
-            }
-            else {
+            } else {
                 new_pos_y = new_cell_y + 1 - radius;
                 mPosY = new_pos_y;
             }

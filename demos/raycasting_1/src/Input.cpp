@@ -39,6 +39,12 @@ Input::Input(
         if (name == XBOX360_CONTROLLER_NAME) {
             // only XBOX360 controller are supported
             mController = controller;
+
+            // xbox360 controllers are haptic
+            auto* const js = SDL_GameControllerGetJoystick(mController);
+            if (SDL_JoystickIsHaptic(js)) {
+                mControllerHaptic = SDL_HapticOpenFromJoystick(js);
+            }
             break;
         }
 
@@ -48,6 +54,11 @@ Input::Input(
 
 Input::~Input()
 {
+    if (mControllerHaptic) {
+        SDL_HapticClose(mControllerHaptic);
+        mControllerHaptic = nullptr;
+    }
+
     if (mController) {
         SDL_GameControllerClose(mController);
         mController = nullptr;
@@ -148,4 +159,12 @@ int Input::TestMotionLeft() const
 int Input::TestMotionRight() const
 {
     return mMouseLookRight ? mMouseLookRight : mControllerLookRight;
+}
+
+void Input::Rumble()
+{
+    SDL_HapticRumbleStop(mControllerHaptic);
+
+    SDL_HapticRumbleInit(mControllerHaptic);
+    SDL_HapticRumblePlay(mControllerHaptic, 0.25, 250);
 }

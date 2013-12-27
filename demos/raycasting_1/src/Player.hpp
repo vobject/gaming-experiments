@@ -5,6 +5,8 @@
 
 #include <memory>
 #include <vector>
+#include <algorithm>
+#include <SDL.h>
 
 class World;
 class Input;
@@ -29,14 +31,14 @@ public: // hack
     void UpdateRotation(long elapsed_time);
     void UpdateMovement(long elapsed_time);
 
-    void MoveTo(double x, double y);
+    void MoveTo(double x, double y, bool rumble_on_wall);
 
     const World& mWorld;
     std::unique_ptr<Input> mInput;
 
     // Position vector of the player.
-    double mPosX = 20.0;
-    double mPosY = 20.0;
+    double mPosX = 1.5;
+    double mPosY = 1.5;
 
     // Direction vector of the player.
     double mDirX = -1.0;
@@ -51,6 +53,23 @@ public: // hack
     int mVerticalLook = 0;
 
     std::vector<RaycastResult> mRays;
+
+
+
+
+// public:
+//     double height2 = 32;
+//     double fov2 = 60.0;
+// 
+//     double posx2 = 1.5 * 64;
+//     double posy2 = 2.5 * 64;
+//     double angle2 = 60.0;
+// 
+//     double planex2 = 320;
+//     double planey2 = 200;
+// 
+//     double plane_dist2 = planex2 / 2 / std::tan((fov2 / 2) * M_PI / 180);
+//     double angle_per_ray2 = fov2 / planex2;
 };
 
 #endif // PLAYER_HPP

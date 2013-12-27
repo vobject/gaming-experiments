@@ -33,6 +33,8 @@ public:
     int TestMotionUp() const;
     int TestMotionDown() const;
 
+    void Rumble();
+
 private:
     const SDL_Scancode mUpKey;
     const SDL_Scancode mDownKey;
@@ -43,6 +45,7 @@ private:
 
     static const std::string XBOX360_CONTROLLER_NAME;
     SDL_GameController* mController = nullptr;
+    SDL_Haptic* mControllerHaptic = nullptr;
 
     bool mUpKeyPressed = false;
     bool mDownKeyPressed = false;

@@ -3,6 +3,8 @@
 
 #include <SDL.h>
 
+#include <string>
+
 class Input
 {
 public:
@@ -39,6 +41,9 @@ private:
     const SDL_Scancode mAction1Key;
     const SDL_Scancode mAction2Key;
 
+    static const std::string XBOX360_CONTROLLER_NAME;
+    SDL_GameController* mController = nullptr;
+
     bool mUpKeyPressed = false;
     bool mDownKeyPressed = false;
     bool mLeftKeyPressed = false;
@@ -46,10 +51,19 @@ private:
     bool mAction1KeyPressed = false;
     bool mAction2KeyPressed = false;
 
-    int mMotionLeft = 0;
-    int mMotionRight = 0;
-    int mMotionUp = 0;
-    int mMotionDown = 0;
+    int mMouseLookLeft = 0;
+    int mMouseLookRight = 0;
+    int mMouseLookUp = 0;
+    int mMouseLookDown = 0;
+
+    bool mControllerMoveUp = false;
+    bool mControllerMoveDown = false;
+    bool mControllerMoveLeft = false;
+    bool mControllerMoveRight = false;
+    int mControllerLookUp = 0;
+    int mControllerLookDown = 0;
+    int mControllerLookLeft = 0;
+    int mControllerLookRight = 0;
 };
 
 #endif // INPUT_HPP

@@ -9,7 +9,7 @@
 class ResourceCache
 {
 public:
-    ResourceCache(const std::string& res_dir, Uint32 format);
+    ResourceCache(const std::string& res_dir, int res_x, int res_y, Uint32 format);
     ~ResourceCache();
 
     ResourceCache(ResourceCache&) = delete;
@@ -18,22 +18,24 @@ public:
     SDL_Surface* GetWall(int id) const;
     //SDL_Surface* GetCeiling(int id) const;
     SDL_Surface* GetFloor(int id) const;
-    //SDL_Surface* GetSky(int id) const;
+    SDL_Surface* GetSky(int id) const;
 
 private:
     void LoadWallResources();
     //void LoadCeilingResources();
     void LoadFloorResources();
-    //void LoadSkyResources();
+    void LoadSkyResources();
 
     SDL_Surface* LoadTexture(const std::string& file, int width, int height);
 
     const std::string mResDir;
+    const int mResX;
+    const int mResY;
     const Uint32 mPixelFormat;
     std::vector<SDL_Surface*> mWallCache;
     //std::vector<SDL_Surface*> mCeilingCache;
     std::vector<SDL_Surface*> mFloorCache;
-    //std::vector<SDL_Surface*> mSkyCache;
+    std::vector<SDL_Surface*> mSkyCache;
     std::vector<SDL_Surface*> mSurfaceCache;
 };
 

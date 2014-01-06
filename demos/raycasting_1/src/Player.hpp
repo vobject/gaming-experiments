@@ -23,6 +23,8 @@ public:
     Input& GetInput() const;
     void Update(long elapsed_time);
 
+    double GetRotation() const;
+
     void SetHorizontalRayCount(int ray_cnt);
     const std::vector<RaycastResult>& GetRaycastResults() const;
 

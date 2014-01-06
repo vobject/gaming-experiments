@@ -15,8 +15,16 @@ public:
     TexSwRenderer(int res_x, int res_y, const std::string& app_name);
     virtual ~TexSwRenderer();
 
+    void Startup() override;
+    void Shutdown() override;
+
 protected:
-    virtual void DrawPlayerView(const World& world, const Player& player);
+    void DrawPlayerView(const World& world, const Player& player) override;
+
+//     void InitSky(const SDL_Surface* const sky_tex);
+//     virtual void DrawSky(const Player& player);
+// 
+//     SDL_Texture* mSkyTexture = nullptr;
 
     std::unique_ptr<const ResourceCache> mResCache;
 };

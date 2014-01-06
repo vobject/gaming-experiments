@@ -44,6 +44,12 @@ private:
 
     std::unique_ptr<Player> mPlayer;
     std::vector<Sprite> mSprites;
+
+
+
+
+// public:
+//     double cube_size = 64;
 };
 
 #endif // WORLD_HPP

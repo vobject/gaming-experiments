@@ -54,8 +54,9 @@ inline void draw_slice(const RaycastResult& r, int res_y,
 
 #ifdef WITH_TEXTURE
 
+// unoptimized, ugly, buggy monstrosity
 inline void draw_slice(
-    const RaycastResult& r,
+    const RaycastResult& ray,
     int x,
     int res_y,
     const double player_pos_x, const double player_pos_y,
@@ -67,7 +68,7 @@ inline void draw_slice(
 )
 {
     // calculate the height of the wall (vertical line) to draw on screen
-    const double wall_height_d = std::abs(res_y / r.distance);
+    const double wall_height_d = std::abs(res_y / ray.distance);
     const int wall_height = static_cast<int>(wall_height_d);
 
     // FIXME: line_height might be negative when the player is near a wall
@@ -86,20 +87,20 @@ inline void draw_slice(
     }
 
     // Get the texture that matches the cell type.
-    const auto cell_id = lvl.GetCellType(r.map_pos_x, r.map_pos_y);
+    const auto cell_id = lvl.GetCellType(ray.map_pos_x, ray.map_pos_y);
     const auto wall_tex = res.GetWall(cell_id - 1);
     const auto ceiling_tex = res.GetWall(1);
     const auto floor_tex = res.GetFloor(0);
 
     // where exactly the wall was hit?
-    double wall_x = r.intersect_y;
+    double wall_x = ray.intersect_y;
     wall_x -= std::floor(wall_x);
 
     // X-coordinate on the texture.
     int tex_x = wall_x * wall_tex->w;
 
-    if ((r.vertical_hit && player_dir_y < 0) ||
-        (!r.vertical_hit && player_dir_x > 0))
+    if ((ray.vertical_hit && player_dir_y < 0) ||
+        (!ray.vertical_hit && player_dir_x > 0))
     {
         tex_x = wall_tex->w - tex_x - 1;
     }
@@ -109,24 +110,24 @@ inline void draw_slice(
     double floor_x_wall;
     double floor_y_wall;
 
-    if (!r.vertical_hit && (player_dir_x > 0)) {
-        floor_x_wall = r.map_pos_x;
-        floor_y_wall = r.map_pos_y + wall_x;
+    if (!ray.vertical_hit && (player_dir_x > 0)) {
+        floor_x_wall = ray.map_pos_x;
+        floor_y_wall = ray.map_pos_y + wall_x;
     }
-    else if (!r.vertical_hit && (player_dir_x < 0)) {
-        floor_x_wall = r.map_pos_x + 1.;
-        floor_y_wall = r.map_pos_y + wall_x;
+    else if (!ray.vertical_hit && (player_dir_x < 0)) {
+        floor_x_wall = ray.map_pos_x + 1.;
+        floor_y_wall = ray.map_pos_y + wall_x;
     }
-    else if (r.vertical_hit && (player_dir_y > 0)) {
-        floor_x_wall = r.map_pos_x + wall_x;
-        floor_y_wall = r.map_pos_y;
+    else if (ray.vertical_hit && (player_dir_y > 0)) {
+        floor_x_wall = ray.map_pos_x + wall_x;
+        floor_y_wall = ray.map_pos_y;
     }
     else {
-        floor_x_wall = r.map_pos_x + wall_x;
-        floor_y_wall = r.map_pos_y + 1.;
+        floor_x_wall = ray.map_pos_x + wall_x;
+        floor_y_wall = ray.map_pos_y + 1.;
     }
 
-    const double dist_wall = r.distance;
+    const double dist_wall = ray.distance;
     const double dist_player = .0;
 
 
@@ -138,7 +139,8 @@ inline void draw_slice(
 
     for (auto y = 0; y < res_y; y++)
     {
-        if (y < wall_start) {
+        if (y < wall_start)
+        {
             const double cur_dist = -(res_y / (2. * y - res_y));
             const double weight = (cur_dist + dist_player) / (dist_wall - dist_player);
 
@@ -153,7 +155,8 @@ inline void draw_slice(
             const auto floor_tex_offset = (floor_tex->w * floor_tex_y) + floor_tex_x;
             *slice_buf = *(floor_buf + floor_tex_offset);
         }
-        else if (y >= wall_end) {
+        else if (y >= wall_end)
+        {
             const double cur_dist = res_y / (2. * y - res_y);
             const double weight = (cur_dist + dist_player) / (dist_wall - dist_player);
 
@@ -168,12 +171,13 @@ inline void draw_slice(
             const auto ceiling_tex_offset = (ceiling_tex->w * ceiling_tex_y) + ceiling_tex_x;
             *slice_buf = *(ceiling_buf + ceiling_tex_offset);
         }
-        else {
+        else
+        {
             const int tex_y = (y * 2 - res_y + wall_height) * (wall_tex->w / 2) / wall_height;
             const auto tex_offset = (wall_tex->w * tex_y) + tex_x;
             uint32_t tex_color = *(tex_buf + tex_offset);
 
-            if (r.vertical_hit) {
+            if (ray.vertical_hit) {
                 tex_color = ((uint8_t)((uint8_t)(tex_color >> 24) * .7f) << 24) +
                             ((uint8_t)((uint8_t)(tex_color >> 16) * .7f) << 16) +
                             ((uint8_t)((uint8_t)(tex_color >>  8) * .7f) <<  8) +

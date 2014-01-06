@@ -31,6 +31,15 @@ void Player::Update(const long elapsed_time)
     UpdateMovement(elapsed_time);
 }
 
+double Player::GetRotation() const
+{
+    if (mDirY > .0) {
+        return std::acos(mDirX) * 180. / M_PI;
+    } else {
+        return 360. - std::acos(mDirX) * 180. / M_PI;
+    }
+}
+
 void Player::SetHorizontalRayCount(const int ray_cnt)
 {
     mRays.resize(ray_cnt);

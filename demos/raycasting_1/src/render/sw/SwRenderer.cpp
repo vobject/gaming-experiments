@@ -270,7 +270,7 @@ void SwRenderer::DrawMinimap(const World& world, const Player& player)
     const auto rays = player.GetRaycastResults();
     const auto& ray = rays[rays.size() / 2];
     Utils::SDL_DrawLine32(player_cell_x, player_cell_y,
-                          ray.map_pos_x, ray.map_pos_y,
+                          ray.map_pos_y, ray.map_pos_x,
                           mMinimapRayColor, mMinimapSurface);
 
     // draw the player on the minimap

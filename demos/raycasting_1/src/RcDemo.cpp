@@ -79,7 +79,7 @@ void RcDemo::Initialize()
     const auto res_y = 480;
     const auto app_name = "RayCasting";
 
-    mRenderer = Utils::make_unique<SwRenderer>(res_x, res_y, app_name);
+    mRenderer = Utils::make_unique<TexSwRenderer>(res_x, res_y, app_name);
 
     // load the default level
     mWorld = Utils::make_unique<World>("");

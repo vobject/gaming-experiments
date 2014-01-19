@@ -1,4 +1,5 @@
 #include "RcDemo.hpp"
+#include "LuaInterpreter.hpp"
 #include "World.hpp"
 #include "Player.hpp"
 #include "Utils.hpp"
@@ -8,9 +9,50 @@
 #include "render/sw/TexSwRenderer.hpp"
 #include "render/cl/ClRenderer.hpp"
 
+#include <lua.hpp>
+
 #include <SDL.h>
 
 #include <chrono>
+
+const static struct luaL_Reg rcdemo_funcs[] = {
+    { "set_app_name", [](lua_State* state)
+        {
+            if (!lua_isstring(state, -1)) {
+                throw "set_app_name() must return a string.";
+                return -1;
+            }
+
+            const char* name = lua_tostring(state, -1);
+
+            RcDemo::Instance().SetAppName(name);
+            return 0;
+        }
+    },
+
+    { "set_resolution", [](lua_State* state)
+        {
+            if (!lua_isnumber(state, -1) || !lua_isnumber(state, -2)) {
+                throw "set_resolution() must return two numbers.";
+                return -1;
+            }
+
+            const auto height = lua_tointeger(state, -1);
+            const auto width = lua_tointeger(state, -2);
+
+            RcDemo::Instance().SetResolution(width, height);
+            return 0;
+        }
+    },
+
+    { nullptr, nullptr }
+};
+
+RcDemo& RcDemo::Instance()
+{
+    static RcDemo instance;
+    return instance;
+}
 
 RcDemo::RcDemo()
 {
@@ -30,6 +72,32 @@ void RcDemo::Start()
     Mainloop();
 }
 
+void RcDemo::SetAppName(const std::string& name)
+{
+    mAppName = name;
+}
+
+void RcDemo::SetResolution(int width, int height)
+{
+    mResX = width;
+    mResY = height;
+}
+
+std::string RcDemo::GetAppName() const
+{
+    return mAppName;
+}
+
+int RcDemo::GetWindowWidth() const
+{
+    return mResX;
+}
+
+int RcDemo::GetWindowHeight() const
+{
+    return mResY;
+}
+
 const Renderer& RcDemo::GetRenderer() const
 {
     return *mRenderer;
@@ -38,6 +106,11 @@ const Renderer& RcDemo::GetRenderer() const
 const World& RcDemo::GetWorld() const
 {
     return *mWorld;
+}
+
+void RcDemo::RegisterLua(LuaInterpreter& lua)
+{
+    lua.RegisterFunctions("rcdemo", rcdemo_funcs);
 }
 
 void RcDemo::Mainloop()
@@ -75,15 +148,11 @@ void RcDemo::Mainloop()
 
 void RcDemo::Initialize()
 {
-    const auto res_x = 640;
-    const auto res_y = 480;
-    const auto app_name = "RayCasting";
-
-    mRenderer = Utils::make_unique<TexSwRenderer>(res_x, res_y, app_name);
+    mRenderer = Utils::make_unique<SwRenderer>(mResX, mResY, mAppName);
 
     // load the default level
     mWorld = Utils::make_unique<World>("");
-    mWorld->InternalGetPlayer().SetHorizontalRayCount(res_x);
+    mWorld->InternalGetPlayer().SetHorizontalRayCount(mResX);
 }
 
 void RcDemo::ProcessInput()

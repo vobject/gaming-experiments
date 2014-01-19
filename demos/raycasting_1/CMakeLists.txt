@@ -12,7 +12,7 @@ OPTION(WITH_OPENCL "Enable OpenCL option for rendering." OFF)
 OPTION(WITH_SVG "Enable SVG loading option for rendering." OFF)
 
 IF (WIN32)
-    ADD_DEFINITIONS(-W4 -DSDL_MAIN_HANDLED)
+    ADD_DEFINITIONS(-W4 -DSDL_MAIN_HANDLED -D_CRT_SECURE_NO_WARNINGS)
     SET(SDL2_INCLUDE_DIRS ${SDL2_INCLUDE_DIRS} ../../lib/SDL2-2.0.1/include)
     SET(SDL2_IMAGE_INCLUDE_DIRS ${SDL2_IMAGE_INCLUDE_DIRS} ../../lib/SDL2_image-2.0.0/include)
     SET(SDL2_GFX_INCLUDE_DIRS ${SDL2_GFX_INCLUDE_DIRS} ../../lib/SDL2_gfx-1.0.0/include)
@@ -57,10 +57,14 @@ INCLUDE_DIRECTORIES(
     ${SDL2_GFX_INCLUDE_DIRS}
 )
 
+FILE(GLOB LUA_HDR ../../lib/lua-5.2.3/src/*.h
+                  ../../lib/lua-5.2.3/src/*.hpp)
+FILE(GLOB LUA_SRC ../../lib/lua-5.2.3/src/*.c)
+INCLUDE_DIRECTORIES(../../lib/lua-5.2.3/src)
+
 FILE(GLOB PRJ_HDR src/*.hpp
                   src/*/*.hpp
                   src/*/*/*.hpp)
-
 FILE(GLOB PRJ_SRC src/*.cpp
                   src/*/*.cpp
                   src/*/*/*.cpp)
@@ -103,6 +107,7 @@ ENDIF()
 
 ADD_EXECUTABLE(${PROJECT_NAME}
                ${PRJ_HDR} ${PRJ_SRC} ${PRJ_OCL}
+               ${LUA_HDR} ${LUA_SRC}
                ${EXTRA_HDR} ${EXTRA_SRC})
 
 TARGET_LINK_LIBRARIES(

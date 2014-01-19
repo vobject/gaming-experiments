@@ -1,3 +1,4 @@
+#include "LuaInterpreter.hpp"
 #include "RcDemo.hpp"
 
 #include <iostream>
@@ -6,7 +7,10 @@ int main()
 {
     try
     {
-        RcDemo app;
+        RcDemo& app = RcDemo::Instance();
+
+        LuaInterpreter lua(app);
+        lua.RunScript("raycasting.lua");
         app.Start();
     }
     catch (const char* e)

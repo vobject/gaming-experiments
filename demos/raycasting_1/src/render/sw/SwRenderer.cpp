@@ -120,7 +120,10 @@ void SwRenderer::PostRender()
 void SwRenderer::DoRender(const World& world)
 {
     DrawPlayerView(world, world.GetPlayer());
-    DrawMinimap(world, world.GetPlayer());
+
+    if (mShowMinimap) {
+        DrawMinimap(world, world.GetPlayer());
+    }
 }
 
 void SwRenderer::InitMinimap(const World& world)

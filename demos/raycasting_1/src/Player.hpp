@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <SDL.h>
 
+class LuaInterpreter;
 class World;
 class Input;
 
@@ -23,10 +24,16 @@ public:
     Input& GetInput() const;
     void Update(long elapsed_time);
 
+    void SetPosition(double x, double y);
+    void SetDirection(double x, double y);
+    void SetPlane(double x, double y);
+
     double GetRotation() const;
 
     void SetHorizontalRayCount(int ray_cnt);
     const std::vector<RaycastResult>& GetRaycastResults() const;
+
+    void RegisterLua(LuaInterpreter& lua);
 
 public: // hack
     void UpdateRays(long elapsed_time);

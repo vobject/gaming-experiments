@@ -6,6 +6,7 @@
 #include <vector>
 #include <cstdint>
 
+class LuaInterpreter;
 class Player;
 
 class Sprite
@@ -19,7 +20,7 @@ public:
 class World
 {
 public:
-    World(const std::string& level);
+    World();
     ~World();
 
     World(World&) = delete;
@@ -28,22 +29,26 @@ public:
     void ProcessInput();
     void Update(long elapsed_time);
 
+    void SetLevelSize(int width, int height);
+    void SetLevelData(const uint32_t* data);
+
     int GetWidth() const;
     int GetHeight() const;
-    const Player& GetPlayer() const;
-    const std::vector<Sprite>& GetSprites() const;
+    Player& GetPlayer() const;
+//     const std::vector<Sprite>& GetSprites() const;
 
     uint32_t GetCellType(int x, int y) const;
     bool IsBlocking(int x, int y) const;
 
-    // debugging and scripting interfaces
-    Player& InternalGetPlayer() const;
+    void RegisterLua(LuaInterpreter& lua);
 
 private:
-    void CreatePlayer();
+    int mLevelWidth;
+    int mLevelHeight;
+    std::vector<uint32_t> mLevelData;
 
     std::unique_ptr<Player> mPlayer;
-    std::vector<Sprite> mSprites;
+//     std::vector<Sprite> mSprites;
 
 
 

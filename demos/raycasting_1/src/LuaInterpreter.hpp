@@ -10,7 +10,7 @@ class RcDemo;
 class LuaInterpreter
 {
 public:
-    LuaInterpreter(RcDemo& demo);
+    LuaInterpreter();
     ~LuaInterpreter();
 
     LuaInterpreter(LuaInterpreter&) = delete;
@@ -19,6 +19,8 @@ public:
     void RegisterFunctions(const std::string& table, const luaL_Reg funcs[]);
     void RegisterFunction(const std::string& name, const lua_CFunction func);
     void RunScript(const std::string& file);
+
+    void DumpStack() const;
 
 private:
     lua_State* mState = nullptr;

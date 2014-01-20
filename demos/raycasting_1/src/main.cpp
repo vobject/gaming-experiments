@@ -7,11 +7,7 @@ int main()
 {
     try
     {
-        RcDemo& app = RcDemo::Instance();
-
-        LuaInterpreter lua(app);
-        lua.RunScript("raycasting.lua");
-        app.Start();
+        RcDemo::Instance().Start();
     }
     catch (const char* e)
     {

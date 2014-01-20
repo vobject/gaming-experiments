@@ -15,38 +15,62 @@
 
 #include <chrono>
 
-const static struct luaL_Reg rcdemo_funcs[] = {
-    { "set_app_name", [](lua_State* state)
-        {
-            if (!lua_isstring(state, -1)) {
-                throw "set_app_name() must return a string.";
-                return -1;
-            }
+namespace {
 
-            const char* name = lua_tostring(state, -1);
-
-            RcDemo::Instance().SetAppName(name);
-            return 0;
+const struct luaL_Reg lua_funcs[] = {
+    { "set_app_name", [](lua_State* state) {
+        if (!lua_isstring(state, -1)) {
+            throw "set_app_name() must return a string.";
         }
-    },
 
-    { "set_resolution", [](lua_State* state)
-        {
-            if (!lua_isnumber(state, -1) || !lua_isnumber(state, -2)) {
-                throw "set_resolution() must return two numbers.";
-                return -1;
-            }
+        const char* name = lua_tostring(state, -1);
+        RcDemo::Instance().SetAppName(name);
+        return 0;
+    }},
 
-            const auto height = lua_tointeger(state, -1);
-            const auto width = lua_tointeger(state, -2);
-
-            RcDemo::Instance().SetResolution(width, height);
-            return 0;
+    { "set_resolution", [](lua_State* state) {
+        if (!lua_isnumber(state, -1) || !lua_isnumber(state, -2)) {
+            throw "set_resolution() must return two integers.";
         }
-    },
+
+        const int height = static_cast<int>(lua_tointeger(state, -1));
+        const int width = static_cast<int>(lua_tointeger(state, -2));
+        RcDemo::Instance().SetResolution(width, height);
+        return 0;
+    }},
+
+    { "set_update_time", [](lua_State* state) {
+        if (!lua_isnumber(state, -1)) {
+            throw "set_update_time() must return an integer.";
+        }
+
+        const int update_time = static_cast<int>(lua_tointeger(state, -1));
+        RcDemo::Instance().SetUpdateTime(update_time);
+        return 0;
+    }},
+
+    { "set_renderer", [](lua_State* state) {
+        if (!lua_isstring(state, -1)) {
+            throw "set_renderer() must return a string.";
+        }
+
+        const char* name = lua_tostring(state, -1);
+        RcDemo::Instance().SetRenderer(name);
+        return 0;
+    } },
 
     { nullptr, nullptr }
 };
+
+const std::string SW_RENDERER = "SwRenderer";
+const std::string SW_RENDERER_MT_1 = "SwRendererMt1";
+const std::string SW_RENDERER_MT_2 = "SwRendererMt2";
+const std::string SW_RENDERER_MT_4 = "SwRendererMt4";
+const std::string TEX_RENDERER = "TexRenderer";
+const std::string CL_RENDERER = "ClRenderer";
+const std::string SVG_RENDERER = "SvgRenderer";
+
+} // unnamed namespace
 
 RcDemo& RcDemo::Instance()
 {
@@ -56,7 +80,13 @@ RcDemo& RcDemo::Instance()
 
 RcDemo::RcDemo()
 {
+    atexit(SDL_Quit);
 
+    SelectRendererFromName(SW_RENDERER);
+    mWorld = Utils::make_unique<World>();
+
+    RegisterLua(mLua);
+    mLua.RunScript("raycasting.lua");
 }
 
 RcDemo::~RcDemo()
@@ -66,9 +96,6 @@ RcDemo::~RcDemo()
 
 void RcDemo::Start()
 {
-    atexit(SDL_Quit);
-
-    Initialize();
     Mainloop();
 }
 
@@ -81,6 +108,21 @@ void RcDemo::SetResolution(int width, int height)
 {
     mResX = width;
     mResY = height;
+}
+
+void RcDemo::SetUpdateTime(int ms)
+{
+    mUpdateDeltaTime = ms;
+}
+
+void RcDemo::SetRenderer(const std::string& name)
+{
+    SelectRendererFromName(name);
+}
+
+void RcDemo::SetRenderer(const SDL_Scancode code)
+{
+    SelectRendererFromScanCode(code);
 }
 
 std::string RcDemo::GetAppName() const
@@ -98,19 +140,26 @@ int RcDemo::GetWindowHeight() const
     return mResY;
 }
 
-const Renderer& RcDemo::GetRenderer() const
+int RcDemo::GetUpdateTime() const
+{
+    return mUpdateDeltaTime;
+}
+
+Renderer& RcDemo::GetRenderer() const
 {
     return *mRenderer;
 }
 
-const World& RcDemo::GetWorld() const
+World& RcDemo::GetWorld() const
 {
     return *mWorld;
 }
 
 void RcDemo::RegisterLua(LuaInterpreter& lua)
 {
-    lua.RegisterFunctions("rcdemo", rcdemo_funcs);
+    lua.RegisterFunctions("rcdemo", lua_funcs);
+    mWorld->RegisterLua(lua);
+    mRenderer->RegisterLua(lua);
 }
 
 void RcDemo::Mainloop()
@@ -119,7 +168,7 @@ void RcDemo::Mainloop()
     //  http://gafferongames.com/game-physics/fix-your-timestep/
 
     // A game update call will update the game status by this amount of time.
-    const std::chrono::milliseconds delta_time(2);
+    const std::chrono::milliseconds delta_time(mUpdateDeltaTime);
 
     auto old_time = std::chrono::milliseconds(SDL_GetTicks());
     auto game_time = std::chrono::milliseconds::zero();
@@ -146,15 +195,6 @@ void RcDemo::Mainloop()
     }
 }
 
-void RcDemo::Initialize()
-{
-    mRenderer = Utils::make_unique<SwRenderer>(mResX, mResY, mAppName);
-
-    // load the default level
-    mWorld = Utils::make_unique<World>("");
-    mWorld->InternalGetPlayer().SetHorizontalRayCount(mResX);
-}
-
 void RcDemo::ProcessInput()
 {
     // update all inputs regardless of there being an observable event or not
@@ -174,49 +214,7 @@ void RcDemo::ProcessInput()
     // Handle application-level requests, e.g. switching of renderer.
     if ((event.type == SDL_KEYDOWN) && (event.key.keysym.mod & KMOD_LCTRL))
     {
-        const auto res_x = mRenderer->GetResX();
-        const auto res_y = mRenderer->GetResY();
-        const auto app_name = mRenderer->GetAppName();
-
-        switch (event.key.keysym.scancode)
-        {
-            case SDL_SCANCODE_1:
-                mRenderer = nullptr;
-                mRenderer = Utils::make_unique<SwRenderer>(res_x, res_y, app_name);
-                break;
-            case SDL_SCANCODE_2:
-                mRenderer = nullptr;
-                mRenderer = Utils::make_unique<SwRendererMt>(res_x, res_y, app_name, 1);
-                break;
-            case SDL_SCANCODE_3:
-                mRenderer = nullptr;
-                mRenderer = Utils::make_unique<SwRendererMt>(res_x, res_y, app_name, 2);
-                break;
-            case SDL_SCANCODE_4:
-                mRenderer = nullptr;
-                mRenderer = Utils::make_unique<SwRendererMt>(res_x, res_y, app_name, 4);
-                break;
-#ifdef WITH_TEXTURE
-            case SDL_SCANCODE_5:
-                mRenderer = nullptr;
-                mRenderer = Utils::make_unique<TexSwRenderer>(res_x, res_y, app_name);
-                break;
-#endif // WITH_TEXTURE
-#ifdef WITH_OPENCL
-            case SDL_SCANCODE_6:
-                mRenderer = nullptr;
-                mRenderer = Utils::make_unique<ClRenderer>(res_x, res_y, app_name);
-                break;
-#endif // WITH_OPENCL
-#ifdef WITH_SVG
-            case SDL_SCANCODE_7:
-                mRenderer = nullptr;
-                mRenderer = Utils::make_unique<SvgSwRenderer>(res_x, res_y, app_name);
-                break;
-#endif // WITH_SVG
-            default:
-                break;
-        }
+        SelectRendererFromScanCode(event.key.keysym.scancode);
         return;
     }
 
@@ -225,10 +223,10 @@ void RcDemo::ProcessInput()
         switch (event.key.keysym.scancode)
         {
             case SDL_SCANCODE_COMMA:
-                mWorld->InternalGetPlayer().mPlaneY -= 0.05;
+                mWorld->GetPlayer().mPlaneY -= 0.05;
                 break;
             case SDL_SCANCODE_PERIOD:
-                mWorld->InternalGetPlayer().mPlaneY += 0.05;
+                mWorld->GetPlayer().mPlaneY += 0.05;
                 break;
             default:
                 break;
@@ -249,4 +247,91 @@ void RcDemo::RenderScene()
     mRenderer->PreRender();
     mRenderer->DoRender(*mWorld);
     mRenderer->PostRender();
+}
+
+void RcDemo::SelectRendererFromName(const std::string& name)
+{
+    // the active renderer is always deleted before a new one is created.
+    // this makes sure that the new renderer can capture the mouse sensibly.
+
+    if (name == SW_RENDERER)
+    {
+        mRenderer = nullptr;
+        mRenderer = Utils::make_unique<SwRenderer>(mResX, mResY, mAppName);
+    }
+    else if (name == SW_RENDERER_MT_1)
+    {
+        mRenderer = nullptr;
+        mRenderer = Utils::make_unique<SwRendererMt>(mResX, mResY, mAppName, 1);
+    }
+    else if (name == SW_RENDERER_MT_2)
+    {
+        mRenderer = nullptr;
+        mRenderer = Utils::make_unique<SwRendererMt>(mResX, mResY, mAppName, 2);
+    }
+    else if (name == SW_RENDERER_MT_4)
+    {
+        mRenderer = nullptr;
+        mRenderer = Utils::make_unique<SwRendererMt>(mResX, mResY, mAppName, 4);
+    }
+
+#ifdef WITH_TEXTURE
+    else if (name == TEX_RENDERER)
+    {
+        mRenderer = nullptr;
+        mRenderer = Utils::make_unique<TexSwRenderer>(mResX, mResY, mAppName);
+    }
+#endif // WITH_TEXTURE
+
+#ifdef WITH_OPENCL
+    else if (name == CL_RENDERER)
+    {
+        mRenderer = nullptr;
+        mRenderer = Utils::make_unique<ClRenderer>(mResX, mResY, mAppName);
+    }
+#endif // WITH_OPENCL
+
+#ifdef WITH_SVG
+    else if (name == SVG_RENDERER)
+    {
+        mRenderer = nullptr;
+        mRenderer = Utils::make_unique<SvgSwRenderer>(mResX, mResY, mAppName);
+    }
+#endif // WITH_SVG
+}
+
+void RcDemo::SelectRendererFromScanCode(const SDL_Scancode code)
+{
+    switch (code)
+    {
+        case SDL_SCANCODE_1:
+            SelectRendererFromName(SW_RENDERER);
+            break;
+        case SDL_SCANCODE_2:
+            SelectRendererFromName(SW_RENDERER_MT_1);
+            break;
+        case SDL_SCANCODE_3:
+            SelectRendererFromName(SW_RENDERER_MT_2);
+            break;
+        case SDL_SCANCODE_4:
+            SelectRendererFromName(SW_RENDERER_MT_4);
+            break;
+    #ifdef WITH_TEXTURE
+        case SDL_SCANCODE_5:
+            SelectRendererFromName(TEX_RENDERER);
+            break;
+    #endif // WITH_TEXTURE
+    #ifdef WITH_OPENCL
+        case SDL_SCANCODE_6:
+            SelectRendererFromName(CL_RENDERER);
+            break;
+    #endif // WITH_OPENCL
+    #ifdef WITH_SVG
+        case SDL_SCANCODE_7:
+            SelectRendererFromName(SVG_RENDERER);
+            break;
+    #endif // WITH_SVG
+        default:
+            break;
+    }
 }

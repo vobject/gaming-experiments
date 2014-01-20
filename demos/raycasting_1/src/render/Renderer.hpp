@@ -5,6 +5,7 @@
 
 #include <string>
 
+class LuaInterpreter;
 class World;
 
 class Renderer
@@ -24,6 +25,8 @@ public:
     const std::string& GetName() const;
     const int& getFPS() const;
 
+    void ShowMinimap(bool show);
+
     virtual void Startup() = 0;
     virtual void Shutdown() = 0;
 
@@ -31,10 +34,13 @@ public:
     virtual void PostRender() = 0;
     virtual void DoRender(const World& world) = 0;
 
+    void RegisterLua(LuaInterpreter& lua);
+
 protected:
     const int mResX;
     const int mResY;
     SDL_Window* mScreen = nullptr;
+    bool mShowMinimap = false;
 
 private:
     static Uint32 FrameTimerCB(Uint32 interval, void* param);

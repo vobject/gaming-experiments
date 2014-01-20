@@ -1,4 +1,4 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
+CMAKE_MINIMUM_REQUIRED(VERSION 2.8.12)
 
 PROJECT(raycasting_1)
 
@@ -21,18 +21,10 @@ IF (WIN32)
         LINK_DIRECTORIES(../../lib/SDL2-2.0.1/lib/x64)
         LINK_DIRECTORIES(../../lib/SDL2_image-2.0.0/lib/x64)
         LINK_DIRECTORIES(../../lib/SDL2_gfx-1.0.0/lib/x64)
-        
-        FILE(COPY ../../lib/SDL2-2.0.1/lib/x64/SDL2.dll DESTINATION "${CMAKE_BINARY_DIR}")
-        FILE(COPY ../../lib/SDL2_image-2.0.0/lib/x64/SDL2_image.dll DESTINATION "${CMAKE_BINARY_DIR}")
-        FILE(COPY ../../lib/SDL2_gfx-1.0.0/lib/x64/SDL2_gfx.dll DESTINATION "${CMAKE_BINARY_DIR}")
     ELSE()
         LINK_DIRECTORIES(../../lib/SDL2-2.0.1/lib/x86)
         LINK_DIRECTORIES(../../lib/SDL2_image-2.0.0/lib/x86)
         LINK_DIRECTORIES(../../lib/SDL2_gfx-1.0.0/lib/x86)
-        
-        FILE(COPY ../../lib/SDL2-2.0.1/lib/x86/SDL2.dll DESTINATION "${CMAKE_BINARY_DIR}")
-        FILE(COPY ../../lib/SDL2_image-2.0.0/lib/x86/SDL2_image.dll DESTINATION "${CMAKE_BINARY_DIR}")
-        FILE(COPY ../../lib/SDL2_gfx-1.0.0/lib/x86/SDL2_gfx.dll DESTINATION "${CMAKE_BINARY_DIR}")
     ENDIF()
     
     SET(SDL2_LIBRARIES ${SDL2_LIBRARIES} SDL2.lib)
@@ -47,20 +39,15 @@ ELSE()
     SET(SDL2_IMAGE_LIBRARIES ${SDL2_IMAGE_LIBRARIES} SDL2_image)
     SET(SDL2_GFX_LIBRARIES ${SDL2_GFX_LIBRARIES} SDL2_gfx)
 
-    SET(CMAKE_CXX_FLAGS "-std=c++11")
+    SET(CMAKE_CXX_FLAGS "-std=c++1y")
     SET(CMAKE_CXX_FLAGS_DEBUG "-O0 -g3")
 ENDIF()
 
-INCLUDE_DIRECTORIES(
-    ${SDL2_INCLUDE_DIRS}
-    ${SDL2_IMAGE_INCLUDE_DIRS}
-    ${SDL2_GFX_INCLUDE_DIRS}
-)
-
+SET(LUA_INCLUDE_DIR ../../lib/lua-5.2.3/src)
 FILE(GLOB LUA_HDR ../../lib/lua-5.2.3/src/*.h
                   ../../lib/lua-5.2.3/src/*.hpp)
 FILE(GLOB LUA_SRC ../../lib/lua-5.2.3/src/*.c)
-INCLUDE_DIRECTORIES(../../lib/lua-5.2.3/src)
+SOURCE_GROUP(lua FILES ${LUA_HDR} ${LUA_SRC})
 
 FILE(GLOB PRJ_HDR src/*.hpp
                   src/*/*.hpp
@@ -73,7 +60,6 @@ FILE(GLOB PRJ_OCL src/render/cl/cl_renderer.cl)
 
 IF(WITH_TEXTURE)
     MESSAGE(STATUS "Enabling textured renders.")
-
     ADD_DEFINITIONS(-DWITH_TEXTURE)
 ELSE()
     MESSAGE(STATUS "Not using textured renders.")
@@ -81,17 +67,17 @@ ENDIF()
 
 IF(WITH_OPENCL)
     MESSAGE(STATUS "Using OpenCL.")
-
-    FILE(COPY "${PRJ_OCL}" DESTINATION "${CMAKE_BINARY_DIR}")
-
     ADD_DEFINITIONS(-DWITH_OPENCL)
     SET(EXTRA_LIBS ${EXTRA_LIBS} OpenCL)
+
+    FILE(COPY "${PRJ_OCL}" DESTINATION "${CMAKE_BINARY_DIR}")
 ELSE()
     MESSAGE(STATUS "Not using OpenCL.")
 ENDIF()
 
 IF(WITH_SVG)
     MESSAGE(STATUS "Using SVG.")
+    ADD_DEFINITIONS(-DWITH_SVG)
 
     FILE(GLOB EXTRA_HDR src/klib/*.h
                         src/klib/*/*.h
@@ -99,11 +85,16 @@ IF(WITH_SVG)
     FILE(GLOB EXTRA_SRC src/klib/*.cpp
                         src/klib/*/*.cpp
                         src/klib/*/*/*.cpp)
-
-    ADD_DEFINITIONS(-DWITH_SVG)
 ELSE()
     MESSAGE(STATUS "Not using SVG.")
 ENDIF()
+
+INCLUDE_DIRECTORIES(
+    ${SDL2_INCLUDE_DIRS}
+    ${SDL2_IMAGE_INCLUDE_DIRS}
+    ${SDL2_GFX_INCLUDE_DIRS}
+    ${LUA_INCLUDE_DIR}
+)
 
 ADD_EXECUTABLE(${PROJECT_NAME}
                ${PRJ_HDR} ${PRJ_SRC} ${PRJ_OCL}

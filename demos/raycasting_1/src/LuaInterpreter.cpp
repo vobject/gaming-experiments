@@ -1,15 +1,15 @@
 #include "LuaInterpreter.hpp"
 #include "RcDemo.hpp"
 
-LuaInterpreter::LuaInterpreter(RcDemo& demo)
+#include <iostream>
+
+LuaInterpreter::LuaInterpreter()
 {
     mState = luaL_newstate();
     if (!mState) {
         throw "Unable to create a new Lua state.";
     }
     luaL_openlibs(mState);
-
-    demo.RegisterLua(*this);
 }
 
 LuaInterpreter::~LuaInterpreter()
@@ -34,4 +34,32 @@ void LuaInterpreter::RegisterFunction(const std::string& name, const lua_CFuncti
 void LuaInterpreter::RunScript(const std::string& file)
 {
     luaL_dofile(mState, file.c_str());
+}
+
+void LuaInterpreter::DumpStack() const
+{
+    int top = lua_gettop(mState);
+
+    for (int i = 1; i <= top; i++)
+    {
+        int t = lua_type(mState, i);
+
+        switch (t)
+        {
+            case LUA_TSTRING:
+                std::cout << lua_tostring(mState, i);
+                break;
+            case LUA_TBOOLEAN:
+                std::cout << (bool)lua_toboolean(mState, i);
+                break;
+            case LUA_TNUMBER:
+                std::cout << lua_tonumber(mState, i);
+                break;
+            default:
+                std::cout << lua_typename(mState, t);
+                break;
+        }
+        std::cout << " ";
+    }
+    std::cout << std::endl;
 }

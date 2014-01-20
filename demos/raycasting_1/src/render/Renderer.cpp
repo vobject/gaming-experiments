@@ -1,7 +1,27 @@
 #include "Renderer.hpp"
+#include "../LuaInterpreter.hpp"
+#include "../RcDemo.hpp"
 #include "../Utils.hpp"
 
 #include <sstream>
+
+namespace {
+
+const struct luaL_Reg lua_funcs[] = {
+    { "show_minimap", [](lua_State* state) {
+        if (!lua_isboolean(state, -1)) {
+            throw "show_minimap() must specifiy a boolean.";
+        }
+
+        const auto show = static_cast<bool>(lua_toboolean(state, -1));
+        RcDemo::Instance().GetRenderer().ShowMinimap(show);
+        return 0;
+    } },
+
+    { nullptr, nullptr }
+};
+
+} // unnamed namespace
 
 Renderer::Renderer(const int res_x, const int res_y,
                    const std::string& app_name,
@@ -43,6 +63,11 @@ const std::string& Renderer::GetName() const
 const int& Renderer::getFPS() const
 {
     return mFPS;
+}
+
+void Renderer::ShowMinimap(const bool show)
+{
+    mShowMinimap = show;
 }
 
 void Renderer::Startup()
@@ -98,6 +123,11 @@ void Renderer::PostRender()
     }
 
 //    SDL_WarpMouseInWindow(mScreen, mResX / 2, mResY / 2);
+}
+
+void Renderer::RegisterLua(LuaInterpreter& lua)
+{
+    lua.RegisterFunctions("renderer", lua_funcs);
 }
 
 Uint32 Renderer::FrameTimerCB(Uint32 interval, void* param)

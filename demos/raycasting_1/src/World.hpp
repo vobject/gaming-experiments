@@ -40,8 +40,6 @@ public:
     uint32_t GetCellType(int x, int y) const;
     bool IsBlocking(int x, int y) const;
 
-    void RegisterLua(LuaInterpreter& lua);
-
 private:
     int mLevelWidth;
     int mLevelHeight;

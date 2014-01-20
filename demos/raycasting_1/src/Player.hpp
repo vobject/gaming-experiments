@@ -33,8 +33,6 @@ public:
     void SetHorizontalRayCount(int ray_cnt);
     const std::vector<RaycastResult>& GetRaycastResults() const;
 
-    void RegisterLua(LuaInterpreter& lua);
-
 public: // hack
     void UpdateRays(long elapsed_time);
     void UpdateRotation(long elapsed_time);

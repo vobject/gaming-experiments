@@ -34,8 +34,6 @@ public:
     virtual void PostRender() = 0;
     virtual void DoRender(const World& world) = 0;
 
-    void RegisterLua(LuaInterpreter& lua);
-
 protected:
     const int mResX;
     const int mResY;

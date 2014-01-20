@@ -7,50 +7,6 @@
 
 #include <algorithm>
 
-namespace {
-
-const struct luaL_Reg lua_funcs[] = {
-    { "set_position", [](lua_State* state) {
-        if (!lua_isnumber(state, -1) || !lua_isnumber(state, -2)) {
-            throw "set_position() must specify x and y coordinates.";
-        }
-
-        const double y = lua_tonumber(state, -1);
-        const double x = lua_tonumber(state, -2);
-
-        RcDemo::Instance().GetWorld().GetPlayer().SetPosition(x, y);
-        return 0;
-    } },
-
-    { "set_direction", [](lua_State* state) {
-        if (!lua_isnumber(state, -1) || !lua_isnumber(state, -2)) {
-            throw "set_direction() must specify x and y.";
-        }
-
-        const double y = lua_tonumber(state, -1);
-        const double x = lua_tonumber(state, -2);
-
-        RcDemo::Instance().GetWorld().GetPlayer().SetDirection(x, y);
-        return 0;
-    } },
-
-    { "set_plane", [](lua_State* state) {
-        if (!lua_isnumber(state, -1) || !lua_isnumber(state, -2)) {
-            throw "set_plane() must specify x and y.";
-        }
-
-        const double y = lua_tonumber(state, -1);
-        const double x = lua_tonumber(state, -2);
-
-        RcDemo::Instance().GetWorld().GetPlayer().SetPlane(x, y);
-        return 0;
-    } },
-
-    { nullptr, nullptr }
-};
-
-} // unnamed namespace
-
 Player::Player(const World& world)
     : mWorld(world)
     , mInput(Utils::make_unique<Input>(SDL_SCANCODE_W, SDL_SCANCODE_S,
@@ -112,11 +68,6 @@ void Player::SetHorizontalRayCount(const int ray_cnt)
 const std::vector<RaycastResult>& Player::GetRaycastResults() const
 {
     return mRays;
-}
-
-void Player::RegisterLua(LuaInterpreter& lua)
-{
-    lua.RegisterFunctions("player", lua_funcs);
 }
 
 void Player::UpdateRays(const long elapsed_time)

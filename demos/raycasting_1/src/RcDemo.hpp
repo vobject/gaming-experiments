@@ -1,20 +1,19 @@
 #ifndef RCDEMO_HPP
 #define RCDEMO_HPP
 
-#include "LuaInterpreter.hpp"
-
 #include <SDL.h>
 
 #include <string>
 #include <memory>
 
+class LuaInterpreter;
 class Renderer;
 class World;
 
 class RcDemo
 {
 public:
-    static RcDemo& Instance();
+    RcDemo();
     ~RcDemo();
 
     void Start();
@@ -32,10 +31,7 @@ public:
     Renderer& GetRenderer() const;
     World& GetWorld() const;
 
-    void RegisterLua(LuaInterpreter& lua);
-
 private:
-    RcDemo();
     RcDemo(const RcDemo&) = delete;
     RcDemo& operator=(const RcDemo&) = delete;
 
@@ -54,7 +50,7 @@ private:
     int mUpdateDeltaTime = 2; // update game state every 2ms by default
     std::string mAppName = "RcDemo";
 
-    LuaInterpreter mLua;
+    LuaInterpreter& mLua;
     std::unique_ptr<Renderer> mRenderer;
     std::unique_ptr<World> mWorld;
 };

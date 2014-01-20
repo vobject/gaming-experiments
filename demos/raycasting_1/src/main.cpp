@@ -7,7 +7,8 @@ int main()
 {
     try
     {
-        RcDemo::Instance().Start();
+        RcDemo app;
+        app.Start();
     }
     catch (const char* e)
     {

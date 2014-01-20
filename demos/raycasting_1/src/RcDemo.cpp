@@ -17,51 +17,6 @@
 
 namespace {
 
-const struct luaL_Reg lua_funcs[] = {
-    { "set_app_name", [](lua_State* state) {
-        if (!lua_isstring(state, -1)) {
-            throw "set_app_name() must return a string.";
-        }
-
-        const char* name = lua_tostring(state, -1);
-        RcDemo::Instance().SetAppName(name);
-        return 0;
-    }},
-
-    { "set_resolution", [](lua_State* state) {
-        if (!lua_isnumber(state, -1) || !lua_isnumber(state, -2)) {
-            throw "set_resolution() must return two integers.";
-        }
-
-        const int height = static_cast<int>(lua_tointeger(state, -1));
-        const int width = static_cast<int>(lua_tointeger(state, -2));
-        RcDemo::Instance().SetResolution(width, height);
-        return 0;
-    }},
-
-    { "set_update_time", [](lua_State* state) {
-        if (!lua_isnumber(state, -1)) {
-            throw "set_update_time() must return an integer.";
-        }
-
-        const int update_time = static_cast<int>(lua_tointeger(state, -1));
-        RcDemo::Instance().SetUpdateTime(update_time);
-        return 0;
-    }},
-
-    { "set_renderer", [](lua_State* state) {
-        if (!lua_isstring(state, -1)) {
-            throw "set_renderer() must return a string.";
-        }
-
-        const char* name = lua_tostring(state, -1);
-        RcDemo::Instance().SetRenderer(name);
-        return 0;
-    } },
-
-    { nullptr, nullptr }
-};
-
 const std::string SW_RENDERER = "SwRenderer";
 const std::string SW_RENDERER_MT_1 = "SwRendererMt1";
 const std::string SW_RENDERER_MT_2 = "SwRendererMt2";
@@ -72,20 +27,14 @@ const std::string SVG_RENDERER = "SvgRenderer";
 
 } // unnamed namespace
 
-RcDemo& RcDemo::Instance()
-{
-    static RcDemo instance;
-    return instance;
-}
-
 RcDemo::RcDemo()
+    : mLua(LuaInterpreter::Create(*this))
 {
     atexit(SDL_Quit);
 
     SelectRendererFromName(SW_RENDERER);
     mWorld = Utils::make_unique<World>();
 
-    RegisterLua(mLua);
     mLua.RunScript("raycasting.lua");
 }
 
@@ -153,13 +102,6 @@ Renderer& RcDemo::GetRenderer() const
 World& RcDemo::GetWorld() const
 {
     return *mWorld;
-}
-
-void RcDemo::RegisterLua(LuaInterpreter& lua)
-{
-    lua.RegisterFunctions("rcdemo", lua_funcs);
-    mWorld->RegisterLua(lua);
-    mRenderer->RegisterLua(lua);
 }
 
 void RcDemo::Mainloop()

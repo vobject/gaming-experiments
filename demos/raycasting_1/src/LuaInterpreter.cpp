@@ -18,6 +18,57 @@ void initialize_api();
 void register_api(lua_State* L);
 bool api_initialized = false;
 
+//int started_done(lua_State* l)
+//{
+//    printf("started_done()\n");
+//    return 0;
+//}
+//
+//void on_started(lua_State* l)
+//{
+//    printf("on_started()\n");
+//
+////     lua_getfield(l, LUA_REGISTRYINDEX, "demo.main");
+//// 
+////     int positive_index = -1;
+////     if (-1 < 0 && -1 >= -lua_gettop(l)) {
+////         positive_index = lua_gettop(l) + -1 + 1;
+////     }
+//// 
+////     lua_getfield(l, positive_index, "on_started");
+////     // ... object ... method/?
+//// 
+////     LuaInterpreter::DumpStack(l);
+////     bool exists = lua_isfunction(l, -2);
+////     if (exists) {
+////         lua_pushvalue(l, positive_index);
+////     }
+////     else {
+////         // Restore the stack.
+////         lua_pop(l, 1);
+////         // ... object ...
+////     }
+////     if (!exists) {
+////         throw "!exists";
+////     }
+//// 
+////     if (lua_pcall(l, 1, 0, 0) != 0) {
+////         lua_pop(l, 1);
+////         throw "!lua_pcall";
+////     }
+//// 
+////     lua_pop(l, 1);
+//}
+//
+//void lerror(lua_State *L, const char *fmt, ...) {
+//    va_list argp;
+//    va_start(argp, fmt);
+//    vfprintf(stderr, fmt, argp);
+//    va_end(argp);
+//    lua_close(L);
+////    exit(EXIT_FAILURE);
+//}
+
 } // unnamed namespace
 
 LuaInterpreter& LuaInterpreter::Create(MainLoop& mainloop)
@@ -32,6 +83,51 @@ LuaInterpreter& LuaInterpreter::Create(MainLoop& mainloop)
     }
     luaL_openlibs(L);
     register_api(L);
+
+
+
+
+////     lua_newtable(L);
+////     lua_setglobal(L, "demo");
+//
+//    /*
+//    static const luaL_Reg functions[] = {
+//        { "started_done", started_done },
+//        { nullptr, nullptr }
+//    };
+//
+//    lua_newtable(L);
+//    luaL_setfuncs(L, functions, 0);
+//    lua_setglobal(L, "demo");
+//    */
+//
+////     luaL_setfuncs(L, functions, 0);
+//
+////     lua_setglobal(L, "demo.main");
+////     lua_pop(L, 1);
+//
+//// 
+////     lua_getglobal(L, "demo");
+////    lua_getfield(L, -1, "main");
+////    lua_setfield(L, LUA_REGISTRYINDEX, "demo.main");
+////    lua_pop(L, 1);
+//
+//    luaL_dofile(L, "main.lua");
+//    //luaL_dostring(L, "function f() print(\"asdf\") end");
+//    //lua_getglobal(L, "on_started");
+//    lua_getglobal(L, "on_started");
+//    LuaInterpreter::DumpStack(L);
+//    if (lua_pcall(L, 0, 0, 0) != LUA_OK) {
+//        lerror(L, "error running function 'f': %s", lua_tostring(L, -1));
+//    }
+//    lua_pcall(L, 0, 0, 0);
+//
+////     lua_getfield(L, -1, "on_started()");
+////     lua_pushcfunction
+////     lua_call(L, 0, 0);
+//    //lua_call("on_started");
+//    //on_started(L);
+
 
     interpreters.insert({ L, Utils::make_unique<LuaInterpreter>(L, mainloop) });
     return LuaInterpreter::GetInterpreter(L);

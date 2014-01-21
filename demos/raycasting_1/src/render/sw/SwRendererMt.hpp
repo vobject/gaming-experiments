@@ -6,7 +6,7 @@
 class SwRendererMt : public SwRenderer
 {
 public:
-    SwRendererMt(int res_x, int res_y, const std::string& app_name, int threads);
+    SwRendererMt(int threads);
     virtual ~SwRendererMt();
 
 protected:

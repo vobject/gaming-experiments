@@ -16,8 +16,8 @@
 #include <cstdint>
 #include <cstring>
 
-TexClRenderer::TexClRenderer(const int res_x, const int res_y, const std::string& app_name)
-    : Renderer(res_x, res_y, app_name, "TexOpenCL")
+TexClRenderer::TexClRenderer()
+    : Renderer("TexOpenCL")
 {
     Startup();
 }

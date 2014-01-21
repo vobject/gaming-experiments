@@ -1,5 +1,6 @@
-#include "RcDemo.hpp"
+#include "MainLoop.hpp"
 #include "LuaInterpreter.hpp"
+#include "LuaHelper.hpp"
 #include "World.hpp"
 #include "Player.hpp"
 #include "Utils.hpp"
@@ -25,89 +26,56 @@ const std::string TEX_RENDERER = "TexRenderer";
 const std::string CL_RENDERER = "ClRenderer";
 const std::string SVG_RENDERER = "SvgRenderer";
 
+MainLoop* init_me_next = nullptr;
+
+int l_init(lua_State* const L)
+{
+    lua_settop(L, 1);
+    luaL_checktype(L, 1, LUA_TTABLE);
+
+    lua_getfield(L, 1, "update_time");
+    const int update_time = static_cast<int>(luaL_checkinteger(L, -1));
+    lua_pop(L, 1);
+
+    lua_getfield(L, 1, "renderer");
+    const std::string renderer = luaL_checkstring(L, -1);
+    lua_pop(L, 1);
+
+    lua_getfield(L, 1, "world");
+    const std::string world = luaL_checkstring(L, -1);
+    lua_pop(L, 1);
+
+    init_me_next->SetUpdateTime(update_time);
+    init_me_next->SetRenderer(renderer);
+    init_me_next->SetWorld(world);
+    return 0;
+}
+
 } // unnamed namespace
 
-RcDemo::RcDemo()
+MainLoop::MainLoop()
     : mLua(LuaInterpreter::Create(*this))
 {
-    atexit(SDL_Quit);
+    init_me_next = this;
+    LuaHelper::InitInstance("mainloop", "mainloop.lua", l_init);
+    init_me_next = nullptr;
 
-    SelectRendererFromName(SW_RENDERER);
-    mWorld = Utils::make_unique<World>();
+    atexit(SDL_Quit);
 
     mLua.RunScript("raycasting.lua");
 }
 
-RcDemo::~RcDemo()
+MainLoop::~MainLoop()
 {
 
 }
 
-void RcDemo::Start()
-{
-    Mainloop();
-}
-
-void RcDemo::SetAppName(const std::string& name)
-{
-    mAppName = name;
-}
-
-void RcDemo::SetResolution(int width, int height)
-{
-    mResX = width;
-    mResY = height;
-}
-
-void RcDemo::SetUpdateTime(int ms)
-{
-    mUpdateDeltaTime = ms;
-}
-
-void RcDemo::SetRenderer(const std::string& name)
-{
-    SelectRendererFromName(name);
-}
-
-void RcDemo::SetRenderer(const SDL_Scancode code)
-{
-    SelectRendererFromScanCode(code);
-}
-
-std::string RcDemo::GetAppName() const
-{
-    return mAppName;
-}
-
-int RcDemo::GetWindowWidth() const
-{
-    return mResX;
-}
-
-int RcDemo::GetWindowHeight() const
-{
-    return mResY;
-}
-
-int RcDemo::GetUpdateTime() const
-{
-    return mUpdateDeltaTime;
-}
-
-Renderer& RcDemo::GetRenderer() const
-{
-    return *mRenderer;
-}
-
-World& RcDemo::GetWorld() const
-{
-    return *mWorld;
-}
-
-void RcDemo::Mainloop()
+void MainLoop::Run()
 {
     // Mainloop based on an article from Glenn Fiedler:
     //  http://gafferongames.com/game-physics/fix-your-timestep/
+
+    // TODO: handle verly large deltas that can happen while debugging.
 
     // A game update call will update the game status by this amount of time.
     const std::chrono::milliseconds delta_time(mUpdateDeltaTime);
@@ -116,7 +84,7 @@ void RcDemo::Mainloop()
     auto game_time = std::chrono::milliseconds::zero();
     auto accumulator = std::chrono::milliseconds::zero();
 
-    while(!mQuitRequested)
+    while (!mQuitRequested)
     {
         const auto new_time = std::chrono::milliseconds(SDL_GetTicks());
         auto frame_time = new_time - old_time;
@@ -137,7 +105,45 @@ void RcDemo::Mainloop()
     }
 }
 
-void RcDemo::ProcessInput()
+void MainLoop::SetUpdateTime(int ms)
+{
+    mUpdateDeltaTime = ms;
+}
+
+void MainLoop::SetRenderer(const std::string& name)
+{
+    SelectRendererFromName(name);
+}
+
+void MainLoop::SetRenderer(const SDL_Scancode code)
+{
+    SelectRendererFromScanCode(code);
+}
+
+void MainLoop::SetWorld(const std::string& name)
+{
+    (void) name;
+
+    mWorld = nullptr;
+    mWorld = Utils::make_unique<World>();
+}
+
+int MainLoop::GetUpdateTime() const
+{
+    return mUpdateDeltaTime;
+}
+
+Renderer& MainLoop::GetRenderer() const
+{
+    return *mRenderer;
+}
+
+World& MainLoop::GetWorld() const
+{
+    return *mWorld;
+}
+
+void MainLoop::ProcessInput()
 {
     // update all inputs regardless of there being an observable event or not
     mWorld->ProcessInput();
@@ -177,21 +183,21 @@ void RcDemo::ProcessInput()
     }
 }
 
-void RcDemo::UpdateScene(const long app_time, const long elapsed_time)
+void MainLoop::UpdateScene(const long app_time, const long elapsed_time)
 {
     (void) app_time;
 
     mWorld->Update(elapsed_time);
 }
 
-void RcDemo::RenderScene()
+void MainLoop::RenderScene()
 {
     mRenderer->PreRender();
     mRenderer->DoRender(*mWorld);
     mRenderer->PostRender();
 }
 
-void RcDemo::SelectRendererFromName(const std::string& name)
+void MainLoop::SelectRendererFromName(const std::string& name)
 {
     // the active renderer is always deleted before a new one is created.
     // this makes sure that the new renderer can capture the mouse sensibly.
@@ -199,29 +205,29 @@ void RcDemo::SelectRendererFromName(const std::string& name)
     if (name == SW_RENDERER)
     {
         mRenderer = nullptr;
-        mRenderer = Utils::make_unique<SwRenderer>(mResX, mResY, mAppName);
+        mRenderer = Utils::make_unique<SwRenderer>();
     }
     else if (name == SW_RENDERER_MT_1)
     {
         mRenderer = nullptr;
-        mRenderer = Utils::make_unique<SwRendererMt>(mResX, mResY, mAppName, 1);
+        mRenderer = Utils::make_unique<SwRendererMt>(1);
     }
     else if (name == SW_RENDERER_MT_2)
     {
         mRenderer = nullptr;
-        mRenderer = Utils::make_unique<SwRendererMt>(mResX, mResY, mAppName, 2);
+        mRenderer = Utils::make_unique<SwRendererMt>(2);
     }
     else if (name == SW_RENDERER_MT_4)
     {
         mRenderer = nullptr;
-        mRenderer = Utils::make_unique<SwRendererMt>(mResX, mResY, mAppName, 4);
+        mRenderer = Utils::make_unique<SwRendererMt>(4);
     }
 
 #ifdef WITH_TEXTURE
     else if (name == TEX_RENDERER)
     {
         mRenderer = nullptr;
-        mRenderer = Utils::make_unique<TexSwRenderer>(mResX, mResY, mAppName);
+        mRenderer = Utils::make_unique<TexSwRenderer>();
     }
 #endif // WITH_TEXTURE
 
@@ -229,7 +235,7 @@ void RcDemo::SelectRendererFromName(const std::string& name)
     else if (name == CL_RENDERER)
     {
         mRenderer = nullptr;
-        mRenderer = Utils::make_unique<ClRenderer>(mResX, mResY, mAppName);
+        mRenderer = Utils::make_unique<ClRenderer>();
     }
 #endif // WITH_OPENCL
 
@@ -237,12 +243,12 @@ void RcDemo::SelectRendererFromName(const std::string& name)
     else if (name == SVG_RENDERER)
     {
         mRenderer = nullptr;
-        mRenderer = Utils::make_unique<SvgSwRenderer>(mResX, mResY, mAppName);
+        mRenderer = Utils::make_unique<SvgSwRenderer>();
     }
 #endif // WITH_SVG
 }
 
-void RcDemo::SelectRendererFromScanCode(const SDL_Scancode code)
+void MainLoop::SelectRendererFromScanCode(const SDL_Scancode code)
 {
     switch (code)
     {

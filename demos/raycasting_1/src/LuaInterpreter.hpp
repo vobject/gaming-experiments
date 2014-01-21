@@ -5,22 +5,22 @@
 
 #include <lua.hpp>
 
-class RcDemo;
+class MainLoop;
 
 class LuaInterpreter
 {
 public:
-    static LuaInterpreter& Create(RcDemo& app);
-    static LuaInterpreter& Get(lua_State* L);
-    static RcDemo& GetApplication(lua_State* L);
+    static LuaInterpreter& Create(MainLoop& app);
+    static LuaInterpreter& GetInterpreter(lua_State* L);
+    static MainLoop& GetMainLoop(lua_State* L);
 
     static void RunScript(lua_State* L, const std::string& file);
     static void DumpStack(lua_State* L);
 
-    LuaInterpreter(lua_State* L, RcDemo& app);
+    LuaInterpreter(lua_State* L, MainLoop& app);
     ~LuaInterpreter();
 
-    RcDemo& GetApplication() const;
+    MainLoop& GetMainLoop() const;
     void RunScript(const std::string& file);
     void DumpStack();
 
@@ -30,7 +30,7 @@ private:
     LuaInterpreter& operator=(LuaInterpreter&) = delete;
 
     lua_State* const  mL;
-    RcDemo& mApp;
+    MainLoop& mMainLoop;
 };
 
 #endif // LUA_INTERPRETER_HPP

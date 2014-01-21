@@ -6,7 +6,6 @@
 #include <vector>
 #include <cstdint>
 
-class LuaInterpreter;
 class Player;
 
 class Sprite

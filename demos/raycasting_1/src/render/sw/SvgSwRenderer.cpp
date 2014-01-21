@@ -83,14 +83,14 @@ void DrawLine(int x, int y, int dx, int dy, const unsigned int color, SDL_Surfac
 }
 
 
-SvgSwRenderer::SvgSwRenderer(const int res_x, const int res_y, const std::string& app_name)
-: SvgSwRenderer(res_x, res_y, app_name, "SvgSoftware")
+SvgSwRenderer::SvgSwRenderer()
+: SvgSwRenderer("SvgSoftware")
 {
     
 }
 
-SvgSwRenderer::SvgSwRenderer(const int res_x, const int res_y, const std::string& app_name, const std::string& renderer_name)
-: Renderer(res_x, res_y, app_name, renderer_name)
+SvgSwRenderer::SvgSwRenderer(const std::string& renderer_name)
+: Renderer(renderer_name)
 {
     Startup();
 }

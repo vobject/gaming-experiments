@@ -12,7 +12,7 @@ class ResourceCache;
 class TexSwRenderer : public SwRenderer
 {
 public:
-    TexSwRenderer(int res_x, int res_y, const std::string& app_name);
+    TexSwRenderer();
     virtual ~TexSwRenderer();
 
     void Startup() override;

@@ -16,7 +16,7 @@ class Player;
 class ClRenderer : public Renderer
 {
 public:
-    ClRenderer(int res_x, int res_y, const std::string& app_name);
+    ClRenderer();
     virtual ~ClRenderer();
 
     void Startup() override;

@@ -7,14 +7,14 @@
 
 #include <algorithm>
 
-SwRenderer::SwRenderer(const int res_x, const int res_y, const std::string& app_name)
-    : SwRenderer(res_x, res_y, app_name, "Software")
+SwRenderer::SwRenderer()
+    : SwRenderer("Software")
 {
 
 }
 
-SwRenderer::SwRenderer(const int res_x, const int res_y, const std::string& app_name, const std::string& renderer_name)
-    : Renderer(res_x, res_y, app_name, renderer_name)
+SwRenderer::SwRenderer(const std::string& renderer_name)
+    : Renderer(renderer_name)
 {
     Startup();
 }
@@ -154,10 +154,12 @@ void SwRenderer::InitMinimap(const World& world)
 void SwRenderer::DrawPlayerView(const World& world, const Player& player)
 {
     const auto& rays = player.GetRaycastResults();
+    const double rays_per_pixel = static_cast<double>(rays.size()) / mResX;
 
     for (auto x = 0; x < mResX; x++)
     {
-        const auto& ray = rays[x];
+        const auto ray_index = static_cast<size_t>(x * rays_per_pixel);
+        const auto& ray = rays[ray_index];
 
         const auto wall_type = world.GetCellType(ray.map_pos_x, ray.map_pos_y);
         const auto wall_color = mWallColors[wall_type];

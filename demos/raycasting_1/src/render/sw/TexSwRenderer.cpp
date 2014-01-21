@@ -14,8 +14,8 @@
 #include <sstream>
 #include <cmath>
 
-TexSwRenderer::TexSwRenderer(const int res_x, const int res_y, const std::string& app_name)
-    : SwRenderer(res_x, res_y, app_name, "TexSoftware")
+TexSwRenderer::TexSwRenderer()
+    : SwRenderer("TexSoftware")
 {
     mResCache = Utils::make_unique<ResourceCache>("res", mResX, mResY,
                                                   mSurface->format->format);

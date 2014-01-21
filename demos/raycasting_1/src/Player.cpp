@@ -1,11 +1,43 @@
 #include "Player.hpp"
+#include "LuaHelper.hpp"
 #include "World.hpp"
 #include "Input.hpp"
-#include "LuaInterpreter.hpp"
-#include "RcDemo.hpp"
 #include "Utils.hpp"
 
+#include <lua.hpp>
+
 #include <algorithm>
+
+namespace {
+
+Player* init_me_next = nullptr;
+
+int l_init(lua_State* const L)
+{
+    lua_settop(L, 1);
+    luaL_checktype(L, 1, LUA_TTABLE);
+
+    lua_getfield(L, 1, "rays");
+    const int ray_count = luaL_checkinteger(L, -1);
+    lua_pop(L, 1);
+
+    double pos_x, pos_y;
+    LuaHelper::GetXYValue(L, "position", pos_x, pos_y);
+
+    double dir_x, dir_y;
+    LuaHelper::GetXYValue(L, "direction", dir_x, dir_y);
+
+    double plane_x, plane_y;
+    LuaHelper::GetXYValue(L, "plane", plane_x, plane_y);
+
+    init_me_next->SetHorizontalRayCount(ray_count);
+    init_me_next->SetPosition(pos_x, pos_y);
+    init_me_next->SetDirection(dir_x, dir_y);
+    init_me_next->SetPlane(plane_x, plane_y);
+    return 0;
+}
+
+} // unnamed namespace
 
 Player::Player(const World& world)
     : mWorld(world)
@@ -13,7 +45,9 @@ Player::Player(const World& world)
                                        SDL_SCANCODE_A, SDL_SCANCODE_D,
                                        SDL_SCANCODE_E, SDL_SCANCODE_F))
 {
-
+    init_me_next = this;
+    LuaHelper::InitInstance("player", "player.lua", l_init);
+    init_me_next = nullptr;
 }
 
 Player::~Player()

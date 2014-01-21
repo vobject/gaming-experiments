@@ -5,26 +5,26 @@
 
 #include <string>
 
-class LuaInterpreter;
 class World;
 
 class Renderer
 {
 public:
-   Renderer(int res_x, int res_y, const std::string& app_name,
-                                  const std::string& renderer_name);
-   virtual ~Renderer();
+    Renderer(const std::string& renderer_name);
+    virtual ~Renderer();
 
    Renderer(Renderer&) = delete;
-   Renderer& operator=(Renderer&) = delete;
+    Renderer& operator=(Renderer&) = delete;
 
+    std::string GetAppName() const;
     int GetResX() const;
     int GetResY() const;
-    std::string GetAppName() const;
 
     const std::string& GetName() const;
     const int& getFPS() const;
 
+    void SetAppName(const std::string& name);
+    void SetResolution(int width, int height);
     void ShowMinimap(bool show);
 
     virtual void Startup() = 0;
@@ -35,16 +35,16 @@ public:
     virtual void DoRender(const World& world) = 0;
 
 protected:
-    const int mResX;
-    const int mResY;
+    int mResX = 320;
+    int mResY = 240;
     SDL_Window* mScreen = nullptr;
     bool mShowMinimap = false;
 
 private:
     static Uint32 FrameTimerCB(Uint32 interval, void* param);
 
-    const std::string mAppName;
     const std::string mRendererName;
+    std::string mAppName;
     std::string mCaption;
     SDL_TimerID mFrameTimer = 0;
     int mFrameCount = 0;

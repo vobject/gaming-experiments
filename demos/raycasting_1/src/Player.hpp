@@ -8,7 +8,6 @@
 #include <algorithm>
 #include <SDL.h>
 
-class LuaInterpreter;
 class World;
 class Input;
 

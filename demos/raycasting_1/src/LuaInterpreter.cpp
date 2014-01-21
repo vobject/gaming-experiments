@@ -1,5 +1,5 @@
 #include "LuaInterpreter.hpp"
-#include "RcDemo.hpp"
+#include "MainLoop.hpp"
 #include "World.hpp"
 #include "Player.hpp"
 #include "render/Renderer.hpp"
@@ -20,7 +20,7 @@ bool api_initialized = false;
 
 } // unnamed namespace
 
-LuaInterpreter& LuaInterpreter::Create(RcDemo& app)
+LuaInterpreter& LuaInterpreter::Create(MainLoop& mainloop)
 {
     if (!api_initialized) {
         initialize_api();
@@ -33,11 +33,11 @@ LuaInterpreter& LuaInterpreter::Create(RcDemo& app)
     luaL_openlibs(L);
     register_api(L);
 
-    interpreters.insert({ L, Utils::make_unique<LuaInterpreter>(L, app) });
-    return LuaInterpreter::Get(L);
+    interpreters.insert({ L, Utils::make_unique<LuaInterpreter>(L, mainloop) });
+    return LuaInterpreter::GetInterpreter(L);
 }
 
-LuaInterpreter& LuaInterpreter::Get(lua_State* L)
+LuaInterpreter& LuaInterpreter::GetInterpreter(lua_State* L)
 {
     const auto iter = interpreters.find(L);
     if (iter == interpreters.end()) {
@@ -46,9 +46,9 @@ LuaInterpreter& LuaInterpreter::Get(lua_State* L)
     return *iter->second;
 }
 
-RcDemo& LuaInterpreter::GetApplication(lua_State* L)
+MainLoop& LuaInterpreter::GetMainLoop(lua_State* L)
 {
-    return Get(L).GetApplication();
+    return GetInterpreter(L).GetMainLoop();
 }
 
 void LuaInterpreter::RunScript(lua_State* L, const std::string& file)
@@ -84,9 +84,9 @@ void LuaInterpreter::DumpStack(lua_State* L)
     std::cout << std::endl;
 }
 
-LuaInterpreter::LuaInterpreter(lua_State* const L, RcDemo& app)
+LuaInterpreter::LuaInterpreter(lua_State* const L, MainLoop& mainloop)
     : mL(L)
-    , mApp(app)
+    , mMainLoop(mainloop)
 {
 
 }
@@ -96,9 +96,9 @@ LuaInterpreter::~LuaInterpreter()
 
 }
 
-RcDemo& LuaInterpreter::GetApplication() const
+MainLoop& LuaInterpreter::GetMainLoop() const
 {
-    return mApp;
+    return mMainLoop;
 }
 
 void LuaInterpreter::RunScript(const std::string& file)
@@ -140,34 +140,11 @@ void initialize_api()
 
 void initialize_demo_api(std::vector<luaL_Reg>& api)
 {
-    api.push_back({ "set_name", [](lua_State* L) {
-        if (!lua_isstring(L, -1)) {
-            throw "set_app_name() must return a string.";
-        }
-        auto& app = LuaInterpreter::GetApplication(L);
-
-        const char* const name = lua_tostring(L, -1);
-        app.SetAppName(name);
-        return 0;
-    } });
-
-    api.push_back({ "set_resolution", [](lua_State* L) {
-        if (!lua_isnumber(L, -1) || !lua_isnumber(L, -2)) {
-            throw "set_resolution() must return two integers.";
-        }
-        auto& app = LuaInterpreter::GetApplication(L);
-
-        const int height = static_cast<int>(lua_tointeger(L, -1));
-        const int width = static_cast<int>(lua_tointeger(L, -2));
-        app.SetResolution(width, height);
-        return 0;
-    } });
-
     api.push_back({ "set_update_time", [](lua_State* L) {
         if (!lua_isnumber(L, -1)) {
             throw "set_update_time() must return an integer.";
         }
-        auto& app = LuaInterpreter::GetApplication(L);
+        auto& app = LuaInterpreter::GetMainLoop(L);
 
         const int update_time = static_cast<int>(lua_tointeger(L, -1));
         app.SetUpdateTime(update_time);
@@ -176,12 +153,23 @@ void initialize_demo_api(std::vector<luaL_Reg>& api)
 
     api.push_back({ "set_renderer", [](lua_State* L) {
         if (!lua_isstring(L, -1)) {
-            throw "set_app_name() must return a string.";
+            throw "set_renderer() must specify a string.";
         }
-        auto& app = LuaInterpreter::GetApplication(L);
+        auto& app = LuaInterpreter::GetMainLoop(L);
 
         const char* const name = lua_tostring(L, -1);
         app.SetRenderer(name);
+        return 0;
+    } });
+
+    api.push_back({ "set_world", [](lua_State* L) {
+        if (!lua_isstring(L, -1)) {
+            throw "set_world() must specify a string.";
+        }
+        auto& app = LuaInterpreter::GetMainLoop(L);
+
+        const char* const name = lua_tostring(L, -1);
+        app.SetWorld(name);
         return 0;
     } });
 }
@@ -192,7 +180,7 @@ void initialize_world_api(std::vector<luaL_Reg>& api)
         if (!lua_isnumber(L, -1) || !lua_isnumber(L, -2)) {
             throw "set_level_size() must specify level dimensions.";
         }
-        auto& app = LuaInterpreter::GetApplication(L);
+        auto& app = LuaInterpreter::GetMainLoop(L);
 
         const int height = static_cast<int>(lua_tointeger(L, -1));
         const int width = static_cast<int>(lua_tointeger(L, -2));
@@ -232,7 +220,7 @@ void initialize_world_api(std::vector<luaL_Reg>& api)
         lua_pop(L, 1);
         // Stack is now the same as it was on entry to this function
 
-        auto& app = LuaInterpreter::GetApplication(L);
+        auto& app = LuaInterpreter::GetMainLoop(L);
         app.GetWorld().SetLevelData(level_data.data());
         return 0;
     } });
@@ -240,11 +228,22 @@ void initialize_world_api(std::vector<luaL_Reg>& api)
 
 void initialize_player_api(std::vector<luaL_Reg>& api)
 {
+    api.push_back({ "set_rays", [](lua_State* L) {
+        if (!lua_isnumber(L, -1)) {
+            throw "set_rays() specify an integer.";
+        }
+        auto& app = LuaInterpreter::GetMainLoop(L);
+
+        const int ray_count = static_cast<int>(lua_tointeger(L, -1));
+        app.GetWorld().GetPlayer().SetHorizontalRayCount(ray_count);
+        return 0;
+    } });
+
     api.push_back({ "set_position", [](lua_State* L) {
         if (!lua_isnumber(L, -1) || !lua_isnumber(L, -2)) {
             throw "set_position() must specify x and y coordinates.";
         }
-        auto& app = LuaInterpreter::GetApplication(L);
+        auto& app = LuaInterpreter::GetMainLoop(L);
 
         const double y = lua_tonumber(L, -1);
         const double x = lua_tonumber(L, -2);
@@ -256,7 +255,7 @@ void initialize_player_api(std::vector<luaL_Reg>& api)
         if (!lua_isnumber(L, -1) || !lua_isnumber(L, -2)) {
             throw "set_direction() must specify x and y.";
         }
-        auto& app = LuaInterpreter::GetApplication(L);
+        auto& app = LuaInterpreter::GetMainLoop(L);
 
         const double y = lua_tonumber(L, -1);
         const double x = lua_tonumber(L, -2);
@@ -268,33 +267,45 @@ void initialize_player_api(std::vector<luaL_Reg>& api)
         if (!lua_isnumber(L, -1) || !lua_isnumber(L, -2)) {
             throw "set_plane() must specify x and y.";
         }
-        auto& app = LuaInterpreter::GetApplication(L);
+        auto& app = LuaInterpreter::GetMainLoop(L);
 
         const double y = lua_tonumber(L, -1);
         const double x = lua_tonumber(L, -2);
         app.GetWorld().GetPlayer().SetPlane(x, y);
         return 0;
     } });
-
-    api.push_back({ "set_rays", [](lua_State* L) {
-        if (!lua_isnumber(L, -1)) {
-            throw "set_rays() specify an integer.";
-        }
-        auto& app = LuaInterpreter::GetApplication(L);
-
-        const int ray_count = static_cast<int>(lua_tointeger(L, -1));
-        app.GetWorld().GetPlayer().SetHorizontalRayCount(ray_count);
-        return 0;
-    } });
 }
 
 void initialize_renderer_api(std::vector<luaL_Reg>& api)
 {
-    api.push_back({ "show_minimap", [](lua_State* L) {
+    api.push_back({ "set_caption", [](lua_State* L) {
+        if (!lua_isstring(L, -1)) {
+            throw "set_caption() must specify a string.";
+        }
+        auto& app = LuaInterpreter::GetMainLoop(L);
+
+        const char* const name = lua_tostring(L, -1);
+        app.GetRenderer().SetAppName(name);
+        return 0;
+    } });
+
+    api.push_back({ "set_resolution", [](lua_State* L) {
+        if (!lua_isnumber(L, -1) || !lua_isnumber(L, -2)) {
+            throw "set_resolution() must specify x and y dimensions.";
+        }
+        auto& app = LuaInterpreter::GetMainLoop(L);
+
+        const int height = static_cast<int>(lua_tointeger(L, -1));
+        const int width = static_cast<int>(lua_tointeger(L, -2));
+        app.GetRenderer().SetResolution(width, height);
+        return 0;
+    } });
+
+    api.push_back({ "set_show_minimap", [](lua_State* L) {
         if (!lua_isboolean(L, -1)) {
             throw "show_minimap() must specifiy a boolean.";
         }
-        auto& app = LuaInterpreter::GetApplication(L);
+        auto& app = LuaInterpreter::GetMainLoop(L);
 
         const bool show = lua_toboolean(L, -1) != 0;
         app.GetRenderer().ShowMinimap(show);

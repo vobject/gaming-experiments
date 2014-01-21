@@ -7,8 +7,8 @@
 
 #include <thread>
 
-SwRendererMt::SwRendererMt(const int res_x, const int res_y, const std::string& app_name, const int threads)
-    : SwRenderer(res_x, res_y, app_name, std::string("Software(threads:") + std::to_string(threads) + ")")
+SwRendererMt::SwRendererMt(const int threads)
+    : SwRenderer(std::string("Software(threads:") + std::to_string(threads) + ")")
     , mThreadCnt{threads}
 {
 

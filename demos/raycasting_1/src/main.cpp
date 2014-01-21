@@ -1,5 +1,5 @@
 #include "LuaInterpreter.hpp"
-#include "RcDemo.hpp"
+#include "MainLoop.hpp"
 
 #include <iostream>
 
@@ -7,8 +7,7 @@ int main()
 {
     try
     {
-        RcDemo app;
-        app.Start();
+        MainLoop().Run();
     }
     catch (const char* e)
     {

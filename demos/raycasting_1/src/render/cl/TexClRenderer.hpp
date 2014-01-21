@@ -20,7 +20,7 @@ class ResourceCache;
 class TexClRenderer : public Renderer
 {
 public:
-    TexClRenderer(int res_x, int res_y, const std::string& app_name);
+    TexClRenderer();
     virtual ~TexClRenderer();
 
     void Startup() override;

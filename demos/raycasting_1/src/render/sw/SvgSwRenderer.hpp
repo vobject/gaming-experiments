@@ -12,8 +12,8 @@ class Player;
 class SvgSwRenderer : public Renderer
 {
 public:
-    SvgSwRenderer(int res_x, int res_y, const std::string& app_name);
-    SvgSwRenderer(int res_x, int res_y, const std::string& app_name, const std::string& renderer_name);
+    SvgSwRenderer();
+    SvgSwRenderer(const std::string& renderer_name);
     virtual ~SvgSwRenderer();
 
     void Startup() override;

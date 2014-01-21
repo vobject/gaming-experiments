@@ -62,7 +62,8 @@ MainLoop::MainLoop()
 
     atexit(SDL_Quit);
 
-    mLua.RunScript("raycasting.lua");
+    //mLua.RunScript("raycasting.lua");
+    mLua.RunScript("main.lua");
 }
 
 MainLoop::~MainLoop()
@@ -72,6 +73,8 @@ MainLoop::~MainLoop()
 
 void MainLoop::Run()
 {
+    LuaOnStart();
+
     // Mainloop based on an article from Glenn Fiedler:
     //  http://gafferongames.com/game-physics/fix-your-timestep/
 
@@ -105,7 +108,14 @@ void MainLoop::Run()
     }
 }
 
-void MainLoop::SetUpdateTime(int ms)
+void MainLoop::RequestQuit()
+{
+    LuaOnQuit();
+
+    mQuitRequested = true;
+}
+
+void MainLoop::SetUpdateTime(const int ms)
 {
     mUpdateDeltaTime = ms;
 }
@@ -113,11 +123,6 @@ void MainLoop::SetUpdateTime(int ms)
 void MainLoop::SetRenderer(const std::string& name)
 {
     SelectRendererFromName(name);
-}
-
-void MainLoop::SetRenderer(const SDL_Scancode code)
-{
-    SelectRendererFromScanCode(code);
 }
 
 void MainLoop::SetWorld(const std::string& name)
@@ -145,6 +150,8 @@ World& MainLoop::GetWorld() const
 
 void MainLoop::ProcessInput()
 {
+    LuaOnInput();
+
     // update all inputs regardless of there being an observable event or not
     mWorld->ProcessInput();
 
@@ -154,8 +161,7 @@ void MainLoop::ProcessInput()
     }
 
     if((event.type == SDL_QUIT) || ((event.type == SDL_KEYDOWN) && (event.key.keysym.scancode == SDL_SCANCODE_ESCAPE))) {
-        // The user closed the window.
-        mQuitRequested = true;
+        RequestQuit(); // The user closed the window.
         return;
     }
 
@@ -187,14 +193,59 @@ void MainLoop::UpdateScene(const long app_time, const long elapsed_time)
 {
     (void) app_time;
 
+    LuaOnUpdate();
+
     mWorld->Update(elapsed_time);
 }
 
 void MainLoop::RenderScene()
 {
+    LuaOnRender();
+
     mRenderer->PreRender();
     mRenderer->DoRender(*mWorld);
     mRenderer->PostRender();
+}
+
+void MainLoop::SetRenderer(const SDL_Scancode code)
+{
+    SelectRendererFromScanCode(code);
+}
+
+void MainLoop::SelectRendererFromScanCode(const SDL_Scancode code)
+{
+    switch (code)
+    {
+    case SDL_SCANCODE_1:
+        SelectRendererFromName(SW_RENDERER);
+        break;
+    case SDL_SCANCODE_2:
+        SelectRendererFromName(SW_RENDERER_MT_1);
+        break;
+    case SDL_SCANCODE_3:
+        SelectRendererFromName(SW_RENDERER_MT_2);
+        break;
+    case SDL_SCANCODE_4:
+        SelectRendererFromName(SW_RENDERER_MT_4);
+        break;
+#ifdef WITH_TEXTURE
+    case SDL_SCANCODE_5:
+        SelectRendererFromName(TEX_RENDERER);
+        break;
+#endif // WITH_TEXTURE
+#ifdef WITH_OPENCL
+    case SDL_SCANCODE_6:
+        SelectRendererFromName(CL_RENDERER);
+        break;
+#endif // WITH_OPENCL
+#ifdef WITH_SVG
+    case SDL_SCANCODE_7:
+        SelectRendererFromName(SVG_RENDERER);
+        break;
+#endif // WITH_SVG
+    default:
+        break;
+    }
 }
 
 void MainLoop::SelectRendererFromName(const std::string& name)
@@ -248,38 +299,42 @@ void MainLoop::SelectRendererFromName(const std::string& name)
 #endif // WITH_SVG
 }
 
-void MainLoop::SelectRendererFromScanCode(const SDL_Scancode code)
+void MainLoop::LuaOnStart()
 {
-    switch (code)
-    {
-        case SDL_SCANCODE_1:
-            SelectRendererFromName(SW_RENDERER);
-            break;
-        case SDL_SCANCODE_2:
-            SelectRendererFromName(SW_RENDERER_MT_1);
-            break;
-        case SDL_SCANCODE_3:
-            SelectRendererFromName(SW_RENDERER_MT_2);
-            break;
-        case SDL_SCANCODE_4:
-            SelectRendererFromName(SW_RENDERER_MT_4);
-            break;
-    #ifdef WITH_TEXTURE
-        case SDL_SCANCODE_5:
-            SelectRendererFromName(TEX_RENDERER);
-            break;
-    #endif // WITH_TEXTURE
-    #ifdef WITH_OPENCL
-        case SDL_SCANCODE_6:
-            SelectRendererFromName(CL_RENDERER);
-            break;
-    #endif // WITH_OPENCL
-    #ifdef WITH_SVG
-        case SDL_SCANCODE_7:
-            SelectRendererFromName(SVG_RENDERER);
-            break;
-    #endif // WITH_SVG
-        default:
-            break;
-    }
+    lua_State* const L = mLua.GetState();
+
+    lua_getglobal(L, "mainloop_on_start");
+    lua_pcall(L, 0, 0, 0);
+}
+
+void MainLoop::LuaOnQuit()
+{
+    lua_State* const L = mLua.GetState();
+
+    lua_getglobal(L, "mainloop_on_quit");
+    lua_pcall(L, 0, 0, 0);
+}
+
+void MainLoop::LuaOnInput()
+{
+    lua_State* const L = mLua.GetState();
+
+    lua_getglobal(L, "mainloop_on_input");
+    lua_pcall(L, 0, 0, 0);
+}
+
+void MainLoop::LuaOnUpdate()
+{
+    lua_State* const L = mLua.GetState();
+
+    lua_getglobal(L, "mainloop_on_update");
+    lua_pcall(L, 0, 0, 0);
+}
+
+void MainLoop::LuaOnRender()
+{
+    lua_State* const L = mLua.GetState();
+
+    lua_getglobal(L, "mainloop_on_render");
+    lua_pcall(L, 0, 0, 0);
 }

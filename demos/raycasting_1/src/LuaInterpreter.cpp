@@ -14,120 +14,18 @@ namespace {
 
 std::map<lua_State* const, std::unique_ptr<LuaInterpreter>> interpreters;
 
-void initialize_api();
 void register_api(lua_State* L);
-bool api_initialized = false;
-
-//int started_done(lua_State* l)
-//{
-//    printf("started_done()\n");
-//    return 0;
-//}
-//
-//void on_started(lua_State* l)
-//{
-//    printf("on_started()\n");
-//
-////     lua_getfield(l, LUA_REGISTRYINDEX, "demo.main");
-//// 
-////     int positive_index = -1;
-////     if (-1 < 0 && -1 >= -lua_gettop(l)) {
-////         positive_index = lua_gettop(l) + -1 + 1;
-////     }
-//// 
-////     lua_getfield(l, positive_index, "on_started");
-////     // ... object ... method/?
-//// 
-////     LuaInterpreter::DumpStack(l);
-////     bool exists = lua_isfunction(l, -2);
-////     if (exists) {
-////         lua_pushvalue(l, positive_index);
-////     }
-////     else {
-////         // Restore the stack.
-////         lua_pop(l, 1);
-////         // ... object ...
-////     }
-////     if (!exists) {
-////         throw "!exists";
-////     }
-//// 
-////     if (lua_pcall(l, 1, 0, 0) != 0) {
-////         lua_pop(l, 1);
-////         throw "!lua_pcall";
-////     }
-//// 
-////     lua_pop(l, 1);
-//}
-//
-//void lerror(lua_State *L, const char *fmt, ...) {
-//    va_list argp;
-//    va_start(argp, fmt);
-//    vfprintf(stderr, fmt, argp);
-//    va_end(argp);
-//    lua_close(L);
-////    exit(EXIT_FAILURE);
-//}
 
 } // unnamed namespace
 
 LuaInterpreter& LuaInterpreter::Create(MainLoop& mainloop)
 {
-    if (!api_initialized) {
-        initialize_api();
-    }
-
     lua_State* const L = luaL_newstate();
     if (!L) {
         throw "Unable to create a new Lua state.";
     }
     luaL_openlibs(L);
     register_api(L);
-
-
-
-
-////     lua_newtable(L);
-////     lua_setglobal(L, "demo");
-//
-//    /*
-//    static const luaL_Reg functions[] = {
-//        { "started_done", started_done },
-//        { nullptr, nullptr }
-//    };
-//
-//    lua_newtable(L);
-//    luaL_setfuncs(L, functions, 0);
-//    lua_setglobal(L, "demo");
-//    */
-//
-////     luaL_setfuncs(L, functions, 0);
-//
-////     lua_setglobal(L, "demo.main");
-////     lua_pop(L, 1);
-//
-//// 
-////     lua_getglobal(L, "demo");
-////    lua_getfield(L, -1, "main");
-////    lua_setfield(L, LUA_REGISTRYINDEX, "demo.main");
-////    lua_pop(L, 1);
-//
-//    luaL_dofile(L, "main.lua");
-//    //luaL_dostring(L, "function f() print(\"asdf\") end");
-//    //lua_getglobal(L, "on_started");
-//    lua_getglobal(L, "on_started");
-//    LuaInterpreter::DumpStack(L);
-//    if (lua_pcall(L, 0, 0, 0) != LUA_OK) {
-//        lerror(L, "error running function 'f': %s", lua_tostring(L, -1));
-//    }
-//    lua_pcall(L, 0, 0, 0);
-//
-////     lua_getfield(L, -1, "on_started()");
-////     lua_pushcfunction
-////     lua_call(L, 0, 0);
-//    //lua_call("on_started");
-//    //on_started(L);
-
 
     interpreters.insert({ L, Utils::make_unique<LuaInterpreter>(L, mainloop) });
     return LuaInterpreter::GetInterpreter(L);
@@ -192,6 +90,11 @@ LuaInterpreter::~LuaInterpreter()
 
 }
 
+lua_State* LuaInterpreter::GetState() const
+{
+    return mL;
+}
+
 MainLoop& LuaInterpreter::GetMainLoop() const
 {
     return mMainLoop;
@@ -209,206 +112,6 @@ void LuaInterpreter::DumpStack()
 
 namespace {
 
-std::vector<luaL_Reg> demo_api;
-std::vector<luaL_Reg> world_api;
-std::vector<luaL_Reg> player_api;
-std::vector<luaL_Reg> renderer_api;
-
-void initialize_demo_api(std::vector<luaL_Reg>& api);
-void initialize_world_api(std::vector<luaL_Reg>& api);
-void initialize_player_api(std::vector<luaL_Reg>& api);
-void initialize_renderer_api(std::vector<luaL_Reg>& api);
-
-void initialize_api()
-{
-    initialize_demo_api(demo_api);
-    initialize_world_api(world_api);
-    initialize_player_api(player_api);
-    initialize_renderer_api(renderer_api);
-
-    demo_api.push_back({ nullptr, nullptr });
-    world_api.push_back({ nullptr, nullptr });
-    player_api.push_back({ nullptr, nullptr });
-    renderer_api.push_back({ nullptr, nullptr });
-
-    api_initialized = true;
-}
-
-void initialize_demo_api(std::vector<luaL_Reg>& api)
-{
-    api.push_back({ "set_update_time", [](lua_State* L) {
-        if (!lua_isnumber(L, -1)) {
-            throw "set_update_time() must return an integer.";
-        }
-        auto& app = LuaInterpreter::GetMainLoop(L);
-
-        const int update_time = static_cast<int>(lua_tointeger(L, -1));
-        app.SetUpdateTime(update_time);
-        return 0;
-    } });
-
-    api.push_back({ "set_renderer", [](lua_State* L) {
-        if (!lua_isstring(L, -1)) {
-            throw "set_renderer() must specify a string.";
-        }
-        auto& app = LuaInterpreter::GetMainLoop(L);
-
-        const char* const name = lua_tostring(L, -1);
-        app.SetRenderer(name);
-        return 0;
-    } });
-
-    api.push_back({ "set_world", [](lua_State* L) {
-        if (!lua_isstring(L, -1)) {
-            throw "set_world() must specify a string.";
-        }
-        auto& app = LuaInterpreter::GetMainLoop(L);
-
-        const char* const name = lua_tostring(L, -1);
-        app.SetWorld(name);
-        return 0;
-    } });
-}
-
-void initialize_world_api(std::vector<luaL_Reg>& api)
-{
-    api.push_back({ "set_level_size", [](lua_State* L) {
-        if (!lua_isnumber(L, -1) || !lua_isnumber(L, -2)) {
-            throw "set_level_size() must specify level dimensions.";
-        }
-        auto& app = LuaInterpreter::GetMainLoop(L);
-
-        const int height = static_cast<int>(lua_tointeger(L, -1));
-        const int width = static_cast<int>(lua_tointeger(L, -2));
-        app.GetWorld().SetLevelSize(width, height);
-        return 0;
-    } });
-
-    api.push_back({ "set_level_layout", [](lua_State* L) {
-        std::vector<uint32_t> level_data;
-
-        // http://stackoverflow.com/questions/6137684/iterate-through-lua-table
-
-        // Push another reference to the table on top of the stack (so we know
-        // where it is, and this function can work for negative, positive and
-        // pseudo indices
-        lua_pushvalue(L, -1);
-        // stack now contains: -1 => table
-        lua_pushnil(L);
-        // stack now contains: -1 => nil; -2 => table
-        while (lua_next(L, -2))
-        {
-            // stack now contains: -1 => value; -2 => key; -3 => table
-            // copy the key so that lua_tostring does not modify the original
-            lua_pushvalue(L, -2);
-            // stack now contains: -1 => key; -2 => value; -3 => key; -4 => table
-            const uint32_t key = static_cast<uint32_t>(lua_tointeger(L, -1));
-            const uint32_t value = static_cast<uint32_t>(lua_tointeger(L, -2));
-
-            level_data.push_back(value);
-            // pop value + copy of key, leaving original key
-            lua_pop(L, 2);
-            // stack now contains: -1 => key; -2 => table
-        }
-        // stack now contains: -1 => table (when lua_next returns 0 it pops the key
-        // but does not push anything.)
-        // Pop table
-        lua_pop(L, 1);
-        // Stack is now the same as it was on entry to this function
-
-        auto& app = LuaInterpreter::GetMainLoop(L);
-        app.GetWorld().SetLevelData(level_data.data());
-        return 0;
-    } });
-}
-
-void initialize_player_api(std::vector<luaL_Reg>& api)
-{
-    api.push_back({ "set_rays", [](lua_State* L) {
-        if (!lua_isnumber(L, -1)) {
-            throw "set_rays() specify an integer.";
-        }
-        auto& app = LuaInterpreter::GetMainLoop(L);
-
-        const int ray_count = static_cast<int>(lua_tointeger(L, -1));
-        app.GetWorld().GetPlayer().SetHorizontalRayCount(ray_count);
-        return 0;
-    } });
-
-    api.push_back({ "set_position", [](lua_State* L) {
-        if (!lua_isnumber(L, -1) || !lua_isnumber(L, -2)) {
-            throw "set_position() must specify x and y coordinates.";
-        }
-        auto& app = LuaInterpreter::GetMainLoop(L);
-
-        const double y = lua_tonumber(L, -1);
-        const double x = lua_tonumber(L, -2);
-        app.GetWorld().GetPlayer().SetPosition(x, y);
-        return 0;
-    } });
-
-    api.push_back({ "set_direction", [](lua_State* L) {
-        if (!lua_isnumber(L, -1) || !lua_isnumber(L, -2)) {
-            throw "set_direction() must specify x and y.";
-        }
-        auto& app = LuaInterpreter::GetMainLoop(L);
-
-        const double y = lua_tonumber(L, -1);
-        const double x = lua_tonumber(L, -2);
-        app.GetWorld().GetPlayer().SetDirection(x, y);
-        return 0;
-    } });
-
-    api.push_back({ "set_plane", [](lua_State* L) {
-        if (!lua_isnumber(L, -1) || !lua_isnumber(L, -2)) {
-            throw "set_plane() must specify x and y.";
-        }
-        auto& app = LuaInterpreter::GetMainLoop(L);
-
-        const double y = lua_tonumber(L, -1);
-        const double x = lua_tonumber(L, -2);
-        app.GetWorld().GetPlayer().SetPlane(x, y);
-        return 0;
-    } });
-}
-
-void initialize_renderer_api(std::vector<luaL_Reg>& api)
-{
-    api.push_back({ "set_caption", [](lua_State* L) {
-        if (!lua_isstring(L, -1)) {
-            throw "set_caption() must specify a string.";
-        }
-        auto& app = LuaInterpreter::GetMainLoop(L);
-
-        const char* const name = lua_tostring(L, -1);
-        app.GetRenderer().SetAppName(name);
-        return 0;
-    } });
-
-    api.push_back({ "set_resolution", [](lua_State* L) {
-        if (!lua_isnumber(L, -1) || !lua_isnumber(L, -2)) {
-            throw "set_resolution() must specify x and y dimensions.";
-        }
-        auto& app = LuaInterpreter::GetMainLoop(L);
-
-        const int height = static_cast<int>(lua_tointeger(L, -1));
-        const int width = static_cast<int>(lua_tointeger(L, -2));
-        app.GetRenderer().SetResolution(width, height);
-        return 0;
-    } });
-
-    api.push_back({ "set_show_minimap", [](lua_State* L) {
-        if (!lua_isboolean(L, -1)) {
-            throw "show_minimap() must specifiy a boolean.";
-        }
-        auto& app = LuaInterpreter::GetMainLoop(L);
-
-        const bool show = lua_toboolean(L, -1) != 0;
-        app.GetRenderer().ShowMinimap(show);
-        return 0;
-    } });
-}
-
 void register_api(lua_State* const L, const char* const table, const luaL_Reg* api)
 {
     lua_newtable(L);
@@ -418,10 +121,10 @@ void register_api(lua_State* const L, const char* const table, const luaL_Reg* a
 
 void register_api(lua_State* const L)
 {
-    register_api(L, "rcdemo", demo_api.data());
-    register_api(L, "world", world_api.data());
-    register_api(L, "player", player_api.data());
-    register_api(L, "video", renderer_api.data());
+    register_api(L, MainLoop::GetModuleName().c_str(), MainLoop::GetAPI().data());
+    register_api(L, World::GetModuleName().c_str(), World::GetAPI().data());
+    register_api(L, Player::GetModuleName().c_str(), Player::GetAPI().data());
+    register_api(L, Renderer::GetModuleName().c_str(), Renderer::GetAPI().data());
 }
 
 } // unnamed namespace

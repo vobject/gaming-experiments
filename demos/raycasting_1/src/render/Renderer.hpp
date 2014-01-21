@@ -4,8 +4,10 @@
 #include <SDL.h>
 
 #include <string>
+#include <vector>
 
 class World;
+struct luaL_Reg;
 
 class Renderer
 {
@@ -33,6 +35,9 @@ public:
     virtual void PreRender() = 0;
     virtual void PostRender() = 0;
     virtual void DoRender(const World& world) = 0;
+
+    static std::string GetModuleName();
+    static std::vector<luaL_Reg> GetAPI();
 
 protected:
     int mResX = 320;

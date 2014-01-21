@@ -7,23 +7,21 @@
 #include <cstdint>
 
 class Player;
+struct luaL_Reg;
 
-class Sprite
-{
-public:
-    double x;
-    double y;
-    int color;
-};
+// class Sprite
+// {
+// public:
+//     double x;
+//     double y;
+//     int color;
+// };
 
 class World
 {
 public:
     World();
     ~World();
-
-    World(World&) = delete;
-    World& operator=(World&) = delete;
 
     void ProcessInput();
     void Update(long elapsed_time);
@@ -39,7 +37,13 @@ public:
     uint32_t GetCellType(int x, int y) const;
     bool IsBlocking(int x, int y) const;
 
+    static std::string GetModuleName();
+    static std::vector<luaL_Reg> GetAPI();
+
 private:
+    World(World&) = delete;
+    World& operator=(World&) = delete;
+
     int mLevelWidth;
     int mLevelHeight;
     std::vector<uint32_t> mLevelData;

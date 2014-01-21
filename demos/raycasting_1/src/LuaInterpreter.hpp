@@ -20,6 +20,7 @@ public:
     LuaInterpreter(lua_State* L, MainLoop& app);
     ~LuaInterpreter();
 
+    lua_State* GetState() const;
     MainLoop& GetMainLoop() const;
     void RunScript(const std::string& file);
     void DumpStack();

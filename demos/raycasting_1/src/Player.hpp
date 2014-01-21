@@ -3,13 +3,15 @@
 
 #include "Ray.hpp"
 
+#include <SDL.h>
+
+#include <algorithm>
 #include <memory>
 #include <vector>
-#include <algorithm>
-#include <SDL.h>
 
 class World;
 class Input;
+struct luaL_Reg;
 
 class Player
 {
@@ -17,22 +19,24 @@ public:
     Player(const World& world);
     ~Player();
 
-    Player(Player&) = delete;
-    Player& operator=(Player&) = delete;
-
     Input& GetInput() const;
     void Update(long elapsed_time);
 
     void SetPosition(double x, double y);
     void SetDirection(double x, double y);
     void SetPlane(double x, double y);
+    void SetHorizontalRayCount(int ray_cnt);
 
     double GetRotation() const;
-
-    void SetHorizontalRayCount(int ray_cnt);
     const std::vector<RaycastResult>& GetRaycastResults() const;
 
+    static std::string GetModuleName();
+    static std::vector<luaL_Reg> GetAPI();
+
 public: // hack
+    Player(Player&) = delete;
+    Player& operator=(Player&) = delete;
+
     void UpdateRays(long elapsed_time);
     void UpdateRotation(long elapsed_time);
     void UpdateMovement(long elapsed_time);

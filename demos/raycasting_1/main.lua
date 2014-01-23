@@ -3,7 +3,7 @@ print("Loading main.lua script.")
 
 function mainloop_on_start()
     --print("mainloop_on_start()")
-    mainloop.set_renderer("SwRenderer")
+--    mainloop.set_renderer("SwRenderer")
     mainloop.set_world("")
     
     world.set_level_size(12, 12)

@@ -16,11 +16,12 @@
 class Level;
 class Player;
 class ResourceCache;
+struct lua_State;
 
 class TexClRenderer : public Renderer
 {
 public:
-    TexClRenderer();
+    TexClRenderer(lua_State* L);
     virtual ~TexClRenderer();
 
     void Startup() override;

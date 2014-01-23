@@ -8,11 +8,12 @@
 #include <memory>
 
 class ResourceCache;
+struct lua_State;
 
 class TexSwRenderer : public SwRenderer
 {
 public:
-    TexSwRenderer();
+    TexSwRenderer(lua_State* L);
     virtual ~TexSwRenderer();
 
     void Startup() override;

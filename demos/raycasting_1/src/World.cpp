@@ -1,4 +1,5 @@
 #include "World.hpp"
+#include "LuaInstanceMap.hpp"
 #include "LuaHelper.hpp"
 #include "Player.hpp"
 #include "Input.hpp"
@@ -48,15 +49,19 @@ int l_init(lua_State* const L)
     return 0;
 }
 
+LuaInstanceMap<World> instances;
+
 } // unnamed namespace
 
-World::World()
+World::World(lua_State* L)
 {
     init_me_next = this;
     LuaHelper::InitInstance("world", "world.lua", l_init);
     init_me_next = nullptr;
 
-    mPlayer = Utils::make_unique<Player>(*this);
+    mPlayer = Utils::make_unique<Player>(L, *this);
+
+    instances.Add(L, *this);
 
 //     // dummy sprites
 //     mSprites = {
@@ -68,7 +73,7 @@ World::World()
 
 World::~World()
 {
-
+    instances.Remove(*this);
 }
 
 void World::ProcessInput()
@@ -136,4 +141,59 @@ bool World::IsBlocking(const int x, const int y) const
 
     // '0' means floor, we can only walk on floor cells
     return (mLevelData[y * mLevelWidth + x] != 0);
+}
+
+std::string World::GetModuleName()
+{
+    return "world";
+}
+
+std::vector<luaL_Reg> World::GetAPI()
+{
+    return {
+        { "set_level_size", [](lua_State* L) {
+            const int height = static_cast<int>(lua_tointeger(L, -1));
+            const int width = static_cast<int>(lua_tointeger(L, -2));
+            instances.Get(L).SetLevelSize(width, height);
+            return 0;
+        } },
+
+        { "set_level_layout", [](lua_State* L) {
+            std::vector<uint32_t> level_data;
+
+            // http://stackoverflow.com/questions/6137684/iterate-through-lua-table
+
+            // Push another reference to the table on top of the stack (so we know
+            // where it is, and this function can work for negative, positive and
+            // pseudo indices
+            lua_pushvalue(L, -1);
+            // stack now contains: -1 => table
+            lua_pushnil(L);
+            // stack now contains: -1 => nil; -2 => table
+            while (lua_next(L, -2))
+            {
+                // stack now contains: -1 => value; -2 => key; -3 => table
+                // copy the key so that lua_tostring does not modify the original
+                lua_pushvalue(L, -2);
+                // stack now contains: -1 => key; -2 => value; -3 => key; -4 => table
+                const uint32_t key = static_cast<uint32_t>(lua_tointeger(L, -1));
+                const uint32_t value = static_cast<uint32_t>(lua_tointeger(L, -2));
+
+                level_data.push_back(value);
+                // pop value + copy of key, leaving original key
+                lua_pop(L, 2);
+                // stack now contains: -1 => key; -2 => table
+            }
+            // stack now contains: -1 => table (when lua_next returns 0 it pops the key
+            // but does not push anything.)
+            // Pop table
+            lua_pop(L, 1);
+            // Stack is now the same as it was on entry to this function
+
+            instances.Get(L).SetLevelData(level_data.data());
+            return 0;
+        } },
+
+        { nullptr, nullptr }
+    };
 }

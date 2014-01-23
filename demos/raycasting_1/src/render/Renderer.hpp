@@ -7,16 +7,14 @@
 #include <vector>
 
 class World;
+struct lua_State;
 struct luaL_Reg;
 
 class Renderer
 {
 public:
-    Renderer(const std::string& renderer_name);
+    Renderer(lua_State* L, const std::string& renderer_name);
     virtual ~Renderer();
-
-   Renderer(Renderer&) = delete;
-    Renderer& operator=(Renderer&) = delete;
 
     std::string GetAppName() const;
     int GetResX() const;
@@ -25,10 +23,6 @@ public:
     const std::string& GetName() const;
     const int& getFPS() const;
 
-    void SetAppName(const std::string& name);
-    void SetResolution(int width, int height);
-    void ShowMinimap(bool show);
-
     virtual void Startup() = 0;
     virtual void Shutdown() = 0;
 
@@ -36,16 +30,23 @@ public:
     virtual void PostRender() = 0;
     virtual void DoRender(const World& world) = 0;
 
+    void SetAppName(const std::string& name);
+    void SetResolution(int width, int height);
+    void ShowMinimap(bool show);
+
     static std::string GetModuleName();
     static std::vector<luaL_Reg> GetAPI();
 
 protected:
-    int mResX = 320;
-    int mResY = 240;
+    int mResX = 640;
+    int mResY = 480;
     SDL_Window* mScreen = nullptr;
     bool mShowMinimap = false;
 
 private:
+    Renderer(Renderer&) = delete;
+    Renderer& operator=(Renderer&) = delete;
+
     static Uint32 FrameTimerCB(Uint32 interval, void* param);
 
     const std::string mRendererName;

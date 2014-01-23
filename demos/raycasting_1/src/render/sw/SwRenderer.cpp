@@ -7,14 +7,14 @@
 
 #include <algorithm>
 
-SwRenderer::SwRenderer()
-    : SwRenderer("Software")
+SwRenderer::SwRenderer(lua_State* const L)
+    : SwRenderer(L, "Software")
 {
 
 }
 
-SwRenderer::SwRenderer(const std::string& renderer_name)
-    : Renderer(renderer_name)
+SwRenderer::SwRenderer(lua_State* const L, const std::string& renderer_name)
+    : Renderer(L, renderer_name)
 {
     Startup();
 }

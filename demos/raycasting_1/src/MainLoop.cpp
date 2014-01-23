@@ -1,9 +1,11 @@
 #include "MainLoop.hpp"
+#include "LuaInstanceMap.hpp"
 #include "LuaInterpreter.hpp"
 #include "LuaHelper.hpp"
 #include "World.hpp"
 #include "Player.hpp"
 #include "Utils.hpp"
+#include "render/NullRenderer.hpp"
 #include "render/sw/SwRenderer.hpp"
 #include "render/sw/SwRendererMt.hpp"
 #include "render/sw/SvgSwRenderer.hpp"
@@ -26,53 +28,30 @@ const std::string TEX_RENDERER = "TexRenderer";
 const std::string CL_RENDERER = "ClRenderer";
 const std::string SVG_RENDERER = "SvgRenderer";
 
-MainLoop* init_me_next = nullptr;
-
-int l_init(lua_State* const L)
-{
-    lua_settop(L, 1);
-    luaL_checktype(L, 1, LUA_TTABLE);
-
-    lua_getfield(L, 1, "update_time");
-    const int update_time = static_cast<int>(luaL_checkinteger(L, -1));
-    lua_pop(L, 1);
-
-    lua_getfield(L, 1, "renderer");
-    const std::string renderer = luaL_checkstring(L, -1);
-    lua_pop(L, 1);
-
-    lua_getfield(L, 1, "world");
-    const std::string world = luaL_checkstring(L, -1);
-    lua_pop(L, 1);
-
-    init_me_next->SetUpdateTime(update_time);
-    init_me_next->SetRenderer(renderer);
-    init_me_next->SetWorld(world);
-    return 0;
-}
+LuaInstanceMap<MainLoop> instances;
 
 } // unnamed namespace
 
 MainLoop::MainLoop()
     : mLua(LuaInterpreter::Create(*this))
+    , mRenderer(Utils::make_unique<NullRenderer>(mLua.GetState()))
 {
-    init_me_next = this;
-    LuaHelper::InitInstance("mainloop", "mainloop.lua", l_init);
-    init_me_next = nullptr;
-
     atexit(SDL_Quit);
 
-    //mLua.RunScript("raycasting.lua");
-    mLua.RunScript("main.lua");
+    instances.Add(mLua.GetState(), *this);
+
+    mLua.ExecuteScript("main.lua");
 }
 
 MainLoop::~MainLoop()
 {
-
+    instances.Remove(mLua.GetState());
 }
 
 void MainLoop::Run()
 {
+    mQuitRequested = false;
+
     LuaOnStart();
 
     // Mainloop based on an article from Glenn Fiedler:
@@ -129,8 +108,7 @@ void MainLoop::SetWorld(const std::string& name)
 {
     (void) name;
 
-    mWorld = nullptr;
-    mWorld = Utils::make_unique<World>();
+    mWorld = Utils::make_unique<World>(mLua.GetState());
 }
 
 int MainLoop::GetUpdateTime() const
@@ -153,7 +131,9 @@ void MainLoop::ProcessInput()
     LuaOnInput();
 
     // update all inputs regardless of there being an observable event or not
-    mWorld->ProcessInput();
+    if (mWorld) {
+        mWorld->ProcessInput();
+    }
 
     SDL_Event event;
     if (!SDL_PollEvent(&event)) {
@@ -195,7 +175,9 @@ void MainLoop::UpdateScene(const long app_time, const long elapsed_time)
 
     LuaOnUpdate();
 
-    mWorld->Update(elapsed_time);
+    if (mWorld) {
+        mWorld->Update(elapsed_time);
+    }
 }
 
 void MainLoop::RenderScene()
@@ -203,7 +185,11 @@ void MainLoop::RenderScene()
     LuaOnRender();
 
     mRenderer->PreRender();
-    mRenderer->DoRender(*mWorld);
+
+    if (mWorld) {
+        mRenderer->DoRender(*mWorld);
+    }
+
     mRenderer->PostRender();
 }
 
@@ -256,29 +242,29 @@ void MainLoop::SelectRendererFromName(const std::string& name)
     if (name == SW_RENDERER)
     {
         mRenderer = nullptr;
-        mRenderer = Utils::make_unique<SwRenderer>();
+        mRenderer = Utils::make_unique<SwRenderer>(mLua.GetState());
     }
     else if (name == SW_RENDERER_MT_1)
     {
         mRenderer = nullptr;
-        mRenderer = Utils::make_unique<SwRendererMt>(1);
+        mRenderer = Utils::make_unique<SwRendererMt>(mLua.GetState(), 1);
     }
     else if (name == SW_RENDERER_MT_2)
     {
         mRenderer = nullptr;
-        mRenderer = Utils::make_unique<SwRendererMt>(2);
+        mRenderer = Utils::make_unique<SwRendererMt>(mLua.GetState(), 2);
     }
     else if (name == SW_RENDERER_MT_4)
     {
         mRenderer = nullptr;
-        mRenderer = Utils::make_unique<SwRendererMt>(4);
+        mRenderer = Utils::make_unique<SwRendererMt>(mLua.GetState(), 4);
     }
 
 #ifdef WITH_TEXTURE
     else if (name == TEX_RENDERER)
     {
         mRenderer = nullptr;
-        mRenderer = Utils::make_unique<TexSwRenderer>();
+        mRenderer = Utils::make_unique<TexSwRenderer>(mLua.GetState());
     }
 #endif // WITH_TEXTURE
 
@@ -286,7 +272,7 @@ void MainLoop::SelectRendererFromName(const std::string& name)
     else if (name == CL_RENDERER)
     {
         mRenderer = nullptr;
-        mRenderer = Utils::make_unique<ClRenderer>();
+        mRenderer = Utils::make_unique<ClRenderer>(mLua.GetState());
     }
 #endif // WITH_OPENCL
 
@@ -294,7 +280,7 @@ void MainLoop::SelectRendererFromName(const std::string& name)
     else if (name == SVG_RENDERER)
     {
         mRenderer = nullptr;
-        mRenderer = Utils::make_unique<SvgSwRenderer>();
+        mRenderer = Utils::make_unique<SvgSwRenderer>(mLua.GetState());
     }
 #endif // WITH_SVG
 }
@@ -337,4 +323,44 @@ void MainLoop::LuaOnRender()
 
     lua_getglobal(L, "mainloop_on_render");
     lua_pcall(L, 0, 0, 0);
+}
+
+std::string MainLoop::GetModuleName()
+{
+    return "mainloop";
+}
+
+std::vector<luaL_Reg> MainLoop::GetAPI()
+{
+    return {
+        { "run", [](lua_State* L) {
+            instances.Get(L).Run();
+            return 0;
+        } },
+
+        { "request_quit", [](lua_State* L) {
+            instances.Get(L).RequestQuit();
+            return 0;
+        } },
+
+        { "set_update_time", [](lua_State* L) {
+            const int update_time = static_cast<int>(lua_tointeger(L, -1));
+            instances.Get(L).SetUpdateTime(update_time);
+            return 0;
+        } },
+
+        { "set_renderer", [](lua_State* L) {
+            const char* const name = lua_tostring(L, -1);
+            instances.Get(L).SetRenderer(name);
+            return 0;
+        } },
+
+        { "set_world", [](lua_State* L) {
+            const char* const name = lua_tostring(L, -1);
+            instances.Get(L).SetWorld(name);
+            return 0;
+        } },
+
+        { nullptr, nullptr }
+    };
 }

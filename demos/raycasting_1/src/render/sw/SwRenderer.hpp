@@ -7,12 +7,13 @@
 
 class World;
 class Player;
+struct lua_State;
 
 class SwRenderer : public Renderer
 {
 public:
-    SwRenderer();
-    SwRenderer(const std::string& renderer_name);
+    SwRenderer(lua_State* L);
+    SwRenderer(lua_State* L, const std::string& renderer_name);
     virtual ~SwRenderer();
 
     void Startup() override;

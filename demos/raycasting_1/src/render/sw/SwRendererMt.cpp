@@ -7,8 +7,8 @@
 
 #include <thread>
 
-SwRendererMt::SwRendererMt(const int threads)
-    : SwRenderer(std::string("Software(threads:") + std::to_string(threads) + ")")
+SwRendererMt::SwRendererMt(lua_State* const L, const int threads)
+    : SwRenderer(L, std::string("Software(threads:") + std::to_string(threads) + ")")
     , mThreadCnt{threads}
 {
 

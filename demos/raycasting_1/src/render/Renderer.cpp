@@ -1,4 +1,5 @@
 #include "Renderer.hpp"
+#include "../LuaInstanceMap.hpp"
 #include "../LuaHelper.hpp"
 #include "../Utils.hpp"
 
@@ -8,43 +9,19 @@
 
 namespace {
 
-Renderer* init_me_next = nullptr;
-
-int l_init(lua_State* const L)
-{
-    lua_settop(L, 1);
-    luaL_checktype(L, 1, LUA_TTABLE);
-
-    lua_getfield(L, 1, "caption");
-    const std::string caption = luaL_checkstring(L, -1);
-    lua_pop(L, 1);
-
-    int width, height;
-    LuaHelper::GetXYValue(L, "resolution", width, height);
-
-    lua_getfield(L, 1, "show_minimap");
-    const bool show = lua_toboolean(L, -1) != 0;
-    lua_pop(L, 1);
-
-    init_me_next->SetAppName(caption);
-    init_me_next->SetResolution(width, height);
-    init_me_next->ShowMinimap(show);
-    return 0;
-}
+LuaInstanceMap<Renderer> instances;
 
 } // unnamed namespace
 
-Renderer::Renderer(const std::string& renderer_name)
+Renderer::Renderer(lua_State* const L, const std::string& renderer_name)
     : mRendererName(renderer_name)
 {
-    init_me_next = this;
-    LuaHelper::InitInstance("renderer", "renderer.lua", l_init);
-    init_me_next = nullptr;
+    instances.Add(L, *this);
 }
 
 Renderer::~Renderer()
 {
-
+    instances.Remove(*this);
 }
 
 int Renderer::GetResX() const
@@ -80,8 +57,18 @@ void Renderer::SetAppName(const std::string& name)
 
 void Renderer::SetResolution(int width, int height)
 {
+    const auto running = mScreen != nullptr;
+
+    if (running) {
+        Shutdown();
+    }
+
     mResX = width;
     mResY = height;
+
+    if (running) {
+        Startup();
+    }
 }
 
 void Renderer::ShowMinimap(const bool show)
@@ -142,6 +129,37 @@ void Renderer::PostRender()
     }
 
 //    SDL_WarpMouseInWindow(mScreen, mResX / 2, mResY / 2);
+}
+
+std::string Renderer::GetModuleName()
+{
+    return "renderer";
+}
+
+std::vector<luaL_Reg> Renderer::GetAPI()
+{
+    return {
+        { "set_caption", [](lua_State* L) {
+            const char* const name = lua_tostring(L, -1);
+            instances.Get(L).SetAppName(name);
+            return 0;
+        } },
+
+        { "set_resolution", [](lua_State* L) {
+            const int height = static_cast<int>(lua_tointeger(L, -1));
+            const int width = static_cast<int>(lua_tointeger(L, -2));
+            instances.Get(L).SetResolution(width, height);
+            return 0;
+        } },
+
+        { "set_show_minimap", [](lua_State* L) {
+            const bool show = lua_toboolean(L, -1) != 0;
+            instances.Get(L).ShowMinimap(show);
+            return 0;
+        } },
+
+        { nullptr, nullptr }
+    };
 }
 
 Uint32 Renderer::FrameTimerCB(Uint32 interval, void* param)

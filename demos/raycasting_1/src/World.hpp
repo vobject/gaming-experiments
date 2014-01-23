@@ -7,6 +7,7 @@
 #include <cstdint>
 
 class Player;
+struct lua_State;
 struct luaL_Reg;
 
 // class Sprite
@@ -20,7 +21,7 @@ struct luaL_Reg;
 class World
 {
 public:
-    World();
+    World(lua_State* L);
     ~World();
 
     void ProcessInput();

@@ -8,11 +8,12 @@
 #include <SDL.h>
 
 class Player;
+struct lua_State;
 
 class SvgSwRenderer : public Renderer
 {
 public:
-    SvgSwRenderer();
+    SvgSwRenderer(lua_State* L);
     SvgSwRenderer(const std::string& renderer_name);
     virtual ~SvgSwRenderer();
 

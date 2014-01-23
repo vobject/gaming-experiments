@@ -3,10 +3,12 @@
 
 #include "SwRenderer.hpp"
 
+struct lua_State;
+
 class SwRendererMt : public SwRenderer
 {
 public:
-    SwRendererMt(int threads);
+    SwRendererMt(lua_State* L, int threads);
     virtual ~SwRendererMt();
 
 protected:

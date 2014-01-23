@@ -12,11 +12,12 @@
 
 class World;
 class Player;
+struct lua_State;
 
 class ClRenderer : public Renderer
 {
 public:
-    ClRenderer();
+    ClRenderer(lua_State* L);
     virtual ~ClRenderer();
 
     void Startup() override;

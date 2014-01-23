@@ -1,9 +1,9 @@
 #ifndef LUA_HELPER_HPP
 #define LUA_HELPER_HPP
 
-#include <string>
-
 #include <lua.hpp>
+
+#include <string>
 
 class LuaHelper
 {

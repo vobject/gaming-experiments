@@ -47,7 +47,7 @@ SET(LUA_INCLUDE_DIR ../../lib/lua-5.2.3/src)
 FILE(GLOB LUA_HDR ../../lib/lua-5.2.3/src/*.h
                   ../../lib/lua-5.2.3/src/*.hpp)
 FILE(GLOB LUA_SRC ../../lib/lua-5.2.3/src/*.c)
-SOURCE_GROUP(lua FILES ${LUA_HDR} ${LUA_SRC})
+SOURCE_GROUP(lua-5.2.3 FILES ${LUA_HDR} ${LUA_SRC})
 
 FILE(GLOB PRJ_HDR src/*.hpp
                   src/*/*.hpp

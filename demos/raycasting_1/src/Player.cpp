@@ -1,5 +1,7 @@
 #include "Player.hpp"
+#include "LuaInstanceMap.hpp"
 #include "LuaHelper.hpp"
+#include "MainLoop.hpp"
 #include "World.hpp"
 #include "Input.hpp"
 #include "Utils.hpp"
@@ -7,6 +9,7 @@
 #include <lua.hpp>
 
 #include <algorithm>
+#include <map>
 
 namespace {
 
@@ -37,9 +40,11 @@ int l_init(lua_State* const L)
     return 0;
 }
 
+LuaInstanceMap<Player> instances;
+
 } // unnamed namespace
 
-Player::Player(const World& world)
+Player::Player(lua_State* const L, const World& world)
     : mWorld(world)
     , mInput(Utils::make_unique<Input>(SDL_SCANCODE_W, SDL_SCANCODE_S,
                                        SDL_SCANCODE_A, SDL_SCANCODE_D,
@@ -48,11 +53,13 @@ Player::Player(const World& world)
     init_me_next = this;
     LuaHelper::InitInstance("player", "player.lua", l_init);
     init_me_next = nullptr;
+
+    instances.Add(L, *this);
 }
 
 Player::~Player()
 {
-
+    instances.Remove(*this);
 }
 
 Input& Player::GetInput() const
@@ -355,4 +362,43 @@ void Player::MoveTo(const double x, const double y, const bool rumble_on_wall)
             }
         }
     }
+}
+
+std::string Player::GetModuleName()
+{
+    return "player";
+}
+
+std::vector<luaL_Reg> Player::GetAPI()
+{
+    return {
+        { "set_rays", [](lua_State* L) {
+            const int ray_count = static_cast<int>(lua_tointeger(L, -1));
+            instances.Get(L).SetHorizontalRayCount(ray_count);
+            return 0;
+        } },
+
+        { "set_position", [](lua_State* L) {
+            const double y = lua_tonumber(L, -1);
+            const double x = lua_tonumber(L, -2);
+            instances.Get(L).SetPosition(x, y);
+            return 0;
+        } },
+
+        { "set_direction", [](lua_State* L) {
+            const double y = lua_tonumber(L, -1);
+            const double x = lua_tonumber(L, -2);
+            instances.Get(L).SetDirection(x, y);
+            return 0;
+        } },
+
+        { "set_plane", [](lua_State* L) {
+            const double y = lua_tonumber(L, -1);
+            const double x = lua_tonumber(L, -2);
+            instances.Get(L).SetPlane(x, y);
+            return 0;
+        } },
+
+        { nullptr, nullptr }
+    };
 }

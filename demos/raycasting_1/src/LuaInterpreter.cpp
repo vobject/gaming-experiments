@@ -40,14 +40,14 @@ LuaInterpreter& LuaInterpreter::GetInterpreter(lua_State* L)
     return *iter->second;
 }
 
-MainLoop& LuaInterpreter::GetMainLoop(lua_State* L)
-{
-    return GetInterpreter(L).GetMainLoop();
-}
-
-void LuaInterpreter::RunScript(lua_State* L, const std::string& file)
+void LuaInterpreter::ExecuteScript(lua_State* L, const std::string& file)
 {
     luaL_dofile(L, file.c_str());
+}
+
+void LuaInterpreter::ExecuteString(lua_State* L, const std::string& str)
+{
+    luaL_dostring(L, str.c_str());
 }
 
 void LuaInterpreter::DumpStack(lua_State* L)
@@ -95,14 +95,14 @@ lua_State* LuaInterpreter::GetState() const
     return mL;
 }
 
-MainLoop& LuaInterpreter::GetMainLoop() const
+void LuaInterpreter::ExecuteScript(const std::string& file)
 {
-    return mMainLoop;
+    LuaInterpreter::ExecuteScript(mL, file);
 }
 
-void LuaInterpreter::RunScript(const std::string& file)
+void LuaInterpreter::ExecuteString(const std::string& str)
 {
-    LuaInterpreter::RunScript(mL, file);
+    LuaInterpreter::ExecuteString(mL, str);
 }
 
 void LuaInterpreter::DumpStack()

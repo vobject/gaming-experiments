@@ -5,18 +5,18 @@
 
 #include <SDL.h>
 
-#include <algorithm>
 #include <memory>
 #include <vector>
 
 class World;
 class Input;
+struct lua_State;
 struct luaL_Reg;
 
 class Player
 {
 public:
-    Player(const World& world);
+    Player(lua_State* L, const World& world);
     ~Player();
 
     Input& GetInput() const;

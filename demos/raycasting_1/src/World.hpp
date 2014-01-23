@@ -6,8 +6,8 @@
 #include <vector>
 #include <cstdint>
 
+class LuaInterpreter;
 class Player;
-struct lua_State;
 struct luaL_Reg;
 
 // class Sprite
@@ -21,7 +21,7 @@ struct luaL_Reg;
 class World
 {
 public:
-    World(lua_State* L);
+    World(LuaInterpreter& lua);
     ~World();
 
     void ProcessInput();

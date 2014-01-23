@@ -1,4 +1,5 @@
 #include "Player.hpp"
+#include "LuaInterpreter.hpp"
 #include "LuaInstanceMap.hpp"
 #include "LuaHelper.hpp"
 #include "MainLoop.hpp"
@@ -21,7 +22,7 @@ int l_init(lua_State* const L)
     luaL_checktype(L, 1, LUA_TTABLE);
 
     lua_getfield(L, 1, "rays");
-    const int ray_count = luaL_checkinteger(L, -1);
+    const int ray_count = static_cast<int>(luaL_checkinteger(L, -1));
     lua_pop(L, 1);
 
     double pos_x, pos_y;
@@ -44,7 +45,7 @@ LuaInstanceMap<Player> instances;
 
 } // unnamed namespace
 
-Player::Player(lua_State* const L, const World& world)
+Player::Player(LuaInterpreter& lua, const World& world)
     : mWorld(world)
     , mInput(Utils::make_unique<Input>(SDL_SCANCODE_W, SDL_SCANCODE_S,
                                        SDL_SCANCODE_A, SDL_SCANCODE_D,
@@ -54,7 +55,8 @@ Player::Player(lua_State* const L, const World& world)
     LuaHelper::InitInstance("player", "player.lua", l_init);
     init_me_next = nullptr;
 
-    instances.Add(L, *this);
+    instances.Add(lua.GetState(), *this);
+    lua.RegisterAPI(GetModuleName(), GetAPI().data());
 }
 
 Player::~Player()

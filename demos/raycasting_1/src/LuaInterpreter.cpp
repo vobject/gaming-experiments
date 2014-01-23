@@ -1,33 +1,25 @@
 #include "LuaInterpreter.hpp"
-#include "MainLoop.hpp"
-#include "World.hpp"
-#include "Player.hpp"
-#include "render/Renderer.hpp"
 #include "Utils.hpp"
 
 #include <map>
 #include <memory>
-#include <vector>
 #include <iostream>
 
 namespace {
 
 std::map<lua_State* const, std::unique_ptr<LuaInterpreter>> interpreters;
 
-void register_api(lua_State* L);
-
 } // unnamed namespace
 
-LuaInterpreter& LuaInterpreter::Create(MainLoop& mainloop)
+LuaInterpreter& LuaInterpreter::Create()
 {
     lua_State* const L = luaL_newstate();
     if (!L) {
         throw "Unable to create a new Lua state.";
     }
     luaL_openlibs(L);
-    register_api(L);
 
-    interpreters.insert({ L, Utils::make_unique<LuaInterpreter>(L, mainloop) });
+    interpreters.insert({ L, Utils::make_unique<LuaInterpreter>(L) });
     return LuaInterpreter::GetInterpreter(L);
 }
 
@@ -40,6 +32,13 @@ LuaInterpreter& LuaInterpreter::GetInterpreter(lua_State* L)
     return *iter->second;
 }
 
+void LuaInterpreter::RegisterAPI(lua_State* const L, const std::string& name, const luaL_Reg* api)
+{
+    lua_newtable(L);
+    luaL_setfuncs(L, api, 0);
+    lua_setglobal(L, name.c_str());
+}
+
 void LuaInterpreter::ExecuteScript(lua_State* L, const std::string& file)
 {
     luaL_dofile(L, file.c_str());
@@ -50,7 +49,7 @@ void LuaInterpreter::ExecuteString(lua_State* L, const std::string& str)
     luaL_dostring(L, str.c_str());
 }
 
-void LuaInterpreter::DumpStack(lua_State* L)
+void LuaInterpreter::PrintStack(lua_State* L)
 {
     int top = lua_gettop(L);
 
@@ -78,9 +77,15 @@ void LuaInterpreter::DumpStack(lua_State* L)
     std::cout << std::endl;
 }
 
-LuaInterpreter::LuaInterpreter(lua_State* const L, MainLoop& mainloop)
+void LuaInterpreter::PrintGlobals(lua_State* L)
+{
+    LuaInterpreter::ExecuteString(L, "for k, v in pairs(_G) do \
+                                          print(k, v) \
+                                      end");
+}
+
+LuaInterpreter::LuaInterpreter(lua_State* const L)
     : mL(L)
-    , mMainLoop(mainloop)
 {
 
 }
@@ -95,6 +100,11 @@ lua_State* LuaInterpreter::GetState() const
     return mL;
 }
 
+void LuaInterpreter::RegisterAPI(const std::string& name, const luaL_Reg* api)
+{
+    RegisterAPI(mL, name, api);
+}
+
 void LuaInterpreter::ExecuteScript(const std::string& file)
 {
     LuaInterpreter::ExecuteScript(mL, file);
@@ -105,26 +115,12 @@ void LuaInterpreter::ExecuteString(const std::string& str)
     LuaInterpreter::ExecuteString(mL, str);
 }
 
-void LuaInterpreter::DumpStack()
+void LuaInterpreter::PrintStack()
 {
-    LuaInterpreter::DumpStack(mL);
+    LuaInterpreter::PrintStack(mL);
 }
 
-namespace {
-
-void register_api(lua_State* const L, const char* const table, const luaL_Reg* api)
+void LuaInterpreter::PrintGlobals()
 {
-    lua_newtable(L);
-    luaL_setfuncs(L, api, 0);
-    lua_setglobal(L, table);
+    LuaInterpreter::PrintGlobals(mL);
 }
-
-void register_api(lua_State* const L)
-{
-    register_api(L, MainLoop::GetModuleName().c_str(), MainLoop::GetAPI().data());
-    register_api(L, World::GetModuleName().c_str(), World::GetAPI().data());
-    register_api(L, Player::GetModuleName().c_str(), Player::GetAPI().data());
-    register_api(L, Renderer::GetModuleName().c_str(), Renderer::GetAPI().data());
-}
-
-} // unnamed namespace

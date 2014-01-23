@@ -32,20 +32,19 @@ LuaInstanceMap<MainLoop> instances;
 
 } // unnamed namespace
 
-MainLoop::MainLoop()
-    : mLua(LuaInterpreter::Create(*this))
-    , mRenderer(Utils::make_unique<NullRenderer>(mLua.GetState()))
+MainLoop::MainLoop(LuaInterpreter& lua)
+    : mLua(lua)
+    , mRenderer(Utils::make_unique<NullRenderer>(mLua))
 {
     atexit(SDL_Quit);
 
     instances.Add(mLua.GetState(), *this);
-
-    mLua.ExecuteScript("main.lua");
+    mLua.RegisterAPI(GetModuleName(), GetAPI().data());
 }
 
 MainLoop::~MainLoop()
 {
-    instances.Remove(mLua.GetState());
+    instances.Remove(*this);
 }
 
 void MainLoop::Run()
@@ -108,7 +107,7 @@ void MainLoop::SetWorld(const std::string& name)
 {
     (void) name;
 
-    mWorld = Utils::make_unique<World>(mLua.GetState());
+    mWorld = Utils::make_unique<World>(mLua);
 }
 
 int MainLoop::GetUpdateTime() const
@@ -242,29 +241,29 @@ void MainLoop::SelectRendererFromName(const std::string& name)
     if (name == SW_RENDERER)
     {
         mRenderer = nullptr;
-        mRenderer = Utils::make_unique<SwRenderer>(mLua.GetState());
+        mRenderer = Utils::make_unique<SwRenderer>(mLua);
     }
     else if (name == SW_RENDERER_MT_1)
     {
         mRenderer = nullptr;
-        mRenderer = Utils::make_unique<SwRendererMt>(mLua.GetState(), 1);
+        mRenderer = Utils::make_unique<SwRendererMt>(mLua, 1);
     }
     else if (name == SW_RENDERER_MT_2)
     {
         mRenderer = nullptr;
-        mRenderer = Utils::make_unique<SwRendererMt>(mLua.GetState(), 2);
+        mRenderer = Utils::make_unique<SwRendererMt>(mLua, 2);
     }
     else if (name == SW_RENDERER_MT_4)
     {
         mRenderer = nullptr;
-        mRenderer = Utils::make_unique<SwRendererMt>(mLua.GetState(), 4);
+        mRenderer = Utils::make_unique<SwRendererMt>(mLua, 4);
     }
 
 #ifdef WITH_TEXTURE
     else if (name == TEX_RENDERER)
     {
         mRenderer = nullptr;
-        mRenderer = Utils::make_unique<TexSwRenderer>(mLua.GetState());
+        mRenderer = Utils::make_unique<TexSwRenderer>(mLua);
     }
 #endif // WITH_TEXTURE
 
@@ -272,7 +271,7 @@ void MainLoop::SelectRendererFromName(const std::string& name)
     else if (name == CL_RENDERER)
     {
         mRenderer = nullptr;
-        mRenderer = Utils::make_unique<ClRenderer>(mLua.GetState());
+        mRenderer = Utils::make_unique<ClRenderer>(mLua);
     }
 #endif // WITH_OPENCL
 
@@ -280,7 +279,7 @@ void MainLoop::SelectRendererFromName(const std::string& name)
     else if (name == SVG_RENDERER)
     {
         mRenderer = nullptr;
-        mRenderer = Utils::make_unique<SvgSwRenderer>(mLua.GetState());
+        mRenderer = Utils::make_unique<SvgSwRenderer>(mLua);
     }
 #endif // WITH_SVG
 }

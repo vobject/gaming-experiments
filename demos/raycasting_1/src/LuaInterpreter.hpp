@@ -5,32 +5,33 @@
 
 #include <string>
 
-class MainLoop;
-
 class LuaInterpreter
 {
 public:
-    static LuaInterpreter& Create(MainLoop& app);
+    static LuaInterpreter& Create();
     static LuaInterpreter& GetInterpreter(lua_State* L);
 
+    static void RegisterAPI(lua_State* L, const std::string& name, const luaL_Reg* api);
     static void ExecuteScript(lua_State* L, const std::string& file);
     static void ExecuteString(lua_State* L, const std::string& str);
-    static void DumpStack(lua_State* L);
+    static void PrintStack(lua_State* L);
+    static void PrintGlobals(lua_State* L);
 
-    LuaInterpreter(lua_State* L, MainLoop& app);
+    LuaInterpreter(lua_State* L);
     ~LuaInterpreter();
 
     lua_State* GetState() const;
+    void RegisterAPI(const std::string& name, const luaL_Reg* api);
     void ExecuteScript(const std::string& file);
     void ExecuteString(const std::string& str);
-    void DumpStack();
+    void PrintStack();
+    void PrintGlobals();
 
 private:
     LuaInterpreter(LuaInterpreter&) = delete;
     LuaInterpreter& operator=(LuaInterpreter&) = delete;
 
     lua_State* const  mL;
-    MainLoop& mMainLoop;
 };
 
 #endif // LUA_INTERPRETER_HPP

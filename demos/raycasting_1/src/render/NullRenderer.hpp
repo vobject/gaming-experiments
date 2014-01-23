@@ -3,13 +3,13 @@
 
 #include "Renderer.hpp"
 
-struct lua_State;
+class LuaInterpreter;
 class World;
 
 class NullRenderer : public Renderer
 {
 public:
-    NullRenderer(lua_State* L) : Renderer(L, "NullRenderer") { Startup(); }
+    NullRenderer(LuaInterpreter& lua) : Renderer(lua, "NullRenderer") { Startup(); }
     virtual ~NullRenderer() { Shutdown(); }
 
     void Startup() override { Renderer::Startup(); }

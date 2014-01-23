@@ -47,16 +47,18 @@ SET(LUA_INCLUDE_DIR ../../lib/lua-5.2.3/src)
 FILE(GLOB LUA_HDR ../../lib/lua-5.2.3/src/*.h
                   ../../lib/lua-5.2.3/src/*.hpp)
 FILE(GLOB LUA_SRC ../../lib/lua-5.2.3/src/*.c)
-SOURCE_GROUP(lua-5.2.3 FILES ${LUA_HDR} ${LUA_SRC})
+SOURCE_GROUP(_lua-5.2.3 FILES ${LUA_HDR} ${LUA_SRC})
 
-FILE(GLOB PRJ_HDR src/*.hpp
-                  src/*/*.hpp
-                  src/*/*/*.hpp)
-FILE(GLOB PRJ_SRC src/*.cpp
-                  src/*/*.cpp
-                  src/*/*/*.cpp)
+FILE(GLOB PRJ_HDR src/*.hpp)
+FILE(GLOB PRJ_SRC src/*.cpp)
+SOURCE_GROUP(src FILES ${PRJ_HDR} ${PRJ_SRC})
 
-FILE(GLOB PRJ_OCL src/render/cl/cl_renderer.cl)
+FILE(GLOB RENDER_HDR src/render/*.hpp
+                     src/render/*/*.hpp)
+FILE(GLOB RENDER_SRC src/render/*.cpp
+                     src/render/*/*.cpp)
+FILE(GLOB RENDER_OCL src/render/cl/*.cl)
+SOURCE_GROUP(render FILES ${RENDER_HDR} ${RENDER_SRC} ${RENDER_OCL})
 
 IF(WITH_TEXTURE)
     MESSAGE(STATUS "Enabling textured renders.")
@@ -97,7 +99,8 @@ INCLUDE_DIRECTORIES(
 )
 
 ADD_EXECUTABLE(${PROJECT_NAME}
-               ${PRJ_HDR} ${PRJ_SRC} ${PRJ_OCL}
+               ${PRJ_HDR} ${PRJ_SRC}
+               ${RENDER_HDR} ${RENDER_SRC} ${RENDER_OCL}
                ${LUA_HDR} ${LUA_SRC}
                ${EXTRA_HDR} ${EXTRA_SRC})
 

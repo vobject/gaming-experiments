@@ -5,15 +5,15 @@
 
 #include <SDL.h>
 
+class LuaInterpreter;
 class World;
 class Player;
-struct lua_State;
 
 class SwRenderer : public Renderer
 {
 public:
-    SwRenderer(lua_State* L);
-    SwRenderer(lua_State* L, const std::string& renderer_name);
+    SwRenderer(LuaInterpreter& lua);
+    SwRenderer(LuaInterpreter& lua, const std::string& renderer_name);
     virtual ~SwRenderer();
 
     void Startup() override;

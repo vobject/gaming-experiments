@@ -1,4 +1,5 @@
 #include "World.hpp"
+#include "LuaInterpreter.hpp"
 #include "LuaInstanceMap.hpp"
 #include "LuaHelper.hpp"
 #include "Player.hpp"
@@ -53,15 +54,16 @@ LuaInstanceMap<World> instances;
 
 } // unnamed namespace
 
-World::World(lua_State* L)
+World::World(LuaInterpreter& lua)
 {
     init_me_next = this;
     LuaHelper::InitInstance("world", "world.lua", l_init);
     init_me_next = nullptr;
 
-    mPlayer = Utils::make_unique<Player>(L, *this);
+    mPlayer = Utils::make_unique<Player>(lua, *this);
 
-    instances.Add(L, *this);
+    instances.Add(lua.GetState(), *this);
+    lua.RegisterAPI(GetModuleName(), GetAPI().data());
 
 //     // dummy sprites
 //     mSprites = {

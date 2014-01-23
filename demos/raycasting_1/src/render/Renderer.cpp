@@ -1,4 +1,5 @@
 #include "Renderer.hpp"
+#include "../LuaInterpreter.hpp"
 #include "../LuaInstanceMap.hpp"
 #include "../LuaHelper.hpp"
 #include "../Utils.hpp"
@@ -13,10 +14,11 @@ LuaInstanceMap<Renderer> instances;
 
 } // unnamed namespace
 
-Renderer::Renderer(lua_State* const L, const std::string& renderer_name)
+Renderer::Renderer(LuaInterpreter& lua, const std::string& renderer_name)
     : mRendererName(renderer_name)
 {
-    instances.Add(L, *this);
+    instances.Add(lua.GetState(), *this);
+    lua.RegisterAPI(GetModuleName(), GetAPI().data());
 }
 
 Renderer::~Renderer()

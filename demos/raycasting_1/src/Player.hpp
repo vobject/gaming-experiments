@@ -8,15 +8,15 @@
 #include <memory>
 #include <vector>
 
+class LuaInterpreter;
 class World;
 class Input;
-struct lua_State;
 struct luaL_Reg;
 
 class Player
 {
 public:
-    Player(lua_State* L, const World& world);
+    Player(LuaInterpreter& lua, const World& world);
     ~Player();
 
     Input& GetInput() const;

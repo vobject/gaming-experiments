@@ -7,7 +7,11 @@ int main()
 {
     try
     {
-        MainLoop().Run();
+        LuaInterpreter& lua = LuaInterpreter::Create();
+        MainLoop loop(lua);
+
+        lua.ExecuteScript("main.lua");
+        loop.Run();
     }
     catch (const char* e)
     {

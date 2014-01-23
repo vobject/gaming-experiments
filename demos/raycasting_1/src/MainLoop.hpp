@@ -15,7 +15,7 @@ struct luaL_Reg;
 class MainLoop
 {
 public:
-    MainLoop();
+    MainLoop(LuaInterpreter& lua);
     ~MainLoop();
 
     void Run();
@@ -36,12 +36,6 @@ private:
     MainLoop(const MainLoop&) = delete;
     MainLoop& operator=(const MainLoop&) = delete;
 
-    void LuaOnStart();
-    void LuaOnQuit();
-    void LuaOnInput();
-    void LuaOnUpdate();
-    void LuaOnRender();
-
     void ProcessInput();
     void UpdateScene(long app_time, long elapsed_time);
     void RenderScene();
@@ -49,6 +43,12 @@ private:
     void SetRenderer(SDL_Scancode code);
     void SelectRendererFromScanCode(SDL_Scancode scancode);
     void SelectRendererFromName(const std::string& name);
+
+    void LuaOnStart();
+    void LuaOnQuit();
+    void LuaOnInput();
+    void LuaOnUpdate();
+    void LuaOnRender();
 
     bool mQuitRequested = false;
     int mUpdateDeltaTime = 2; // update game state every 2ms by default

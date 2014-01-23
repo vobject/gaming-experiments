@@ -6,14 +6,14 @@
 #include <string>
 #include <vector>
 
+class LuaInterpreter;
 class World;
-struct lua_State;
 struct luaL_Reg;
 
 class Renderer
 {
 public:
-    Renderer(lua_State* L, const std::string& renderer_name);
+    Renderer(LuaInterpreter& lua, const std::string& renderer_name);
     virtual ~Renderer();
 
     std::string GetAppName() const;

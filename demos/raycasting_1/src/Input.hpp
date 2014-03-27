@@ -28,6 +28,8 @@ public:
     bool TestAction1() const;
     bool TestAction2() const;
 
+    bool TestLeftMouseBtn() const;
+    bool TestRightMouseBtn() const;
     int TestMotionLeft() const;
     int TestMotionRight() const;
     int TestMotionUp() const;
@@ -54,6 +56,8 @@ private:
     bool mAction1KeyPressed = false;
     bool mAction2KeyPressed = false;
 
+    bool mMouseLeftBtnPressed = 0;
+    bool mMouseRightBtnPressed = 0;
     int mMouseLookLeft = 0;
     int mMouseLookRight = 0;
     int mMouseLookUp = 0;

@@ -81,11 +81,13 @@ void Input::Update()
     // reset mouse motion states
     int mouse_rel_x;
     int mouse_rel_y;
-    SDL_GetRelativeMouseState(&mouse_rel_x, &mouse_rel_y);
+    int mouse_rel_state = SDL_GetRelativeMouseState(&mouse_rel_x, &mouse_rel_y);
     mMouseLookLeft = (mouse_rel_x < 0) ? std::abs(mouse_rel_x) : 0;
     mMouseLookRight = (mouse_rel_x > 0) ? std::abs(mouse_rel_x) : 0;
     mMouseLookUp = (mouse_rel_y < 0) ? std::abs(mouse_rel_y) : 0;
     mMouseLookDown = (mouse_rel_y > 0) ? std::abs(mouse_rel_y) : 0;
+    mMouseLeftBtnPressed = (mouse_rel_state & SDL_BUTTON(1));
+    mMouseRightBtnPressed = (mouse_rel_state & SDL_BUTTON(3));
 
     // update controller input
     if (mController && SDL_GameControllerGetAttached(mController))
@@ -139,6 +141,16 @@ bool Input::TestAction1() const
 bool Input::TestAction2() const
 {
     return mAction2KeyPressed;
+}
+
+bool Input::TestLeftMouseBtn() const
+{
+    return mMouseLeftBtnPressed;
+}
+
+bool Input::TestRightMouseBtn() const
+{
+    return mMouseRightBtnPressed;
 }
 
 int Input::TestMotionUp() const
